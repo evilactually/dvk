@@ -46,6 +46,10 @@ pub unsafe fn vkCreateInstance(pCreateInfo: *const VkInstanceCreateInfo,
     }
 }
 
+pub fn vkTest() -> u32 {
+    10
+}
+
 #[cfg(test)]
 mod tests {
     #[test]
