@@ -1,0 +1,13 @@
+[package]
+name = "vulkan"
+version = "0.1.0"
+authors = ["Vlad Shcherbakov <vlad.shcherbakov@gmail.com>"]
+
+[dependencies]
+winapi = "0.2.7"
+widestring = "0.1.0"
+gdi32-sys = "0.2.0"
+kernel32-sys = "0.2.2"
+user32-sys = "0.2.0"
+libc = "0.2.11"
+advapi32-sys = "0.2.0"
