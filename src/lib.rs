@@ -13,35 +13,38 @@ use std::path::{Path};
 
 use std::ffi::CString;
 
+pub type VkDispatchableHandle = *const c_void;
+pub type VkNonDispatchableHandle = uint64_t;
+
 pub type VkFlags = uint32_t;
 pub type VkBool32 = uint32_t;
 pub type VkDeviceSize = uint64_t;
 pub type VkSampleMask = uint32_t;
-pub type VkInstance = *const c_void;
-pub type VkPhysicalDevice = *const c_void;
-pub type VkDevice = *const c_void;
-pub type VkQueue = *const c_void;
-pub type VkSemaphore = uint64_t;
-pub type VkCommandBuffer = *const c_void;
-pub type VkFence = uint64_t;
-pub type VkDeviceMemory = uint64_t;
-pub type VkBuffer = uint64_t;
-pub type VkImage = uint64_t;
-pub type VkEvent = uint64_t;
-pub type VkQueryPool = uint64_t;
-pub type VkBufferView = uint64_t;
-pub type VkImageView = uint64_t;
-pub type VkShaderModule = uint64_t;
-pub type VkPipelineCache = uint64_t;
-pub type VkPipelineLayout = uint64_t;
-pub type VkRenderPass = uint64_t;
-pub type VkPipeline = uint64_t;
-pub type VkDescriptorSetLayout = uint64_t;
-pub type VkSampler = uint64_t;
-pub type VkDescriptorPool = uint64_t;
-pub type VkDescriptorSet = uint64_t;
-pub type VkFramebuffer = uint64_t;
-pub type VkCommandPool = uint64_t;
+pub type VkInstance = VkDispatchableHandle;
+pub type VkPhysicalDevice = VkDispatchableHandle;
+pub type VkDevice = VkDispatchableHandle;
+pub type VkQueue = VkDispatchableHandle;
+pub type VkSemaphore = VkNonDispatchableHandle;
+pub type VkCommandBuffer = VkDispatchableHandle;
+pub type VkFence = VkNonDispatchableHandle;
+pub type VkDeviceMemory = VkNonDispatchableHandle;
+//pub type VkBuffer = VkNonDispatchableHandle;
+pub type VkImage = VkNonDispatchableHandle;
+pub type VkEvent = VkNonDispatchableHandle;
+pub type VkQueryPool = VkNonDispatchableHandle;
+pub type VkBufferView = VkNonDispatchableHandle;
+pub type VkImageView = VkNonDispatchableHandle;
+pub type VkShaderModule = VkNonDispatchableHandle;
+pub type VkPipelineCache = VkNonDispatchableHandle;
+pub type VkPipelineLayout = VkNonDispatchableHandle;
+pub type VkRenderPass = VkNonDispatchableHandle;
+pub type VkPipeline = VkNonDispatchableHandle;
+pub type VkDescriptorSetLayout = VkNonDispatchableHandle;
+pub type VkSampler = VkNonDispatchableHandle;
+pub type VkDescriptorPool = VkNonDispatchableHandle;
+pub type VkDescriptorSet = VkNonDispatchableHandle;
+pub type VkFramebuffer = VkNonDispatchableHandle;
+pub type VkCommandPool = VkNonDispatchableHandle;
 
 const VK_LOD_CLAMP_NONE:c_float = 1000.0f32;
 const VK_REMAINING_MIP_LEVELS:uint32_t = 0xffffffffu32;
@@ -2097,29 +2100,79 @@ pub struct VkBufferImageCopy {
     imageExtent: VkExtent3D
 }
 
-// typedef union VkClearColorValue {
-//     c_float       float32[4];
-//     int32_t     int32[4];
-//     uint32_t    uint32[4];
-// } VkClearColorValue;
+#[repr(C)]
+pub struct VkClearColorValue {
+    union_data: [u8;16]
+}
 
-// #[repr(C)]
-// pub struct VkClearDepthStencilValue {
-//     c_float       depth;
-//     uint32_t    stencil;
-// } VkClearDepthStencilValue;
+#[repr(C)]
+pub enum VkClearColorValueUnion {
+    Float32([c_float;4]),
+    Int32([int32_t;4]),
+    UInt32([uint32_t;4])
+}
 
-// typedef union VkClearValue {
-//     VkClearColorValue           color;
-//     VkClearDepthStencilValue    depthStencil;
-// } VkClearValue;
+impl From<VkClearColorValueUnion> for VkClearColorValue {
+    fn from(union:VkClearColorValueUnion) -> Self {
+        unsafe {
+            match union {
+                VkClearColorValueUnion::Float32(color4f) => {
+                    VkClearColorValue{union_data:std::mem::transmute(color4f)}
+                },
+                VkClearColorValueUnion::Int32(color4i) => {
+                    VkClearColorValue{union_data:std::mem::transmute(color4i)}
+                },
+                VkClearColorValueUnion::UInt32(color4u) => {
+                    VkClearColorValue{union_data:std::mem::transmute(color4u)}
+                },
+            }
+        }
+    }
+}
 
-// #[repr(C)]
-// pub struct VkClearAttachment {
-//     aspectMask: VkImageAspectFlags,
-//     colorAttachment: uint32_t,
-//     clearValue: VkClearValue,
-// }
+#[repr(C)]
+pub struct VkClearDepthStencilValue {
+    depth: c_float,
+    stencil: uint32_t
+}
+
+#[repr(C)]
+pub struct VkClearValue {
+    union_data: [u8;16]
+}
+
+pub enum VkClearValueUnion {
+    Color(VkClearColorValue),
+    DepthStencil(VkClearDepthStencilValue)
+}
+
+impl From<VkClearValueUnion> for VkClearValue {
+    fn from(union: VkClearValueUnion) -> Self {
+        unsafe {
+            match union {
+                VkClearValueUnion::Color(clear_color_value) => {
+                    VkClearValue{union_data:clear_color_value.union_data}
+                },
+                VkClearValueUnion::DepthStencil(clear_depth_stencil_value) => {
+                    let mut clear_value:VkClearValue = std::mem::zeroed();
+                    {
+                        let clear_color_bytes: [u8;8] = std::mem::transmute(clear_depth_stencil_value);
+                        let union_data_slice: &mut[u8] = &mut clear_value.union_data[0..8];
+                        union_data_slice.clone_from_slice(&clear_color_bytes);
+                    }
+                    clear_value
+                }
+            }
+        }
+    }
+}
+
+#[repr(C)]
+pub struct VkClearAttachment {
+    aspectMask: VkImageAspectFlags,
+    colorAttachment: uint32_t,
+    clearValue: VkClearValue
+}
 
 #[repr(C)]
 pub struct VkClearRect {
@@ -2172,16 +2225,16 @@ pub struct VkImageMemoryBarrier {
     subresourceRange: VkImageSubresourceRange
 }
 
-// #[repr(C)]
-// pub struct VkRenderPassBeginInfo {
-//     sType: VkStructureType,
-//     pNext: *const c_void,
-//     renderPass: VkRenderPass,
-//     framebuffer: VkFramebuffer,
-//     renderArea: VkRect2D,
-//     clearValueCount: uint32_t,
-//     pClearValues: *const VkClearValue
-// }
+#[repr(C)]
+pub struct VkRenderPassBeginInfo {
+    sType: VkStructureType,
+    pNext: *const c_void,
+    renderPass: VkRenderPass,
+    framebuffer: VkFramebuffer,
+    renderArea: VkRect2D,
+    clearValueCount: uint32_t,
+    pClearValues: *const VkClearValue
+}
 
 #[repr(C)]
 pub struct VkDispatchIndirectCommand {
@@ -2207,18 +2260,671 @@ pub struct VkDrawIndirectCommand {
     firstInstance: uint32_t
 }
 
-pub type vkGetInstanceProcAddrFn = unsafe extern "stdcall" fn(pCreateInfo: VkInstance, 
-                                                              pName: *const c_char);
-
 pub type vkCreateInstanceFn = unsafe extern "stdcall" fn(pCreateInfo: *const VkInstanceCreateInfo, 
-                                                         pAllocator: *const VkAllocationCallbacks,
-                                                         pInstance: *mut VkInstance);
+                                                         pAllocator: *const VkAllocationCallbacks, 
+                                                         pInstance: *mut VkInstance) -> VkResult;
 
+pub type vkDestroyInstanceFn = unsafe extern "stdcall" fn(instance: VkInstance, 
+                                                          pAllocator: *const VkAllocationCallbacks);
+
+pub type vkEnumeratePhysicalDevicesFn = unsafe extern "stdcall" fn(instance: VkInstance, 
+                                                                   pPhysicalDeviceCount: *mut uint32_t, 
+                                                                   pPhysicalDevices: *mut VkPhysicalDevice) -> VkResult;
+
+pub type vkGetPhysicalDeviceFeaturesFn = unsafe extern "stdcall" fn(physicalDevice: VkPhysicalDevice, 
+                                                                    pFeatures: *mut VkPhysicalDeviceFeatures);
+
+pub type vkGetPhysicalDeviceFormatPropertiesFn = unsafe extern "stdcall" fn(physicalDevice: VkPhysicalDevice, 
+                                                                            format: VkFormat, 
+                                                                            pFormatProperties: *mut VkFormatProperties);
+
+pub type vkGetPhysicalDeviceImageFormatPropertiesFn = unsafe extern "stdcall" fn(physicalDevice: VkPhysicalDevice,
+                                                                                 format: VkFormat,
+                                                                                 iType: VkImageType,
+                                                                                 tiling: VkImageTiling,
+                                                                                 usage: VkImageUsageFlags,
+                                                                                 flags: VkImageCreateFlags,
+                                                                                 pImageFormatProperties: *mut VkImageFormatProperties) -> VkResult;
+
+pub type vkGetPhysicalDevicePropertiesFn = unsafe extern "stdcall" fn(physicalDevice: VkPhysicalDevice,
+                                                                      pProperties: *mut VkPhysicalDeviceProperties);
+
+pub type vkGetPhysicalDeviceQueueFamilyPropertiesFn = unsafe extern "stdcall" fn(physicalDevice: VkPhysicalDevice,
+                                                                                 pQueueFamilyPropertyCount: *mut uint32_t,
+                                                                                 pQueueFamilyProperties: *mut VkQueueFamilyProperties);
+
+pub type vkGetPhysicalDeviceMemoryPropertiesFn = unsafe extern "stdcall" fn(physicalDevice: VkPhysicalDevice,
+                                                                            pMemoryProperties: *mut VkPhysicalDeviceMemoryProperties);
+
+pub type vkGetInstanceProcAddrFn = unsafe extern "stdcall" fn(instance: VkInstance,
+                                                              pName: *const char) -> vkVoidFunctionFn;
+
+pub type vkGetDeviceProcAddrFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                            pName: *const char) -> vkVoidFunctionFn;
+
+pub type vkCreateDeviceFn = unsafe extern "stdcall" fn(physicalDevice: VkPhysicalDevice,
+                                                       pCreateInfo: *const VkDeviceCreateInfo,
+                                                       pAllocator: *const VkAllocationCallbacks,
+                                                       pDevice: *mut VkDevice) -> VkResult;
+
+pub type vkDestroyDeviceFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                        pAllocator: *const VkAllocationCallbacks);
+
+pub type vkEnumerateInstanceExtensionPropertiesFn = unsafe extern "stdcall" fn(pLayerName: *const char,
+                                                                               pPropertyCount: *mut uint32_t,
+                                                                               pProperties: *mut VkExtensionProperties) -> VkResult;
+
+pub type vkEnumerateDeviceExtensionPropertiesFn = unsafe extern "stdcall" fn(physicalDevice: VkPhysicalDevice,
+                                                                             pLayerName: *const char,
+                                                                             pPropertyCount: *mut uint32_t,
+                                                                             pProperties: *mut VkExtensionProperties) -> VkResult;
+
+pub type vkEnumerateInstanceLayerPropertiesFn = unsafe extern "stdcall" fn(pPropertyCount: *mut uint32_t,
+                                                                           pProperties: *mut VkLayerProperties) -> VkResult;
+
+pub type vkEnumerateDeviceLayerPropertiesFn = unsafe extern "stdcall" fn(physicalDevice: VkPhysicalDevice,
+                                                                         pPropertyCount: *mut uint32_t,
+                                                                         pProperties: *mut VkLayerProperties) -> VkResult;
+
+pub type vkGetDeviceQueueFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                         queueFamilyIndex: uint32_t,
+                                                         queueIndex: uint32_t,
+                                                         pQueue: *mut VkQueue);
+
+pub type vkQueueSubmitFn = unsafe extern "stdcall" fn(queue: VkQueue,
+                                                      submitCount: uint32_t,
+                                                      pSubmits: *const VkSubmitInfo,
+                                                      fence: VkFence) -> VkResult;
+
+pub type vkQueueWaitIdleFn = unsafe extern "stdcall" fn(queue: VkQueue) -> VkResult;
+
+pub type vkDeviceWaitIdleFn = unsafe extern "stdcall" fn(device: VkDevice) -> VkResult;
+
+pub type vkAllocateMemoryFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                         pAllocateInfo: *const VkMemoryAllocateInfo,
+                                                         pAllocator: *const VkAllocationCallbacks,
+                                                         pMemory: *mut VkDeviceMemory) -> VkResult;
+
+pub type vkFreeMemoryFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                     memory: VkDeviceMemory,
+                                                     pAllocator: *const VkAllocationCallbacks);
+
+pub type vkMapMemoryFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                    memory: VkDeviceMemory,
+                                                    offset: VkDeviceSize,
+                                                    size: VkDeviceSize,
+                                                    flags: VkMemoryMapFlags,
+                                                    ppData: *mut *mut c_void) -> VkResult;
+
+pub type vkUnmapMemoryFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                      memory: VkDeviceMemory);
+
+pub type vkFlushMappedMemoryRangesFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                                  memoryRangeCount: uint32_t,
+                                                                  pMemoryRanges: *const VkMappedMemoryRange) -> VkResult;
+
+pub type vkInvalidateMappedMemoryRangesFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                                       memoryRangeCount: uint32_t,
+                                                                       pMemoryRanges: *const VkMappedMemoryRange) -> VkResult;
+
+pub type vkGetDeviceMemoryCommitmentFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                                    memory: VkDeviceMemory,
+                                                                    pCommittedMemoryInBytes: *mut VkDeviceSize);
+
+pub type vkBindBufferMemoryFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                           buffer: VkBuffer,
+                                                           memory: VkDeviceMemory,
+                                                           memoryOffset: VkDeviceSize) -> VkResult;
+
+pub type vkBindImageMemoryFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                          image: VkImage,
+                                                          memory: VkDeviceMemory,
+                                                          memoryOffset: VkDeviceSize) -> VkResult;
+
+pub type vkGetBufferMemoryRequirementsFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                                      buffer: VkBuffer,
+                                                                      pMemoryRequirements: *mut VkMemoryRequirements);
+
+pub type vkGetImageMemoryRequirementsFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                                     image: VkImage,
+                                                                     pMemoryRequirements: *mut VkMemoryRequirements);
+
+pub type vkGetImageSparseMemoryRequirementsFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                                           image: VkImage,
+                                                                           pSparseMemoryRequirementCount: *mut uint32_t,
+                                                                           pSparseMemoryRequirements: *mut VkSparseImageMemoryRequirements);
+
+pub type vkGetPhysicalDeviceSparseImageFormatPropertiesFn = unsafe extern "stdcall" fn(physicalDevice: VkPhysicalDevice,
+                                                                                       format: VkFormat,
+                                                                                       iType: VkImageType,
+                                                                                       samples: VkSampleCountFlagBits,
+                                                                                       usage: VkImageUsageFlags,
+                                                                                       tiling: VkImageTiling,
+                                                                                       pPropertyCount: *mut uint32_t,
+                                                                                       pProperties: *mut VkSparseImageFormatProperties);
+pub type vkQueueBindSparseFn = unsafe extern "stdcall" fn(queue: VkQueue,
+                                                          bindInfoCount: uint32_t,
+                                                          pBindInfo: *const VkBindSparseInfo,
+                                                          fence: VkFence) -> VkResult;
+
+pub type vkCreateFenceFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                      pCreateInfo: *const VkFenceCreateInfo,
+                                                      pAllocator: *const VkAllocationCallbacks,
+                                                      pFence: *mut VkFence) -> VkResult;
+
+pub type vkDestroyFenceFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                       fence: VkFence,
+                                                       pAllocator: *const VkAllocationCallbacks);
+
+pub type vkResetFencesFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                      fenceCount: uint32_t,
+                                                      pFences: *const VkFence) -> VkResult;
+
+pub type vkGetFenceStatusFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                         fence: VkFence) -> VkResult;
+
+pub type vkWaitForFencesFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                        fenceCount: uint32_t,
+                                                        pFences: *const VkFence,
+                                                        waitAll: VkBool32,
+                                                        timeout: uint64_t) -> VkResult;
+
+pub type vkCreateSemaphoreFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                          pCreateInfo: *const VkSemaphoreCreateInfo,
+                                                          pAllocator: *const VkAllocationCallbacks,
+                                                          pSemaphore: *mut VkSemaphore) -> VkResult;
+
+pub type vkDestroySemaphoreFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                           semaphore: VkSemaphore,
+                                                           pAllocator: *const VkAllocationCallbacks);
+
+pub type vkCreateEventFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                      pCreateInfo: *const VkEventCreateInfo,
+                                                      pAllocator: *const VkAllocationCallbacks,
+                                                      pEvent: *mut VkEvent) -> VkResult;
+
+pub type vkDestroyEventFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                       event: VkEvent,
+                                                       pAllocator: *const VkAllocationCallbacks);
+
+pub type vkGetEventStatusFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                         event: VkEvent) -> VkResult;
+
+pub type vkSetEventFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                   event: VkEvent) -> VkResult;
+
+pub type vkResetEventFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                     event: VkEvent) -> VkResult;
+
+pub type vkCreateQueryPoolFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                          pCreateInfo: *const VkQueryPoolCreateInfo,
+                                                          pAllocator: *const VkAllocationCallbacks,
+                                                          pQueryPool: *mut VkQueryPool) -> VkResult;
+
+pub type vkDestroyQueryPoolFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                           queryPool: VkQueryPool,
+                                                           pAllocator: *const VkAllocationCallbacks);
+
+pub type vkGetQueryPoolResultsFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                              queryPool: VkQueryPool,
+                                                              firstQuery: uint32_t,
+                                                              queryCount: uint32_t,
+                                                              dataSize: size_t,
+                                                              pData: *mut c_void,
+                                                              stride: VkDeviceSize,
+                                                              flags: VkDeviceSize) -> VkResult;
+
+pub type vkCreateBufferFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                       pCreateInfo: *const VkBufferCreateInfo,
+                                                       pAllocator: *const VkAllocationCallbacks,
+                                                       pBuffer: *mut VkBuffer) -> VkResult;
+
+pub type vkDestroyBufferFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                        buffer: VkBuffer,
+                                                        pAllocator: *const VkAllocationCallbacks);
+
+pub type vkCreateBufferViewFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                           pCreateInfo: *const VkBufferViewCreateInfo,
+                                                           pAllocator: *const VkAllocationCallbacks,
+                                                           pView: *mut VkBufferView) -> VkResult;
+
+pub type vkDestroyBufferViewFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                            bufferView: VkBufferView,
+                                                            pAllocator: *const VkAllocationCallbacks);
+
+pub type vkCreateImageFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                      pCreateInfo: *const VkImageCreateInfo,
+                                                      pAllocator: *const VkAllocationCallbacks,
+                                                      pImage: *mut VkImage) -> VkResult;
+
+pub type vkDestroyImageFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                       image: VkImage,
+                                                       pAllocator: *const VkAllocationCallbacks);
+
+pub type vkGetImageSubresourceLayoutFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                                    image: VkImage,
+                                                                    pSubresource: *const VkImageSubresource,
+                                                                    pLayout: *mut VkSubresourceLayout);
+
+pub type vkCreateImageViewFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                          pCreateInfo: *const VkImageViewCreateInfo,
+                                                          pAllocator: *const VkAllocationCallbacks,
+                                                          pView: *mut VkImageView) -> VkResult;
+
+pub type vkDestroyImageViewFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                           imageView: VkImageView,
+                                                           pAllocator: *const VkAllocationCallbacks);
+
+pub type vkCreateShaderModuleFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                             pCreateInfo: *const VkShaderModuleCreateInfo,
+                                                             pAllocator: *const VkAllocationCallbacks,
+                                                             pShaderModule: *mut VkShaderModule) -> VkResult;
+
+pub type vkDestroyShaderModuleFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                              shaderModule: VkShaderModule,
+                                                              pAllocator: *const VkAllocationCallbacks);
+
+pub type vkCreatePipelineCacheFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                              pCreateInfo: *const VkPipelineCacheCreateInfo,
+                                                              pAllocator: *const VkAllocationCallbacks,
+                                                              pPipelineCache: *mut VkPipelineCache) -> VkResult;
+
+pub type vkDestroyPipelineCacheFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                               pipelineCache: VkPipelineCache,
+                                                               pAllocator: *const VkAllocationCallbacks);
+
+pub type vkGetPipelineCacheDataFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                               pipelineCache: VkPipelineCache,
+                                                               pDataSize: *mut size_t,
+                                                               pData: *mut c_void) -> VkResult;
+
+pub type vkMergePipelineCachesFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                              dstCache: VkPipelineCache,
+                                                              srcCacheCount: uint32_t,
+                                                              pSrcCaches: *const VkPipelineCache) -> VkResult;
+
+pub type vkCreateGraphicsPipelinesFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                                  pipelineCache: VkPipelineCache,
+                                                                  createInfoCount: uint32_t,
+                                                                  pCreateInfos: *const VkGraphicsPipelineCreateInfo,
+                                                                  pAllocator: *const VkAllocationCallbacks,
+                                                                  pPipelines: *mut VkPipeline) -> VkResult;
+
+pub type vkCreateComputePipelinesFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                                 pipelineCache: VkPipelineCache,
+                                                                 createInfoCount: uint32_t,
+                                                                 pCreateInfos: *const VkComputePipelineCreateInfo,
+                                                                 pAllocator: *const VkAllocationCallbacks,
+                                                                 pPipelines: *mut VkPipeline) -> VkResult;
+
+pub type vkDestroyPipelineFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                          pipeline: VkPipeline,
+                                                          pAllocator: *const VkAllocationCallbacks);
+
+pub type vkCreatePipelineLayoutFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                               pCreateInfo: *const VkPipelineLayoutCreateInfo,
+                                                               pAllocator: *const VkAllocationCallbacks,
+                                                               pPipelineLayout: *mut VkPipelineLayout) -> VkResult;
+
+pub type vkDestroyPipelineLayoutFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                                pipelineLayout: VkPipelineLayout,
+                                                                pAllocator: *const VkAllocationCallbacks);
+
+pub type vkCreateSamplerFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                        pCreateInfo: *const VkSamplerCreateInfo,
+                                                        pAllocator: *const VkAllocationCallbacks,
+                                                        pSampler: *mut VkSampler) -> VkResult;
+
+pub type vkDestroySamplerFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                         sampler: VkSampler,
+                                                         pAllocator: *const VkAllocationCallbacks);
+
+pub type vkCreateDescriptorSetLayoutFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                                    pCreateInfo: *const VkDescriptorSetLayoutCreateInfo,
+                                                                    pAllocator: *const VkAllocationCallbacks,
+                                                                    pSetLayout: *mut VkDescriptorSetLayout) -> VkResult;
+
+pub type vkDestroyDescriptorSetLayoutFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                                     descriptorSetLayout: VkDescriptorSetLayout,
+                                                                     pAllocator: *const VkAllocationCallbacks);
+
+pub type vkCreateDescriptorPoolFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                               pCreateInfo: *const VkDescriptorPoolCreateInfo,
+                                                               pAllocator: *const VkAllocationCallbacks,
+                                                               pDescriptorPool: *mut VkDescriptorPool) -> VkResult;
+
+pub type vkDestroyDescriptorPoolFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                                descriptorPool: VkDescriptorPool,
+                                                                pAllocator: *const VkAllocationCallbacks);
+
+pub type vkResetDescriptorPoolFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                              descriptorPool: VkDescriptorPool,
+                                                              flags: VkDescriptorPoolResetFlags) -> VkResult;
+
+pub type vkAllocateDescriptorSetsFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                                 pAllocateInfo: *const VkDescriptorSetAllocateInfo,
+                                                                 pDescriptorSets: *mut VkDescriptorSet) -> VkResult;
+
+pub type vkFreeDescriptorSetsFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                             descriptorPool: VkDescriptorPool,
+                                                             descriptorSetCount: uint32_t,
+                                                             pDescriptorSets: *const VkDescriptorSet) -> VkResult;
+
+pub type vkUpdateDescriptorSetsFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                               descriptorWriteCount: uint32_t,
+                                                               pDescriptorWrites: *const VkWriteDescriptorSet,
+                                                               descriptorCopyCount: uint32_t,
+                                                               pDescriptorCopies: *const VkCopyDescriptorSet);
+
+pub type vkCreateFramebufferFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                            pCreateInfo: *const VkFramebufferCreateInfo,
+                                                            pAllocator: *const VkAllocationCallbacks,
+                                                            pFramebuffer: *mut VkFramebuffer) -> VkResult;
+
+pub type vkDestroyFramebufferFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                             framebuffer: VkFramebuffer,
+                                                             pAllocator: *const VkAllocationCallbacks);
+
+pub type vkCreateRenderPassFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                           pCreateInfo: *const VkRenderPassCreateInfo,
+                                                           pAllocator: *const VkAllocationCallbacks,
+                                                           pRenderPass: *mut VkRenderPass) -> VkResult;
+
+pub type vkDestroyRenderPassFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                            renderPass: VkRenderPass,
+                                                            pAllocator: *const VkAllocationCallbacks);
+
+pub type vkGetRenderAreaGranularityFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                                   renderPass: VkRenderPass,
+                                                                   pGranularity: *mut VkExtent2D);
+
+pub type vkCreateCommandPoolFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                            pCreateInfo: *const VkCommandPoolCreateInfo,
+                                                            pAllocator: *const VkAllocationCallbacks,
+                                                            pCommandPool: *mut VkCommandPool) -> VkResult;
+
+pub type vkDestroyCommandPoolFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                             commandPool: VkCommandPool,
+                                                             pAllocator: *const VkAllocationCallbacks);
+
+pub type vkResetCommandPoolFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                           commandPool: VkCommandPool,
+                                                           flags: VkCommandPoolResetFlags) -> VkResult;
+
+pub type vkAllocateCommandBuffersFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                                 pAllocateInfo: *const VkCommandBufferAllocateInfo,
+                                                                 pCommandBuffers: *mut VkCommandBuffer) -> VkResult;
+
+pub type vkFreeCommandBuffersFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                             commandPool: VkCommandPool,
+                                                             commandBufferCount: uint32_t,
+                                                             pCommandBuffers: *const VkCommandBuffer);
+
+pub type vkBeginCommandBufferFn = unsafe extern "stdcall" fn(commandBuffer: VkCommandBuffer,
+                                                             pBeginInfo: *const VkCommandBufferBeginInfo) -> VkResult;
+
+pub type vkEndCommandBufferFn = unsafe extern "stdcall" fn(commandBuffer: VkCommandBuffer) -> VkResult;
+
+pub type vkResetCommandBufferFn = unsafe extern "stdcall" fn(commandBuffer: VkCommandBuffer,
+                                                             flags: VkCommandBufferResetFlags) -> VkResult;
+
+pub type vkCmdBindPipelineFn = unsafe extern "stdcall" fn(commandBuffer: VkCommandBuffer,
+                                                          pipelineBindPoint: VkPipelineBindPoint,
+                                                          pipeline: VkPipeline);
+
+pub type vkCmdSetViewportFn = unsafe extern "stdcall" fn(commandBuffer: VkCommandBuffer,
+                                                         firstViewport: uint32_t,
+                                                         viewportCount: uint32_t,
+                                                         pViewports: *const VkViewport);
+
+pub type vkCmdSetScissorFn = unsafe extern "stdcall" fn(commandBuffer: VkCommandBuffer,
+                                                        firstScissor: uint32_t,
+                                                        scissorCount: uint32_t,
+                                                        pScissors: *const VkRect2D);
+
+pub type vkCmdSetLineWidthFn = unsafe extern "stdcall" fn(commandBuffer: VkCommandBuffer,
+                                                          lineWidth: c_float);
+
+pub type vkCmdSetDepthBiasFn = unsafe extern "stdcall" fn(commandBuffer: VkCommandBuffer,
+                                                          depthBiasConstantFactor: c_float,
+                                                          depthBiasClamp: c_float,
+                                                          depthBiasSlopeFactor: c_float);
+
+// TODO: make sure this is working
+pub type vkCmdSetBlendConstantsFn = unsafe extern "stdcall" fn(commandBuffer: VkCommandBuffer,
+                                                               blendConstants: [c_float;4]);
+
+pub type vkCmdSetDepthBoundsFn = unsafe extern "stdcall" fn(commandBuffer: VkCommandBuffer,
+                                                            minDepthBounds: c_float,
+                                                            maxDepthBounds: c_float);
+
+pub type vkCmdSetStencilCompareMaskFn = unsafe extern "stdcall" fn(commandBuffer: VkCommandBuffer,
+                                                                   faceMask: VkStencilFaceFlags,
+                                                                   compareMask: uint32_t);
+
+pub type vkCmdSetStencilWriteMaskFn = unsafe extern "stdcall" fn(commandBuffer: VkCommandBuffer,
+                                                                 faceMask: VkStencilFaceFlags,
+                                                                 writeMask: uint32_t);
+
+pub type vkCmdSetStencilReferenceFn = unsafe extern "stdcall" fn(commandBuffer: VkCommandBuffer,
+                                                                 faceMask: VkStencilFaceFlags,
+                                                                 reference: uint32_t);
+
+pub type vkCmdBindDescriptorSetsFn = unsafe extern "stdcall" fn(commandBuffer: VkCommandBuffer,
+                                                                pipelineBindPoint: VkPipelineBindPoint,
+                                                                layout: VkPipelineLayout,
+                                                                firstSet: uint32_t,
+                                                                descriptorSetCount: uint32_t,
+                                                                pDescriptorSets: *const VkDescriptorSet,
+                                                                dynamicOffsetCount: uint32_t,
+                                                                pDynamicOffsets: *const uint32_t);
+
+pub type vkCmdBindIndexBufferFn = unsafe extern "stdcall" fn(commandBuffer: VkCommandBuffer,
+                                                             buffer: VkBuffer,
+                                                             offset: VkDeviceSize,
+                                                             indexType: VkIndexType);
+
+pub type vkCmdBindVertexBuffersFn = unsafe extern "stdcall" fn(commandBuffer: VkCommandBuffer,
+                                                               firstBinding: uint32_t,
+                                                               bindingCount: uint32_t,
+                                                               pBuffers: *const VkBuffer,
+                                                               pOffsets: *const VkDeviceSize);
+
+pub type vkCmdDrawFn = unsafe extern "stdcall" fn(commandBuffer: VkCommandBuffer,
+                                                  vertexCount: uint32_t,
+                                                  instanceCount: uint32_t,
+                                                  firstVertex: uint32_t,
+                                                  firstInstance: uint32_t);
+
+pub type vkCmdDrawIndexedFn = unsafe extern "stdcall" fn(commandBuffer: VkCommandBuffer,
+                                                         indexCount: uint32_t,
+                                                         instanceCount: uint32_t,
+                                                         firstIndex: uint32_t,
+                                                         vertexOffset: int32_t,
+                                                         firstInstance: uint32_t);
+
+pub type vkCmdDrawIndirectFn = unsafe extern "stdcall" fn(commandBuffer: VkCommandBuffer,
+                                                          buffer: VkBuffer,
+                                                          offset: VkDeviceSize,
+                                                          drawCount: uint32_t,
+                                                          stride: uint32_t);
+
+pub type vkCmdDrawIndexedIndirectFn = unsafe extern "stdcall" fn(commandBuffer: VkCommandBuffer,
+                                                                 buffer: VkBuffer,
+                                                                 offset: VkDeviceSize,
+                                                                 drawCount: uint32_t,
+                                                                 stride: uint32_t);
+
+pub type vkCmdDispatchFn = unsafe extern "stdcall" fn(commandBuffer: VkCommandBuffer,
+                                                      x: uint32_t,
+                                                      y: uint32_t,
+                                                      z: uint32_t);
+
+pub type vkCmdDispatchIndirectFn = unsafe extern "stdcall" fn(commandBuffer: VkCommandBuffer,
+                                                              buffer: VkBuffer,
+                                                              offset: VkDeviceSize);
+
+pub type vkCmdCopyBufferFn = unsafe extern "stdcall" fn(commandBuffer: VkCommandBuffer,
+                                                        srcBuffer: VkBuffer,
+                                                        dstBuffer: VkBuffer,
+                                                        regionCount: uint32_t,
+                                                        pRegions: *const VkBufferCopy);
+
+pub type vkCmdCopyImageFn = unsafe extern "stdcall" fn(commandBuffer: VkCommandBuffer,
+                                                       srcImage: VkImage,
+                                                       srcImageLayout: VkImageLayout,
+                                                       dstImage: VkImage,
+                                                       dstImageLayout: VkImageLayout,
+                                                       regionCount: uint32_t,
+                                                       pRegions: *const VkImageCopy);
+
+pub type vkCmdBlitImageFn = unsafe extern "stdcall" fn(commandBuffer: VkCommandBuffer,
+                                                       srcImage: VkImage,
+                                                       srcImageLayout: VkImageLayout,
+                                                       dstImage: VkImage,
+                                                       dstImageLayout: VkImageLayout,
+                                                       regionCount: uint32_t,
+                                                       pRegions: *const VkImageBlit,
+                                                       filter: VkFilter);
+
+pub type vkCmdCopyBufferToImageFn = unsafe extern "stdcall" fn(commandBuffer: VkCommandBuffer,
+                                                               srcBuffer: VkBuffer,
+                                                               dstImage: VkImage,
+                                                               dstImageLayout: VkImageLayout,
+                                                               regionCount: uint32_t,
+                                                               pRegions: *const VkBufferImageCopy);
+
+pub type vkCmdCopyImageToBufferFn = unsafe extern "stdcall" fn(commandBuffer: VkCommandBuffer,
+                                                               srcImage: VkImage,
+                                                               srcImageLayout: VkImageLayout,
+                                                               dstBuffer: VkBuffer,
+                                                               regionCount: uint32_t,
+                                                               pRegions: *const VkBufferImageCopy);
+
+pub type vkCmdUpdateBufferFn = unsafe extern "stdcall" fn(commandBuffer: VkCommandBuffer,
+                                                          dstBuffer: VkBuffer,
+                                                          dstOffset: VkDeviceSize,
+                                                          dataSize: VkDeviceSize,
+                                                          pData: *const uint32_t);
+
+pub type vkCmdFillBufferFn = unsafe extern "stdcall" fn(commandBuffer: VkCommandBuffer,
+                                                        dstBuffer: VkBuffer,
+                                                        dstOffset: VkDeviceSize,
+                                                        size: VkDeviceSize,
+                                                        data: uint32_t);
+
+pub type vkCmdClearColorImageFn = unsafe extern "stdcall" fn(commandBuffer: VkCommandBuffer,
+                                                             image: VkImage,
+                                                             imageLayout: VkImageLayout,
+                                                             pColor: *const VkClearColorValue,
+                                                             rangeCount: uint32_t,
+                                                             pRanges: *const VkImageSubresourceRange);
+
+pub type vkCmdClearDepthStencilImageFn = unsafe extern "stdcall" fn(commandBuffer: VkCommandBuffer,
+                                                                    image: VkImage,
+                                                                    imageLayout: VkImageLayout,
+                                                                    pDepthStencil: *const VkClearDepthStencilValue,
+                                                                    rangeCount: uint32_t,
+                                                                    pRanges: *const VkImageSubresourceRange);
+
+pub type vkCmdClearAttachmentsFn = unsafe extern "stdcall" fn(commandBuffer: VkCommandBuffer,
+                                                              attachmentCount: uint32_t,
+                                                              pAttachments: *const VkClearAttachment,
+                                                              rectCount: uint32_t,
+                                                              pRects: *const VkClearRect);
+
+pub type vkCmdResolveImageFn = unsafe extern "stdcall" fn(commandBuffer: VkCommandBuffer,
+                                                          srcImage: VkImage,
+                                                          srcImageLayout: VkImageLayout,
+                                                          dstImage: VkImage,
+                                                          dstImageLayout: VkImageLayout,
+                                                          regionCount: uint32_t,
+                                                          pRegions: *const VkImageResolve);
+
+pub type vkCmdSetEventFn = unsafe extern "stdcall" fn(commandBuffer: VkCommandBuffer,
+                                                      event: VkEvent,
+                                                      stageMask: VkPipelineStageFlags);
+
+pub type vkCmdResetEventFn = unsafe extern "stdcall" fn(commandBuffer: VkCommandBuffer,
+                                                        event: VkEvent,
+                                                        stageMask: VkPipelineStageFlags);
+
+pub type vkCmdWaitEventsFn = unsafe extern "stdcall" fn(commandBuffer: VkCommandBuffer,
+                                                        eventCount: uint32_t,
+                                                        pEvents: *const VkEvent,
+                                                        srcStageMask: VkPipelineStageFlags,
+                                                        dstStageMask: VkPipelineStageFlags,
+                                                        memoryBarrierCount: uint32_t,
+                                                        pMemoryBarriers: *const VkMemoryBarrier,
+                                                        bufferMemoryBarrierCount: uint32_t,
+                                                        pBufferMemoryBarriers: *const VkBufferMemoryBarrier,
+                                                        imageMemoryBarrierCount: uint32_t,
+                                                        pImageMemoryBarriers: *const VkImageMemoryBarrier);
+
+pub type vkCmdPipelineBarrierFn = unsafe extern "stdcall" fn(commandBuffer: VkCommandBuffer,
+                                                             srcStageMask: VkPipelineStageFlags,
+                                                             dstStageMask: VkPipelineStageFlags,
+                                                             dependencyFlags: VkDependencyFlags,
+                                                             memoryBarrierCount: uint32_t,
+                                                             pMemoryBarriers: *const VkMemoryBarrier,
+                                                             bufferMemoryBarrierCount: uint32_t,
+                                                             pBufferMemoryBarriers: *const VkBufferMemoryBarrier,
+                                                             imageMemoryBarrierCount: uint32_t,
+                                                             pImageMemoryBarriers: *const VkImageMemoryBarrier);
+
+pub type vkCmdBeginQueryFn = unsafe extern "stdcall" fn(commandBuffer: VkCommandBuffer,
+                                                        queryPool: VkQueryPool,
+                                                        query: uint32_t,
+                                                        flags: VkQueryControlFlags);
+
+pub type vkCmdEndQueryFn = unsafe extern "stdcall" fn(commandBuffer: VkCommandBuffer,
+                                                      queryPool: VkQueryPool,
+                                                      query: uint32_t);
+
+pub type vkCmdResetQueryPoolFn = unsafe extern "stdcall" fn(commandBuffer: VkCommandBuffer,
+                                                            queryPool: VkQueryPool,
+                                                            firstQuery: uint32_t,
+                                                            queryCount: uint32_t);
+
+pub type vkCmdWriteTimestampFn = unsafe extern "stdcall" fn(commandBuffer: VkCommandBuffer,
+                                                            pipelineStage: VkPipelineStageFlagBits,
+                                                            queryPool: VkQueryPool,
+                                                            query: uint32_t);
+
+pub type vkCmdCopyQueryPoolResultsFn = unsafe extern "stdcall" fn(commandBuffer: VkCommandBuffer,
+                                                                  queryPool: VkQueryPool,
+                                                                  firstQuery: uint32_t,
+                                                                  queryCount: uint32_t,
+                                                                  dstBuffer: VkBuffer,
+                                                                  dstOffset: VkDeviceSize,
+                                                                  stride: VkDeviceSize,
+                                                                  flags: VkQueryResultFlags);
+
+pub type vkCmdPushConstantsFn = unsafe extern "stdcall" fn(commandBuffer: VkCommandBuffer,
+                                                           layout: VkPipelineLayout,
+                                                           stageFlags: VkShaderStageFlags,
+                                                           offset: uint32_t,
+                                                           size: uint32_t,
+                                                           pValues: *const c_void);
+
+pub type vkCmdBeginRenderPassFn = unsafe extern "stdcall" fn(commandBuffer: VkCommandBuffer,
+                                                             pRenderPassBegin: *const VkRenderPassBeginInfo,
+                                                             contents: VkSubpassContents);
+
+pub type vkCmdNextSubpassFn = unsafe extern "stdcall" fn(commandBuffer: VkCommandBuffer,
+                                                         contents: VkSubpassContents);
+
+pub type vkCmdEndRenderPassFn = unsafe extern "stdcall" fn(commandBuffer: VkCommandBuffer);
+
+pub type vkCmdExecuteCommandsFn = unsafe extern "stdcall" fn(commandBuffer: VkCommandBuffer,
+                                                             commandBufferCount: uint32_t,
+                                                             pCommandBuffers: *const VkCommandBuffer);
 
 /// Core vulkan commands
 pub struct VulkanCommands {
     pub vkGetInstanceProcAddr: vkGetInstanceProcAddrFn,
     pub vkCreateInstance: vkCreateInstanceFn
+    // TODO
 }
 
 impl VulkanCommands {
@@ -2240,6 +2946,15 @@ impl VulkanCommands {
 
 #[test]
 fn load_test() {
+    let a: VkClearColorValue = VkClearColorValueUnion::Float32([0.5,1.0,0.0,0.0]).into();
+    unsafe {
+        let cdsv = VkClearDepthStencilValue{depth:std::mem::transmute([0xffu8,0x00u8,0xffu8,0x00u8]),stencil:0x161262ff};
+        let cv: VkClearValue = VkClearValueUnion::DepthStencil(cdsv).into();
+        assert_eq!(&cv.union_data[0..8], &[0xffu8,0x00u8,0xffu8,0x00u8, 0xffu8, 0x62u8, 0x12u8, 0x16u8]);
+        let cv: VkClearValue = VkClearValueUnion::DepthStencil(VkClearDepthStencilValue{depth:0.0f32, stencil:0}).into();
+        let cv: VkClearValue = VkClearValueUnion::Color(VkClearColorValueUnion::Float32([0.5,1.0,0.0,0.0]).into()).into();
+    }
+
     match VulkanCommands::load() {
         Err(err) => panic!(err),
         _ => ()
