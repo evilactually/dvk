@@ -12,20 +12,24 @@ use self::shared_library::dynamic_library::DynamicLibrary;
 use std::path::{Path};
 use std::ffi::CString;
 
+#[macro_export]
 macro_rules! VK_MAKE_VERSION {
     ($major:expr, $minor:expr, $patch:expr) => ((($major) << 22) | (($minor) << 12) | ($patch));
 }
 
 pub const VK_API_VERSION_1_0: uint32_t = VK_MAKE_VERSION!(1,0,0);
 
+#[macro_export]
 macro_rules! VK_VERSION_MAJOR {
     ($version:expr) => ($version >> 22);
 }
 
+#[macro_export]
 macro_rules! VK_VERSION_MINOR {
     ($version:expr) => (($version >> 12) & 0x3ff);
 }
 
+#[macro_export]
 macro_rules! VK_VERSION_PATCH {
     ($version:expr) => ($version & 0xfff);
 }
@@ -2941,7 +2945,7 @@ pub type vkCmdExecuteCommandsFn = unsafe extern "stdcall" fn(commandBuffer: VkCo
                                                              pCommandBuffers: *const VkCommandBuffer);
 
 #[derive(Default)]
-struct VulkanCore {
+pub struct VulkanCore {
     library: Option<DynamicLibrary>,
     vkCreateInstance: Option<vkCreateInstanceFn>,
     vkDestroyInstance: Option<vkDestroyInstanceFn>,
@@ -3113,6 +3117,16 @@ impl VulkanCore {
     pub unsafe fn vkGetInstanceProcAddr(&self, instance: VkInstance, pName: *const c_char) -> vkVoidFunctionFn {
         (self.vkGetInstanceProcAddr.as_ref().unwrap())(instance, pName)
     }
+
+    pub unsafe fn vkCreateInstance(&self, 
+                                   pCreateInfo: *const VkInstanceCreateInfo, 
+                                   pAllocator: *const VkAllocationCallbacks, 
+                                   pInstance: *mut VkInstance) -> VkResult {
+        (self.vkCreateInstance.as_ref().unwrap())(pCreateInfo, pAllocator, pInstance)
+    }
+
+    // TODO: Write the stubs!
+    // TODO: Maybe group the functions, so I don't have to unwrap them every time!
 
     pub fn load(mut self, instance: VkInstance) -> Result<VulkanCore, String> {
         unsafe {
