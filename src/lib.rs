@@ -10,41 +10,61 @@ extern crate shared_library;
 use self::libc::{c_void, c_char, uint32_t, size_t, uint64_t, c_float, int32_t, uint8_t};
 use self::shared_library::dynamic_library::DynamicLibrary;
 use std::path::{Path};
-
 use std::ffi::CString;
 
-pub type VkDispatchableHandle = *const c_void;
-pub type VkNonDispatchableHandle = uint64_t;
+macro_rules! VK_MAKE_VERSION {
+    ($major:expr, $minor:expr, $patch:expr) => ((($major) << 22) | (($minor) << 12) | ($patch));
+}
+
+pub const VK_API_VERSION_1_0: uint32_t = VK_MAKE_VERSION!(1,0,0);
+
+macro_rules! VK_VERSION_MAJOR {
+    ($version:expr) => ($version >> 22);
+}
+
+macro_rules! VK_VERSION_MINOR {
+    ($version:expr) => (($version >> 12) & 0x3ff);
+}
+
+macro_rules! VK_VERSION_PATCH {
+    ($version:expr) => ($version & 0xfff);
+}
 
 pub type VkFlags = uint32_t;
 pub type VkBool32 = uint32_t;
 pub type VkDeviceSize = uint64_t;
 pub type VkSampleMask = uint32_t;
-pub type VkInstance = VkDispatchableHandle;
-pub type VkPhysicalDevice = VkDispatchableHandle;
-pub type VkDevice = VkDispatchableHandle;
-pub type VkQueue = VkDispatchableHandle;
-pub type VkSemaphore = VkNonDispatchableHandle;
-pub type VkCommandBuffer = VkDispatchableHandle;
-pub type VkFence = VkNonDispatchableHandle;
-pub type VkDeviceMemory = VkNonDispatchableHandle;
-//pub type VkBuffer = VkNonDispatchableHandle;
-pub type VkImage = VkNonDispatchableHandle;
-pub type VkEvent = VkNonDispatchableHandle;
-pub type VkQueryPool = VkNonDispatchableHandle;
-pub type VkBufferView = VkNonDispatchableHandle;
-pub type VkImageView = VkNonDispatchableHandle;
-pub type VkShaderModule = VkNonDispatchableHandle;
-pub type VkPipelineCache = VkNonDispatchableHandle;
-pub type VkPipelineLayout = VkNonDispatchableHandle;
-pub type VkRenderPass = VkNonDispatchableHandle;
-pub type VkPipeline = VkNonDispatchableHandle;
-pub type VkDescriptorSetLayout = VkNonDispatchableHandle;
-pub type VkSampler = VkNonDispatchableHandle;
-pub type VkDescriptorPool = VkNonDispatchableHandle;
-pub type VkDescriptorSet = VkNonDispatchableHandle;
-pub type VkFramebuffer = VkNonDispatchableHandle;
-pub type VkCommandPool = VkNonDispatchableHandle;
+#[repr(C)] pub struct VkInstance(*const c_void);
+#[repr(C)] pub struct VkPhysicalDevice(*const c_void);
+#[repr(C)] pub struct VkDevice(*const c_void);
+#[repr(C)] pub struct VkQueue(*const c_void);
+#[repr(C)] pub struct VkSemaphore(uint64_t);
+#[repr(C)] pub struct VkCommandBuffer(*const c_void);
+#[repr(C)] pub struct VkFence(uint64_t);
+#[repr(C)] pub struct VkDeviceMemory(uint64_t);
+#[repr(C)] pub struct VkBuffer(uint64_t);
+#[repr(C)] pub struct VkImage(uint64_t);
+#[repr(C)] pub struct VkEvent(uint64_t);
+#[repr(C)] pub struct VkQueryPool(uint64_t);
+#[repr(C)] pub struct VkBufferView(uint64_t);
+#[repr(C)] pub struct VkImageView(uint64_t);
+#[repr(C)] pub struct VkShaderModule(uint64_t);
+#[repr(C)] pub struct VkPipelineCache(uint64_t);
+#[repr(C)] pub struct VkPipelineLayout(uint64_t);
+#[repr(C)] pub struct VkRenderPass(uint64_t);
+#[repr(C)] pub struct VkPipeline(uint64_t);
+#[repr(C)] pub struct VkDescriptorSetLayout(uint64_t);
+#[repr(C)] pub struct VkSampler(uint64_t);
+#[repr(C)] pub struct VkDescriptorPool(uint64_t);
+#[repr(C)] pub struct VkDescriptorSet(uint64_t);
+#[repr(C)] pub struct VkFramebuffer(uint64_t);
+#[repr(C)] pub struct VkCommandPool(uint64_t);
+
+impl VkInstance {
+    pub fn null() -> VkInstance {
+        VkInstance(std::ptr::null())
+    }
+}
 
 const VK_LOD_CLAMP_NONE:c_float = 1000.0f32;
 const VK_REMAINING_MIP_LEVELS:uint32_t = 0xffffffffu32;
@@ -1025,7 +1045,7 @@ pub type vkInternalFreeNotificationFn = unsafe extern "stdcall" fn(pUserData: *m
                                                                    allocationType: VkInternalAllocationType,
                                                                    allocationScope: VkSystemAllocationScope);
 
-pub type vkVoidFunctionFn = unsafe extern "stdcall" fn() -> ();
+pub type vkVoidFunctionFn = *const u8;
 
 #[repr(C)]
 pub struct VkApplicationInfo {
@@ -2297,10 +2317,10 @@ pub type vkGetPhysicalDeviceMemoryPropertiesFn = unsafe extern "stdcall" fn(phys
                                                                             pMemoryProperties: *mut VkPhysicalDeviceMemoryProperties);
 
 pub type vkGetInstanceProcAddrFn = unsafe extern "stdcall" fn(instance: VkInstance,
-                                                              pName: *const char) -> vkVoidFunctionFn;
+                                                              pName: *const c_char) -> vkVoidFunctionFn;
 
 pub type vkGetDeviceProcAddrFn = unsafe extern "stdcall" fn(device: VkDevice,
-                                                            pName: *const char) -> vkVoidFunctionFn;
+                                                            pName: *const c_char) -> vkVoidFunctionFn;
 
 pub type vkCreateDeviceFn = unsafe extern "stdcall" fn(physicalDevice: VkPhysicalDevice,
                                                        pCreateInfo: *const VkDeviceCreateInfo,
@@ -2310,12 +2330,12 @@ pub type vkCreateDeviceFn = unsafe extern "stdcall" fn(physicalDevice: VkPhysica
 pub type vkDestroyDeviceFn = unsafe extern "stdcall" fn(device: VkDevice,
                                                         pAllocator: *const VkAllocationCallbacks);
 
-pub type vkEnumerateInstanceExtensionPropertiesFn = unsafe extern "stdcall" fn(pLayerName: *const char,
+pub type vkEnumerateInstanceExtensionPropertiesFn = unsafe extern "stdcall" fn(pLayerName: *const c_char,
                                                                                pPropertyCount: *mut uint32_t,
                                                                                pProperties: *mut VkExtensionProperties) -> VkResult;
 
 pub type vkEnumerateDeviceExtensionPropertiesFn = unsafe extern "stdcall" fn(physicalDevice: VkPhysicalDevice,
-                                                                             pLayerName: *const char,
+                                                                             pLayerName: *const c_char,
                                                                              pPropertyCount: *mut uint32_t,
                                                                              pProperties: *mut VkExtensionProperties) -> VkResult;
 
@@ -2920,44 +2940,316 @@ pub type vkCmdExecuteCommandsFn = unsafe extern "stdcall" fn(commandBuffer: VkCo
                                                              commandBufferCount: uint32_t,
                                                              pCommandBuffers: *const VkCommandBuffer);
 
-/// Core vulkan commands
-pub struct VulkanCommands {
-    pub vkGetInstanceProcAddr: vkGetInstanceProcAddrFn,
-    pub vkCreateInstance: vkCreateInstanceFn
-    // TODO
+#[derive(Default)]
+struct VulkanCore {
+    library: Option<DynamicLibrary>,
+    vkCreateInstance: Option<vkCreateInstanceFn>,
+    vkDestroyInstance: Option<vkDestroyInstanceFn>,
+    vkEnumeratePhysicalDevices: Option<vkEnumeratePhysicalDevicesFn>,
+    vkGetPhysicalDeviceFeatures: Option<vkGetPhysicalDeviceFeaturesFn>,
+    vkGetPhysicalDeviceFormatProperties: Option<vkGetPhysicalDeviceFormatPropertiesFn>,
+    vkGetPhysicalDeviceImageFormatProperties: Option<vkGetPhysicalDeviceImageFormatPropertiesFn>,
+    vkGetPhysicalDeviceProperties: Option<vkGetPhysicalDevicePropertiesFn>,
+    vkGetPhysicalDeviceQueueFamilyProperties: Option<vkGetPhysicalDeviceQueueFamilyPropertiesFn>,
+    vkGetPhysicalDeviceMemoryProperties: Option<vkGetPhysicalDeviceMemoryPropertiesFn>,
+    vkGetInstanceProcAddr: Option<vkGetInstanceProcAddrFn>,
+    vkGetDeviceProcAddr: Option<vkGetDeviceProcAddrFn>,
+    vkCreateDevice: Option<vkCreateDeviceFn>,
+    vkDestroyDevice: Option<vkDestroyDeviceFn>,
+    vkEnumerateInstanceExtensionProperties: Option<vkEnumerateInstanceExtensionPropertiesFn>,
+    vkEnumerateDeviceExtensionProperties: Option<vkEnumerateDeviceExtensionPropertiesFn>,
+    vkEnumerateInstanceLayerProperties: Option<vkEnumerateInstanceLayerPropertiesFn>,
+    vkEnumerateDeviceLayerProperties: Option<vkEnumerateDeviceLayerPropertiesFn>,
+    vkGetDeviceQueue: Option<vkGetDeviceQueueFn>,
+    vkQueueSubmit: Option<vkQueueSubmitFn>,
+    vkQueueWaitIdle: Option<vkQueueWaitIdleFn>,
+    vkDeviceWaitIdle: Option<vkDeviceWaitIdleFn>,
+    vkAllocateMemory: Option<vkAllocateMemoryFn>,
+    vkFreeMemory: Option<vkFreeMemoryFn>,
+    vkMapMemory: Option<vkMapMemoryFn>,
+    vkUnmapMemory: Option<vkUnmapMemoryFn>,
+    vkFlushMappedMemoryRanges: Option<vkFlushMappedMemoryRangesFn>,
+    vkInvalidateMappedMemoryRanges: Option<vkInvalidateMappedMemoryRangesFn>,
+    vkGetDeviceMemoryCommitment: Option<vkGetDeviceMemoryCommitmentFn>,
+    vkBindBufferMemory: Option<vkBindBufferMemoryFn>,
+    vkBindImageMemory: Option<vkBindImageMemoryFn>,
+    vkGetBufferMemoryRequirements: Option<vkGetBufferMemoryRequirementsFn>,
+    vkGetImageMemoryRequirements: Option<vkGetImageMemoryRequirementsFn>,
+    vkGetImageSparseMemoryRequirements: Option<vkGetImageSparseMemoryRequirementsFn>,
+    vkGetPhysicalDeviceSparseImageFormatProperties: Option<vkGetPhysicalDeviceSparseImageFormatPropertiesFn>,
+    vkQueueBindSparse: Option<vkQueueBindSparseFn>,
+    vkCreateFence: Option<vkCreateFenceFn>,
+    vkDestroyFence: Option<vkDestroyFenceFn>,
+    vkResetFences: Option<vkResetFencesFn>,
+    vkGetFenceStatus: Option<vkGetFenceStatusFn>,
+    vkWaitForFences: Option<vkWaitForFencesFn>,
+    vkCreateSemaphore: Option<vkCreateSemaphoreFn>,
+    vkDestroySemaphore: Option<vkDestroySemaphoreFn>,
+    vkCreateEvent: Option<vkCreateEventFn>,
+    vkDestroyEvent: Option<vkDestroyEventFn>,
+    vkGetEventStatus: Option<vkGetEventStatusFn>,
+    vkSetEvent: Option<vkSetEventFn>,
+    vkResetEvent: Option<vkResetEventFn>,
+    vkCreateQueryPool: Option<vkCreateQueryPoolFn>,
+    vkDestroyQueryPool: Option<vkDestroyQueryPoolFn>,
+    vkGetQueryPoolResults: Option<vkGetQueryPoolResultsFn>,
+    vkCreateBuffer: Option<vkCreateBufferFn>,
+    vkDestroyBuffer: Option<vkDestroyBufferFn>,
+    vkCreateBufferView: Option<vkCreateBufferViewFn>,
+    vkDestroyBufferView: Option<vkDestroyBufferViewFn>,
+    vkCreateImage: Option<vkCreateImageFn>,
+    vkDestroyImage: Option<vkDestroyImageFn>,
+    vkGetImageSubresourceLayout: Option<vkGetImageSubresourceLayoutFn>,
+    vkCreateImageView: Option<vkCreateImageViewFn>,
+    vkDestroyImageView: Option<vkDestroyImageViewFn>,
+    vkCreateShaderModule: Option<vkCreateShaderModuleFn>,
+    vkDestroyShaderModule: Option<vkDestroyShaderModuleFn>,
+    vkCreatePipelineCache: Option<vkCreatePipelineCacheFn>,
+    vkDestroyPipelineCache: Option<vkDestroyPipelineCacheFn>,
+    vkGetPipelineCacheData: Option<vkGetPipelineCacheDataFn>,
+    vkMergePipelineCaches: Option<vkMergePipelineCachesFn>,
+    vkCreateGraphicsPipelines: Option<vkCreateGraphicsPipelinesFn>,
+    vkCreateComputePipelines: Option<vkCreateComputePipelinesFn>,
+    vkDestroyPipeline: Option<vkDestroyPipelineFn>,
+    vkCreatePipelineLayout: Option<vkCreatePipelineLayoutFn>,
+    vkDestroyPipelineLayout: Option<vkDestroyPipelineLayoutFn>,
+    vkCreateSampler: Option<vkCreateSamplerFn>,
+    vkDestroySampler: Option<vkDestroySamplerFn>,
+    vkCreateDescriptorSetLayout: Option<vkCreateDescriptorSetLayoutFn>,
+    vkDestroyDescriptorSetLayout: Option<vkDestroyDescriptorSetLayoutFn>,
+    vkCreateDescriptorPool: Option<vkCreateDescriptorPoolFn>,
+    vkDestroyDescriptorPool: Option<vkDestroyDescriptorPoolFn>,
+    vkResetDescriptorPool: Option<vkResetDescriptorPoolFn>,
+    vkAllocateDescriptorSets: Option<vkAllocateDescriptorSetsFn>,
+    vkFreeDescriptorSets: Option<vkFreeDescriptorSetsFn>,
+    vkUpdateDescriptorSets: Option<vkUpdateDescriptorSetsFn>,
+    vkCreateFramebuffer: Option<vkCreateFramebufferFn>,
+    vkDestroyFramebuffer: Option<vkDestroyFramebufferFn>,
+    vkCreateRenderPass: Option<vkCreateRenderPassFn>,
+    vkDestroyRenderPass: Option<vkDestroyRenderPassFn>,
+    vkGetRenderAreaGranularity: Option<vkGetRenderAreaGranularityFn>,
+    vkCreateCommandPool: Option<vkCreateCommandPoolFn>,
+    vkDestroyCommandPool: Option<vkDestroyCommandPoolFn>,
+    vkResetCommandPool: Option<vkResetCommandPoolFn>,
+    vkAllocateCommandBuffers: Option<vkAllocateCommandBuffersFn>,
+    vkFreeCommandBuffers: Option<vkFreeCommandBuffersFn>,
+    vkBeginCommandBuffer: Option<vkBeginCommandBufferFn>,
+    vkEndCommandBuffer: Option<vkEndCommandBufferFn>,
+    vkResetCommandBuffer: Option<vkResetCommandBufferFn>,
+    vkCmdBindPipeline: Option<vkCmdBindPipelineFn>,
+    vkCmdSetViewport: Option<vkCmdSetViewportFn>,
+    vkCmdSetScissor: Option<vkCmdSetScissorFn>,
+    vkCmdSetLineWidth: Option<vkCmdSetLineWidthFn>,
+    vkCmdSetDepthBias: Option<vkCmdSetDepthBiasFn>,
+    vkCmdSetBlendConstants: Option<vkCmdSetBlendConstantsFn>,
+    vkCmdSetDepthBounds: Option<vkCmdSetDepthBoundsFn>,
+    vkCmdSetStencilCompareMask: Option<vkCmdSetStencilCompareMaskFn>,
+    vkCmdSetStencilWriteMask: Option<vkCmdSetStencilWriteMaskFn>,
+    vkCmdSetStencilReference: Option<vkCmdSetStencilReferenceFn>,
+    vkCmdBindDescriptorSets: Option<vkCmdBindDescriptorSetsFn>,
+    vkCmdBindIndexBuffer: Option<vkCmdBindIndexBufferFn>,
+    vkCmdBindVertexBuffers: Option<vkCmdBindVertexBuffersFn>,
+    vkCmdDraw: Option<vkCmdDrawFn>,
+    vkCmdDrawIndexed: Option<vkCmdDrawIndexedFn>,
+    vkCmdDrawIndirect: Option<vkCmdDrawIndirectFn>,
+    vkCmdDrawIndexedIndirect: Option<vkCmdDrawIndexedIndirectFn>,
+    vkCmdDispatch: Option<vkCmdDispatchFn>,
+    vkCmdDispatchIndirect: Option<vkCmdDispatchIndirectFn>,
+    vkCmdCopyBuffer: Option<vkCmdCopyBufferFn>,
+    vkCmdCopyImage: Option<vkCmdCopyImageFn>,
+    vkCmdBlitImage: Option<vkCmdBlitImageFn>,
+    vkCmdCopyBufferToImage: Option<vkCmdCopyBufferToImageFn>,
+    vkCmdCopyImageToBuffer: Option<vkCmdCopyImageToBufferFn>,
+    vkCmdUpdateBuffer: Option<vkCmdUpdateBufferFn>,
+    vkCmdFillBuffer: Option<vkCmdFillBufferFn>,
+    vkCmdClearColorImage: Option<vkCmdClearColorImageFn>,
+    vkCmdClearDepthStencilImage: Option<vkCmdClearDepthStencilImageFn>,
+    vkCmdClearAttachments: Option<vkCmdClearAttachmentsFn>,
+    vkCmdResolveImage: Option<vkCmdResolveImageFn>,
+    vkCmdSetEvent: Option<vkCmdSetEventFn>,
+    vkCmdResetEvent: Option<vkCmdResetEventFn>,
+    vkCmdWaitEvents: Option<vkCmdWaitEventsFn>,
+    vkCmdPipelineBarrier: Option<vkCmdPipelineBarrierFn>,
+    vkCmdBeginQuery: Option<vkCmdBeginQueryFn>,
+    vkCmdEndQuery: Option<vkCmdEndQueryFn>,
+    vkCmdResetQueryPool: Option<vkCmdResetQueryPoolFn>,
+    vkCmdWriteTimestamp: Option<vkCmdWriteTimestampFn>,
+    vkCmdCopyQueryPoolResults: Option<vkCmdCopyQueryPoolResultsFn>,
+    vkCmdPushConstants: Option<vkCmdPushConstantsFn>,
+    vkCmdBeginRenderPass: Option<vkCmdBeginRenderPassFn>,
+    vkCmdNextSubpass: Option<vkCmdNextSubpassFn>,
+    vkCmdEndRenderPass: Option<vkCmdEndRenderPassFn>,
+    vkCmdExecuteCommands: Option<vkCmdExecuteCommandsFn>,
 }
 
-impl VulkanCommands {
-    /// Dynamically loads core vulkan commands
-    pub fn load() -> Result<VulkanCommands, String> {
-        let lib_name = Path::new("vulkan-1.dll");
-        let lib = match DynamicLibrary::open(Some(&lib_name)) {
-            Err(err) => return Err(format!("Failed to load {}: {}",lib_name.to_str().unwrap(),err)),
-            Ok(lib) => lib,
-        };
-        unsafe {
-            let mut vulkan = std::mem::zeroed::<VulkanCommands>();
-            vulkan.vkGetInstanceProcAddr = std::mem::transmute(lib.symbol::<u8>("vkGetInstanceProcAddr").unwrap());
-            vulkan.vkCreateInstance = std::mem::transmute(lib.symbol::<u8>("vkCreateInstance").unwrap());
-            Ok(vulkan)
+static VULKAN_LIBRARY: &'static str = "vulkan-1.dll";
+
+impl VulkanCore {
+    unsafe fn load_command(&self, instance: VkInstance, name: &str) -> Result<vkVoidFunctionFn, String> {
+        let fn_ptr = self.vkGetInstanceProcAddr(instance, CString::new(name).unwrap().as_ptr());
+        if fn_ptr != std::ptr::null() {
+            Ok(fn_ptr)
+        } else {
+            Err(format!("Failed to load {}",name))
         }
     }
-}
 
-#[test]
-fn load_test() {
-    let a: VkClearColorValue = VkClearColorValueUnion::Float32([0.5,1.0,0.0,0.0]).into();
-    unsafe {
-        let cdsv = VkClearDepthStencilValue{depth:std::mem::transmute([0xffu8,0x00u8,0xffu8,0x00u8]),stencil:0x161262ff};
-        let cv: VkClearValue = VkClearValueUnion::DepthStencil(cdsv).into();
-        assert_eq!(&cv.union_data[0..8], &[0xffu8,0x00u8,0xffu8,0x00u8, 0xffu8, 0x62u8, 0x12u8, 0x16u8]);
-        let cv: VkClearValue = VkClearValueUnion::DepthStencil(VkClearDepthStencilValue{depth:0.0f32, stencil:0}).into();
-        let cv: VkClearValue = VkClearValueUnion::Color(VkClearColorValueUnion::Float32([0.5,1.0,0.0,0.0]).into()).into();
+    pub fn new() -> Result<VulkanCore, String> {
+        let mut vulkan_core: VulkanCore = Default::default();
+        let library_path = Path::new(VULKAN_LIBRARY);
+        vulkan_core.library = match DynamicLibrary::open(Some(library_path)) {
+            Err(error) => return Err(format!("Failed to load {}: {}",VULKAN_LIBRARY,error)),
+            Ok(library) => Some(library),
+        };
+        unsafe {
+            vulkan_core.vkGetInstanceProcAddr = Some(std::mem::transmute(try!(vulkan_core.library.as_ref().unwrap().symbol::<u8>("vkGetInstanceProcAddr"))));
+            vulkan_core.vkCreateInstance = Some(std::mem::transmute(try!(vulkan_core.load_command(VkInstance::null(), "vkCreateInstance"))));
+            vulkan_core.vkEnumerateInstanceExtensionProperties = Some(std::mem::transmute(try!(vulkan_core.load_command(VkInstance::null(), "vkEnumerateInstanceExtensionProperties"))));
+            vulkan_core.vkEnumerateInstanceLayerProperties = Some(std::mem::transmute(try!(vulkan_core.load_command(VkInstance::null(), "vkEnumerateInstanceLayerProperties"))));
+        }
+        Ok(vulkan_core)
     }
 
-    match VulkanCommands::load() {
-        Err(err) => panic!(err),
-        _ => ()
+    pub unsafe fn vkGetInstanceProcAddr(&self, instance: VkInstance, pName: *const c_char) -> vkVoidFunctionFn {
+        (self.vkGetInstanceProcAddr.as_ref().unwrap())(instance, pName)
+    }
+
+    pub fn load(mut self, instance: VkInstance) -> Result<VulkanCore, String> {
+        unsafe {
+            self.vkDestroyInstance = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkDestroyInstance"))));
+            self.vkEnumeratePhysicalDevices = Some(std::mem::transmute(try!(self.load_command(VkInstance::null(), "vkEnumeratePhysicalDevices"))));
+            self.vkGetPhysicalDeviceFeatures = Some(std::mem::transmute(try!(self.load_command(VkInstance::null(), "vkGetPhysicalDeviceFeatures"))));
+            self.vkGetPhysicalDeviceFormatProperties = Some(std::mem::transmute(try!(self.load_command(VkInstance::null(), "vkGetPhysicalDeviceFormatProperties"))));
+            self.vkGetPhysicalDeviceImageFormatProperties = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkGetPhysicalDeviceImageFormatProperties"))));
+            self.vkGetPhysicalDeviceProperties = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkGetPhysicalDeviceProperties"))));
+            self.vkGetPhysicalDeviceQueueFamilyProperties = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkGetPhysicalDeviceQueueFamilyProperties"))));
+            self.vkGetPhysicalDeviceMemoryProperties = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkGetPhysicalDeviceMemoryProperties"))));
+            self.vkGetDeviceProcAddr = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkGetDeviceProcAddr"))));
+            self.vkCreateDevice = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCreateDevice"))));
+            self.vkDestroyDevice = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkDestroyDevice"))));
+            self.vkEnumerateDeviceExtensionProperties = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkEnumerateDeviceExtensionProperties"))));
+            self.vkEnumerateDeviceLayerProperties = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkEnumerateDeviceLayerProperties"))));
+            self.vkGetDeviceQueue = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkGetDeviceQueue"))));
+            self.vkQueueSubmit = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkQueueSubmit"))));
+            self.vkQueueWaitIdle = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkQueueWaitIdle"))));
+            self.vkDeviceWaitIdle = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkDeviceWaitIdle"))));
+            self.vkAllocateMemory = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkAllocateMemory"))));
+            self.vkFreeMemory = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkFreeMemory"))));
+            self.vkMapMemory = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkMapMemory"))));
+            self.vkUnmapMemory = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkUnmapMemory"))));
+            self.vkFlushMappedMemoryRanges = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkFlushMappedMemoryRanges"))));
+            self.vkInvalidateMappedMemoryRanges = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkInvalidateMappedMemoryRanges"))));
+            self.vkGetDeviceMemoryCommitment = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkGetDeviceMemoryCommitment"))));
+            self.vkBindBufferMemory = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkBindBufferMemory"))));
+            self.vkBindImageMemory = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkBindImageMemory"))));
+            self.vkGetBufferMemoryRequirements = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkGetBufferMemoryRequirements"))));
+            self.vkGetImageMemoryRequirements = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkGetImageMemoryRequirements"))));
+            self.vkGetImageSparseMemoryRequirements = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkGetImageSparseMemoryRequirements"))));
+            self.vkGetPhysicalDeviceSparseImageFormatProperties = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkGetPhysicalDeviceSparseImageFormatProperties"))));
+            self.vkQueueBindSparse = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkQueueBindSparse"))));
+            self.vkCreateFence = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCreateFence"))));
+            self.vkDestroyFence = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkDestroyFence"))));
+            self.vkResetFences = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkResetFences"))));
+            self.vkGetFenceStatus = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkGetFenceStatus"))));
+            self.vkWaitForFences = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkWaitForFences"))));
+            self.vkCreateSemaphore = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCreateSemaphore"))));
+            self.vkDestroySemaphore = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkDestroySemaphore"))));
+            self.vkCreateEvent = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCreateEvent"))));
+            self.vkDestroyEvent = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkDestroyEvent"))));
+            self.vkGetEventStatus = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkGetEventStatus"))));
+            self.vkSetEvent = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkSetEvent"))));
+            self.vkResetEvent = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkResetEvent"))));
+            self.vkCreateQueryPool = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCreateQueryPool"))));
+            self.vkDestroyQueryPool = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkDestroyQueryPool"))));
+            self.vkGetQueryPoolResults = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkGetQueryPoolResults"))));
+            self.vkCreateBuffer = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCreateBuffer"))));
+            self.vkDestroyBuffer = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkDestroyBuffer"))));
+            self.vkCreateBufferView = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCreateBufferView"))));
+            self.vkDestroyBufferView = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkDestroyBufferView"))));
+            self.vkCreateImage = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCreateImage"))));
+            self.vkDestroyImage = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkDestroyImage"))));
+            self.vkGetImageSubresourceLayout = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkGetImageSubresourceLayout"))));
+            self.vkCreateImageView = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCreateImageView"))));
+            self.vkDestroyImageView = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkDestroyImageView"))));
+            self.vkCreateShaderModule = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCreateShaderModule"))));
+            self.vkDestroyShaderModule = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkDestroyShaderModule"))));
+            self.vkCreatePipelineCache = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCreatePipelineCache"))));
+            self.vkDestroyPipelineCache = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkDestroyPipelineCache"))));
+            self.vkGetPipelineCacheData = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkGetPipelineCacheData"))));
+            self.vkMergePipelineCaches = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkMergePipelineCaches"))));
+            self.vkCreateGraphicsPipelines = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCreateGraphicsPipelines"))));
+            self.vkCreateComputePipelines = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCreateComputePipelines"))));
+            self.vkDestroyPipeline = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkDestroyPipeline"))));
+            self.vkCreatePipelineLayout = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCreatePipelineLayout"))));
+            self.vkDestroyPipelineLayout = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkDestroyPipelineLayout"))));
+            self.vkCreateSampler = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCreateSampler"))));
+            self.vkDestroySampler = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkDestroySampler"))));
+            self.vkCreateDescriptorSetLayout = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCreateDescriptorSetLayout"))));
+            self.vkDestroyDescriptorSetLayout = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkDestroyDescriptorSetLayout"))));
+            self.vkCreateDescriptorPool = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCreateDescriptorPool"))));
+            self.vkDestroyDescriptorPool = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkDestroyDescriptorPool"))));
+            self.vkResetDescriptorPool = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkResetDescriptorPool"))));
+            self.vkAllocateDescriptorSets = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkAllocateDescriptorSets"))));
+            self.vkFreeDescriptorSets = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkFreeDescriptorSets"))));
+            self.vkUpdateDescriptorSets = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkUpdateDescriptorSets"))));
+            self.vkCreateFramebuffer = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCreateFramebuffer"))));
+            self.vkDestroyFramebuffer = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkDestroyFramebuffer"))));
+            self.vkCreateRenderPass = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCreateRenderPass"))));
+            self.vkDestroyRenderPass = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkDestroyRenderPass"))));
+            self.vkGetRenderAreaGranularity = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkGetRenderAreaGranularity"))));
+            self.vkCreateCommandPool = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCreateCommandPool"))));
+            self.vkDestroyCommandPool = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkDestroyCommandPool"))));
+            self.vkResetCommandPool = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkResetCommandPool"))));
+            self.vkAllocateCommandBuffers = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkAllocateCommandBuffers"))));
+            self.vkFreeCommandBuffers = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkFreeCommandBuffers"))));
+            self.vkBeginCommandBuffer = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkBeginCommandBuffer"))));
+            self.vkEndCommandBuffer = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkEndCommandBuffer"))));
+            self.vkResetCommandBuffer = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkResetCommandBuffer"))));
+            self.vkCmdBindPipeline = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCmdBindPipeline"))));
+            self.vkCmdSetViewport = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCmdSetViewport"))));
+            self.vkCmdSetScissor = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCmdSetScissor"))));
+            self.vkCmdSetLineWidth = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCmdSetLineWidth"))));
+            self.vkCmdSetDepthBias = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCmdSetDepthBias"))));
+            self.vkCmdSetBlendConstants = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCmdSetBlendConstants"))));
+            self.vkCmdSetDepthBounds = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCmdSetDepthBounds"))));
+            self.vkCmdSetStencilCompareMask = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCmdSetStencilCompareMask"))));
+            self.vkCmdSetStencilWriteMask = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCmdSetStencilWriteMask"))));
+            self.vkCmdSetStencilReference = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCmdSetStencilReference"))));
+            self.vkCmdBindDescriptorSets = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCmdBindDescriptorSets"))));
+            self.vkCmdBindIndexBuffer = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCmdBindIndexBuffer"))));
+            self.vkCmdBindVertexBuffers = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCmdBindVertexBuffers"))));
+            self.vkCmdDraw = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCmdDraw"))));
+            self.vkCmdDrawIndexed = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCmdDrawIndexed"))));
+            self.vkCmdDrawIndirect = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCmdDrawIndirect"))));
+            self.vkCmdDrawIndexedIndirect = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCmdDrawIndexedIndirect"))));
+            self.vkCmdDispatch = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCmdDispatch"))));
+            self.vkCmdDispatchIndirect = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCmdDispatchIndirect"))));
+            self.vkCmdCopyBuffer = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCmdCopyBuffer"))));
+            self.vkCmdCopyImage = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCmdCopyImage"))));
+            self.vkCmdBlitImage = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCmdBlitImage"))));
+            self.vkCmdCopyBufferToImage = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCmdCopyBufferToImage"))));
+            self.vkCmdCopyImageToBuffer = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCmdCopyImageToBuffer"))));
+            self.vkCmdUpdateBuffer = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCmdUpdateBuffer"))));
+            self.vkCmdFillBuffer = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCmdFillBuffer"))));
+            self.vkCmdClearColorImage = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCmdClearColorImage"))));
+            self.vkCmdClearDepthStencilImage = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCmdClearDepthStencilImage"))));
+            self.vkCmdClearAttachments = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCmdClearAttachments"))));
+            self.vkCmdResolveImage = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCmdResolveImage"))));
+            self.vkCmdSetEvent = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCmdSetEvent"))));
+            self.vkCmdResetEvent = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCmdResetEvent"))));
+            self.vkCmdWaitEvents = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCmdWaitEvents"))));
+            self.vkCmdPipelineBarrier = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCmdPipelineBarrier"))));
+            self.vkCmdBeginQuery = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCmdBeginQuery"))));
+            self.vkCmdEndQuery = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCmdEndQuery"))));
+            self.vkCmdResetQueryPool = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCmdResetQueryPool"))));
+            self.vkCmdWriteTimestamp = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCmdWriteTimestamp"))));
+            self.vkCmdCopyQueryPoolResults = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCmdCopyQueryPoolResults"))));
+            self.vkCmdPushConstants = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCmdPushConstants"))));
+            self.vkCmdBeginRenderPass = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCmdBeginRenderPass"))));
+            self.vkCmdNextSubpass = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCmdNextSubpass"))));
+            self.vkCmdEndRenderPass = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCmdEndRenderPass"))));
+            self.vkCmdExecuteCommands = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCmdExecuteCommands"))));            
+        }
+        Ok(self)
     }
 }
-
