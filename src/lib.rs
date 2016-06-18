@@ -3128,7 +3128,7 @@ impl VulkanCore {
     // TODO: Write the stubs!
     // TODO: Maybe group the functions, so I don't have to unwrap them every time!
 
-    pub fn load(mut self, instance: VkInstance) -> Result<VulkanCore, String> {
+    pub fn load(&mut self, instance: VkInstance) -> Result<(), String> {
         unsafe {
             self.vkDestroyInstance = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkDestroyInstance"))));
             self.vkEnumeratePhysicalDevices = Some(std::mem::transmute(try!(self.load_command(VkInstance::null(), "vkEnumeratePhysicalDevices"))));
@@ -3264,6 +3264,6 @@ impl VulkanCore {
             self.vkCmdEndRenderPass = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCmdEndRenderPass"))));
             self.vkCmdExecuteCommands = Some(std::mem::transmute(try!(self.library.as_ref().unwrap().symbol::<u8>("vkCmdExecuteCommands"))));            
         }
-        Ok(self)
+        Ok(())
     }
 }
