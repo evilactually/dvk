@@ -34,51 +34,76 @@ macro_rules! VK_VERSION_PATCH {
     ($version:expr) => ($version & 0xfff);
 }
 
+#[macro_export]
+macro_rules! VK_DEFINE_NON_DISPATCHABLE_HANDLE {
+    ($name:ident) => (
+        #[derive(Clone)] 
+        #[derive(Copy)] 
+        #[repr(C)]
+        pub struct $name(uint64_t);
+        impl $name {
+            pub fn null() -> $name {
+            $name(0)
+            }
+        }
+    );
+}
+
+#[macro_export]
+macro_rules! VK_DEFINE_HANDLE {
+    ($name:ident) => (
+        #[derive(Clone)] 
+        #[derive(Copy)] 
+        #[repr(C)]
+        pub struct $name(*const c_void);
+        impl $name {
+            pub fn null() -> $name {
+                $name(std::ptr::null())
+            }
+        }
+    );
+}
+
 pub type VkFlags = uint32_t;
 pub type VkBool32 = uint32_t;
 pub type VkDeviceSize = uint64_t;
 pub type VkSampleMask = uint32_t;
-#[derive(Clone)] #[derive(Copy)] #[repr(C)] pub struct VkInstance(*const c_void);
-#[derive(Clone)] #[derive(Copy)] #[repr(C)] pub struct VkPhysicalDevice(*const c_void);
-#[derive(Clone)] #[derive(Copy)] #[repr(C)] pub struct VkDevice(*const c_void);
-#[derive(Clone)] #[derive(Copy)] #[repr(C)] pub struct VkQueue(*const c_void);
-#[derive(Clone)] #[derive(Copy)] #[repr(C)] pub struct VkSemaphore(uint64_t);
-#[derive(Clone)] #[derive(Copy)] #[repr(C)] pub struct VkCommandBuffer(*const c_void);
-#[derive(Clone)] #[derive(Copy)] #[repr(C)] pub struct VkFence(uint64_t);
-#[derive(Clone)] #[derive(Copy)] #[repr(C)] pub struct VkDeviceMemory(uint64_t);
-#[derive(Clone)] #[derive(Copy)] #[repr(C)] pub struct VkBuffer(uint64_t);
-#[derive(Clone)] #[derive(Copy)] #[repr(C)] pub struct VkImage(uint64_t);
-#[derive(Clone)] #[derive(Copy)] #[repr(C)] pub struct VkEvent(uint64_t);
-#[derive(Clone)] #[derive(Copy)] #[repr(C)] pub struct VkQueryPool(uint64_t);
-#[derive(Clone)] #[derive(Copy)] #[repr(C)] pub struct VkBufferView(uint64_t);
-#[derive(Clone)] #[derive(Copy)] #[repr(C)] pub struct VkImageView(uint64_t);
-#[derive(Clone)] #[derive(Copy)] #[repr(C)] pub struct VkShaderModule(uint64_t);
-#[derive(Clone)] #[derive(Copy)] #[repr(C)] pub struct VkPipelineCache(uint64_t);
-#[derive(Clone)] #[derive(Copy)] #[repr(C)] pub struct VkPipelineLayout(uint64_t);
-#[derive(Clone)] #[derive(Copy)] #[repr(C)] pub struct VkRenderPass(uint64_t);
-#[derive(Clone)] #[derive(Copy)] #[repr(C)] pub struct VkPipeline(uint64_t);
-#[derive(Clone)] #[derive(Copy)] #[repr(C)] pub struct VkDescriptorSetLayout(uint64_t);
-#[derive(Clone)] #[derive(Copy)] #[repr(C)] pub struct VkSampler(uint64_t);
-#[derive(Clone)] #[derive(Copy)] #[repr(C)] pub struct VkDescriptorPool(uint64_t);
-#[derive(Clone)] #[derive(Copy)] #[repr(C)] pub struct VkDescriptorSet(uint64_t);
-#[derive(Clone)] #[derive(Copy)] #[repr(C)] pub struct VkFramebuffer(uint64_t);
-#[derive(Clone)] #[derive(Copy)] #[repr(C)] pub struct VkCommandPool(uint64_t);
 
-impl VkInstance {
-    pub fn null() -> VkInstance {
-        VkInstance(std::ptr::null())
-    }
-}
+VK_DEFINE_HANDLE!(VkInstance);
+VK_DEFINE_HANDLE!(VkPhysicalDevice);
+VK_DEFINE_HANDLE!(VkDevice);
+VK_DEFINE_HANDLE!(VkQueue);
+VK_DEFINE_NON_DISPATCHABLE_HANDLE!(VkSemaphore);
+VK_DEFINE_HANDLE!(VkCommandBuffer);
+VK_DEFINE_NON_DISPATCHABLE_HANDLE!(VkFence);
+VK_DEFINE_NON_DISPATCHABLE_HANDLE!(VkDeviceMemory);
+VK_DEFINE_NON_DISPATCHABLE_HANDLE!(VkBuffer);
+VK_DEFINE_NON_DISPATCHABLE_HANDLE!(VkImage);
+VK_DEFINE_NON_DISPATCHABLE_HANDLE!(VkEvent);
+VK_DEFINE_NON_DISPATCHABLE_HANDLE!(VkQueryPool);
+VK_DEFINE_NON_DISPATCHABLE_HANDLE!(VkBufferView);
+VK_DEFINE_NON_DISPATCHABLE_HANDLE!(VkImageView);
+VK_DEFINE_NON_DISPATCHABLE_HANDLE!(VkShaderModule);
+VK_DEFINE_NON_DISPATCHABLE_HANDLE!(VkPipelineCache);
+VK_DEFINE_NON_DISPATCHABLE_HANDLE!(VkPipelineLayout);
+VK_DEFINE_NON_DISPATCHABLE_HANDLE!(VkRenderPass);
+VK_DEFINE_NON_DISPATCHABLE_HANDLE!(VkPipeline);
+VK_DEFINE_NON_DISPATCHABLE_HANDLE!(VkDescriptorSetLayout);
+VK_DEFINE_NON_DISPATCHABLE_HANDLE!(VkSampler);
+VK_DEFINE_NON_DISPATCHABLE_HANDLE!(VkDescriptorPool);
+VK_DEFINE_NON_DISPATCHABLE_HANDLE!(VkDescriptorSet);
+VK_DEFINE_NON_DISPATCHABLE_HANDLE!(VkFramebuffer);
+VK_DEFINE_NON_DISPATCHABLE_HANDLE!(VkCommandPool);
 
 const VK_LOD_CLAMP_NONE:c_float = 1000.0f32;
-const VK_REMAINING_MIP_LEVELS:uint32_t = 0xffffffffu32;
-const VK_REMAINING_ARRAY_LAYERS:uint32_t = 0xffffffffu32;
-const VK_WHOLE_SIZE:u64 = 0xffffffffffffffffu64;
-const VK_ATTACHMENT_UNUSED:uint32_t = 0xffffffffu32;
+const VK_REMAINING_MIP_LEVELS:uint32_t = !0x0u32;
+const VK_REMAINING_ARRAY_LAYERS:uint32_t = !0x0u32;
+const VK_WHOLE_SIZE:uint64_t = !0x0u64;
+const VK_ATTACHMENT_UNUSED:uint32_t = !0x0u32;
 const VK_TRUE:uint32_t = 1u32;
 const VK_FALSE:uint32_t = 0u32;
-const VK_QUEUE_FAMILY_IGNORED:uint32_t = 0xffffffffu32;
-const VK_SUBPASS_EXTERNAL:uint32_t = 0xffffffffu32;
+const VK_QUEUE_FAMILY_IGNORED:uint32_t = !0x0u32;
+const VK_SUBPASS_EXTERNAL:uint32_t = !0x0u32;
 const VK_MAX_PHYSICAL_DEVICE_NAME_SIZE:size_t = 256usize;
 const VK_UUID_SIZE:size_t = 16usize;
 const VK_MAX_MEMORY_TYPES:size_t = 32usize;
