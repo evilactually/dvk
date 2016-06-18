@@ -95,21 +95,21 @@ VK_DEFINE_NON_DISPATCHABLE_HANDLE!(VkDescriptorSet);
 VK_DEFINE_NON_DISPATCHABLE_HANDLE!(VkFramebuffer);
 VK_DEFINE_NON_DISPATCHABLE_HANDLE!(VkCommandPool);
 
-const VK_LOD_CLAMP_NONE:c_float = 1000.0f32;
-const VK_REMAINING_MIP_LEVELS:uint32_t = !0x0u32;
-const VK_REMAINING_ARRAY_LAYERS:uint32_t = !0x0u32;
-const VK_WHOLE_SIZE:uint64_t = !0x0u64;
-const VK_ATTACHMENT_UNUSED:uint32_t = !0x0u32;
-const VK_TRUE:uint32_t = 1u32;
-const VK_FALSE:uint32_t = 0u32;
-const VK_QUEUE_FAMILY_IGNORED:uint32_t = !0x0u32;
-const VK_SUBPASS_EXTERNAL:uint32_t = !0x0u32;
-const VK_MAX_PHYSICAL_DEVICE_NAME_SIZE:size_t = 256usize;
-const VK_UUID_SIZE:size_t = 16usize;
-const VK_MAX_MEMORY_TYPES:size_t = 32usize;
-const VK_MAX_MEMORY_HEAPS:size_t = 16usize;
-const VK_MAX_EXTENSION_NAME_SIZE:size_t = 256usize;
-const VK_MAX_DESCRIPTION_SIZE:size_t = 256usize;
+pub const VK_LOD_CLAMP_NONE:c_float = 1000.0f32;
+pub const VK_REMAINING_MIP_LEVELS:uint32_t = !0x0u32;
+pub const VK_REMAINING_ARRAY_LAYERS:uint32_t = !0x0u32;
+pub const VK_WHOLE_SIZE:uint64_t = !0x0u64;
+pub const VK_ATTACHMENT_UNUSED:uint32_t = !0x0u32;
+pub const VK_TRUE:uint32_t = 1u32;
+pub const VK_FALSE:uint32_t = 0u32;
+pub const VK_QUEUE_FAMILY_IGNORED:uint32_t = !0x0u32;
+pub const VK_SUBPASS_EXTERNAL:uint32_t = !0x0u32;
+pub const VK_MAX_PHYSICAL_DEVICE_NAME_SIZE:size_t = 256usize;
+pub const VK_UUID_SIZE:size_t = 16usize;
+pub const VK_MAX_MEMORY_TYPES:size_t = 32usize;
+pub const VK_MAX_MEMORY_HEAPS:size_t = 16usize;
+pub const VK_MAX_EXTENSION_NAME_SIZE:size_t = 256usize;
+pub const VK_MAX_DESCRIPTION_SIZE:size_t = 256usize;
 
 #[repr(u32)]
 #[derive(Eq)]
