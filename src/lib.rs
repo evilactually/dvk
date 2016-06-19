@@ -886,6 +886,7 @@ bitflags! {
     }
 }
 pub type VkMemoryHeapFlags = VkFlags;
+
 pub type VkDeviceCreateFlags = VkFlags;
 pub type VkDeviceQueueCreateFlags = VkFlags;
 
@@ -911,6 +912,7 @@ bitflags! {
     }
 }
 pub type VkPipelineStageFlags = VkFlags;
+
 pub type VkMemoryMapFlags = VkFlags;
 
 bitflags! {
@@ -945,6 +947,7 @@ bitflags! {
     }
 }
 pub type VkFenceCreateFlags = VkFlags;
+
 pub type VkSemaphoreCreateFlags = VkFlags;
 pub type VkEventCreateFlags = VkFlags;
 pub type VkQueryPoolCreateFlags = VkFlags;
@@ -999,6 +1002,7 @@ bitflags! {
     }
 }
 pub type VkBufferUsageFlags = VkFlags;
+
 pub type VkBufferViewCreateFlags = VkFlags;
 pub type VkImageViewCreateFlags = VkFlags;
 pub type VkShaderModuleCreateFlags = VkFlags;
@@ -1012,6 +1016,7 @@ bitflags! {
     }
 }
 pub type VkPipelineCreateFlags = VkFlags;
+
 pub type VkPipelineShaderStageCreateFlags = VkFlags;
 
 bitflags! {
@@ -1026,6 +1031,8 @@ bitflags! {
         const VK_SHADER_STAGE_ALL = 0x7FFFFFFF
     }
 }
+pub type VkShaderStageFlags = VkFlags;
+
 pub type VkPipelineVertexInputStateCreateFlags = VkFlags;
 pub type VkPipelineInputAssemblyStateCreateFlags = VkFlags;
 pub type VkPipelineTessellationStateCreateFlags = VkFlags;
@@ -1041,6 +1048,7 @@ bitflags! {
     }
 }
 pub type VkCullModeFlags = VkFlags;
+
 pub type VkPipelineMultisampleStateCreateFlags = VkFlags;
 pub type VkPipelineDepthStencilStateCreateFlags = VkFlags;
 pub type VkPipelineColorBlendStateCreateFlags = VkFlags;
@@ -1054,9 +1062,9 @@ bitflags! {
     }
 }
 pub type VkColorComponentFlags = VkFlags;
+
 pub type VkPipelineDynamicStateCreateFlags = VkFlags;
 pub type VkPipelineLayoutCreateFlags = VkFlags;
-pub type VkShaderStageFlags = VkFlags;
 pub type VkSamplerCreateFlags = VkFlags;
 pub type VkDescriptorSetLayoutCreateFlags = VkFlags;
 
@@ -1066,6 +1074,7 @@ bitflags! {
     }
 }
 pub type VkDescriptorPoolCreateFlags = VkFlags;
+
 pub type VkDescriptorPoolResetFlags = VkFlags;
 pub type VkFramebufferCreateFlags = VkFlags;
 pub type VkRenderPassCreateFlags = VkFlags;
@@ -1076,6 +1085,7 @@ bitflags! {
     }
 }
 pub type VkAttachmentDescriptionFlags = VkFlags;
+
 pub type VkSubpassDescriptionFlags = VkFlags;
 
 bitflags! {
