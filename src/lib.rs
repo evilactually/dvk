@@ -3228,7 +3228,8 @@ pub struct VulkanCore {
 
 static VULKAN_LIBRARY: &'static str = "vulkan-1.dll";
 
-impl VulkanCore {
+pub trait VulkanLoader {
+    unsafe fn vkGetInstanceProcAddr(&self, instance: VkInstance, pName: *const c_char) -> vkVoidFunctionFn;
     unsafe fn load_command(&self, instance: VkInstance, name: &str) -> Result<vkVoidFunctionFn, String> {
         let fn_ptr = self.vkGetInstanceProcAddr(instance, CString::new(name).unwrap().as_ptr());
         if fn_ptr != std::ptr::null() {
@@ -3237,8 +3238,12 @@ impl VulkanCore {
             Err(format!("Failed to load {}",name))
         }
     }
+    fn new() -> Result<VulkanCore, String>;
+    fn load(&mut self, instance: VkInstance) -> Result<(), String>;
+}
 
-    pub fn new() -> Result<VulkanCore, String> {
+impl VulkanLoader for VulkanCore {
+    fn new() -> Result<VulkanCore, String> {
         let mut vulkan_core: VulkanCore = Default::default();
         let library_path = Path::new(VULKAN_LIBRARY);
         vulkan_core.library = match DynamicLibrary::open(Some(library_path)) {
@@ -3254,21 +3259,11 @@ impl VulkanCore {
         Ok(vulkan_core)
     }
 
-    pub unsafe fn vkGetInstanceProcAddr(&self, instance: VkInstance, pName: *const c_char) -> vkVoidFunctionFn {
+    unsafe fn vkGetInstanceProcAddr(&self, instance: VkInstance, pName: *const c_char) -> vkVoidFunctionFn {
         (self.vkGetInstanceProcAddr.as_ref().unwrap())(instance, pName)
     }
 
-    pub unsafe fn vkCreateInstance(&self, 
-                                   pCreateInfo: *const VkInstanceCreateInfo, 
-                                   pAllocator: *const VkAllocationCallbacks, 
-                                   pInstance: *mut VkInstance) -> VkResult {
-        (self.vkCreateInstance.as_ref().unwrap())(pCreateInfo, pAllocator, pInstance)
-    }
-
-    // TODO: Write the stubs!
-    // TODO: Maybe group the functions, so I don't have to unwrap them every time!
-
-    pub fn load(&mut self, instance: VkInstance) -> Result<(), String> {
+    fn load(&mut self, instance: VkInstance) -> Result<(), String> {
         unsafe {
             //self.vkCreateInstance = Some(std::mem::transmute(try!(self.load_command(instance, "vkCreateInstance"))));
             self.vkDestroyInstance = Some(std::mem::transmute(try!(self.load_command(instance, "vkDestroyInstance"))));
@@ -3410,4 +3405,16 @@ impl VulkanCore {
         }
         Ok(())
     }
+}
+
+impl VulkanCore {
+    pub unsafe fn vkCreateInstance(&self, 
+                               pCreateInfo: *const VkInstanceCreateInfo, 
+                               pAllocator: *const VkAllocationCallbacks, 
+                               pInstance: *mut VkInstance) -> VkResult {
+        (self.vkCreateInstance.as_ref().unwrap())(pCreateInfo, pAllocator, pInstance)
+    }
+
+    // TODO: Write the stubs!
+    // TODO: Maybe group the functions, so I don't have to unwrap them every time!
 }
