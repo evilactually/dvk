@@ -3228,7 +3228,7 @@ pub struct VulkanCore {
 
 static VULKAN_LIBRARY: &'static str = "vulkan-1.dll";
 
-pub trait VulkanLoader {
+pub trait VulkanLoader: Sized {
     unsafe fn vkGetInstanceProcAddr(&self, instance: VkInstance, pName: *const c_char) -> vkVoidFunctionFn;
     unsafe fn load_command(&self, instance: VkInstance, name: &str) -> Result<vkVoidFunctionFn, String> {
         let fn_ptr = self.vkGetInstanceProcAddr(instance, CString::new(name).unwrap().as_ptr());
@@ -3238,7 +3238,7 @@ pub trait VulkanLoader {
             Err(format!("Failed to load {}",name))
         }
     }
-    fn new() -> Result<VulkanCore, String>;
+    fn new() -> Result<Self, String>;
     fn load(&mut self, instance: VkInstance) -> Result<(), String>;
 }
 
