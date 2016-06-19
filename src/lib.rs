@@ -802,7 +802,7 @@ pub enum VkSubpassContents {
 pub type VkInstanceCreateFlags = VkFlags;
 
 bitflags! {
-    pub flags VkFormatFeatureFlagBits: u32 {
+    pub flags VkFormatFeatureFlagBits: VkFlags {
         const VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT = 0x00000001,
         const VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT = 0x00000002,
         const VK_FORMAT_FEATURE_STORAGE_IMAGE_ATOMIC_BIT = 0x00000004,
@@ -822,7 +822,7 @@ bitflags! {
 pub type VkFormatFeatureFlags = VkFlags;
 
 bitflags! {
-    pub flags VkImageUsageFlagBits: u32 {
+    pub flags VkImageUsageFlagBits: VkFlags {
         const VK_IMAGE_USAGE_TRANSFER_SRC_BIT = 0x00000001,
         const VK_IMAGE_USAGE_TRANSFER_DST_BIT = 0x00000002,
         const VK_IMAGE_USAGE_SAMPLED_BIT = 0x00000004,
@@ -836,7 +836,7 @@ bitflags! {
 pub type VkImageUsageFlags = VkFlags;
 
 bitflags! {
-    pub flags VkImageCreateFlagBits: u32 {
+    pub flags VkImageCreateFlagBits: VkFlags {
         const VK_IMAGE_CREATE_SPARSE_BINDING_BIT = 0x00000001,
         const VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT = 0x00000002,
         const VK_IMAGE_CREATE_SPARSE_ALIASED_BIT = 0x00000004,
@@ -847,7 +847,7 @@ bitflags! {
 pub type VkImageCreateFlags = VkFlags;
 
 bitflags! {
-    pub flags VkSampleCountFlagBits: u32 {
+    pub flags VkSampleCountFlagBits: VkFlags {
         const VK_SAMPLE_COUNT_1_BIT = 0x00000001,
         const VK_SAMPLE_COUNT_2_BIT = 0x00000002,
         const VK_SAMPLE_COUNT_4_BIT = 0x00000004,
@@ -860,7 +860,7 @@ bitflags! {
 pub type VkSampleCountFlags = VkFlags;
 
 bitflags! {
-    pub flags VkQueueFlagBits: u32 {
+    pub flags VkQueueFlagBits: VkFlags {
         const VK_QUEUE_GRAPHICS_BIT = 0x00000001,
         const VK_QUEUE_COMPUTE_BIT = 0x00000002,
         const VK_QUEUE_TRANSFER_BIT = 0x00000004,
@@ -870,7 +870,7 @@ bitflags! {
 pub type VkQueueFlags = VkFlags;
 
 bitflags! {
-    pub flags VkMemoryPropertyFlagBits: u32 {
+    pub flags VkMemoryPropertyFlagBits: VkFlags {
         const VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT = 0x00000001,
         const VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT = 0x00000002,
         const VK_MEMORY_PROPERTY_HOST_COHERENT_BIT = 0x00000004,
@@ -881,7 +881,7 @@ bitflags! {
 pub type VkMemoryPropertyFlags = VkFlags;
 
 bitflags! {
-    pub flags VkMemoryHeapFlagBits: u32 {
+    pub flags VkMemoryHeapFlagBits: VkFlags {
         const VK_MEMORY_HEAP_DEVICE_LOCAL_BIT = 0x00000001
     }
 }
@@ -890,7 +890,7 @@ pub type VkDeviceCreateFlags = VkFlags;
 pub type VkDeviceQueueCreateFlags = VkFlags;
 
 bitflags! {
-    pub flags VkPipelineStageFlagBits: u32 {
+    pub flags VkPipelineStageFlagBits: VkFlags {
         const VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT = 0x00000001,
         const VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT = 0x00000002,
         const VK_PIPELINE_STAGE_VERTEX_INPUT_BIT = 0x00000004,
@@ -914,7 +914,7 @@ pub type VkPipelineStageFlags = VkFlags;
 pub type VkMemoryMapFlags = VkFlags;
 
 bitflags! {
-    pub flags VkImageAspectFlagBits: u32 {
+    pub flags VkImageAspectFlagBits: VkFlags {
         const VK_IMAGE_ASPECT_COLOR_BIT = 0x00000001,
         const VK_IMAGE_ASPECT_DEPTH_BIT = 0x00000002,
         const VK_IMAGE_ASPECT_STENCIL_BIT = 0x00000004,
@@ -924,7 +924,7 @@ bitflags! {
 pub type VkImageAspectFlags = VkFlags;
 
 bitflags! {
-    pub flags VkSparseImageFormatFlagBits: u32 {
+    pub flags VkSparseImageFormatFlagBits: VkFlags {
         const VK_SPARSE_IMAGE_FORMAT_SINGLE_MIPTAIL_BIT = 0x00000001,
         const VK_SPARSE_IMAGE_FORMAT_ALIGNED_MIP_SIZE_BIT = 0x00000002,
         const VK_SPARSE_IMAGE_FORMAT_NONSTANDARD_BLOCK_SIZE_BIT = 0x00000004
@@ -933,14 +933,14 @@ bitflags! {
 pub type VkSparseImageFormatFlags = VkFlags;
 
 bitflags! {
-    pub flags VkSparseMemoryBindFlagBits: u32 {
+    pub flags VkSparseMemoryBindFlagBits: VkFlags {
         const VK_SPARSE_MEMORY_BIND_METADATA_BIT = 0x00000001
     }
 }
 pub type VkSparseMemoryBindFlags = VkFlags;
 
 bitflags! {
-    pub flags VkFenceCreateFlagBits: u32 {
+    pub flags VkFenceCreateFlagBits: VkFlags {
         const VK_FENCE_CREATE_SIGNALED_BIT = 0x00000001
     }
 }
@@ -950,7 +950,7 @@ pub type VkEventCreateFlags = VkFlags;
 pub type VkQueryPoolCreateFlags = VkFlags;
 
 bitflags! {
-    pub flags VkQueryPipelineStatisticFlagBits: u32 {
+    pub flags VkQueryPipelineStatisticFlagBits: VkFlags {
         const VK_QUERY_PIPELINE_STATISTIC_INPUT_ASSEMBLY_VERTICES_BIT = 0x00000001,
         const VK_QUERY_PIPELINE_STATISTIC_INPUT_ASSEMBLY_PRIMITIVES_BIT = 0x00000002,
         const VK_QUERY_PIPELINE_STATISTIC_VERTEX_SHADER_INVOCATIONS_BIT = 0x00000004,
@@ -967,7 +967,7 @@ bitflags! {
 pub type VkQueryPipelineStatisticFlags = VkFlags;
 
 bitflags! {
-    pub flags VkQueryResultFlagBits: u32 {
+    pub flags VkQueryResultFlagBits: VkFlags {
         const VK_QUERY_RESULT_64_BIT = 0x00000001,
         const VK_QUERY_RESULT_WAIT_BIT = 0x00000002,
         const VK_QUERY_RESULT_WITH_AVAILABILITY_BIT = 0x00000004,
@@ -977,7 +977,7 @@ bitflags! {
 pub type VkQueryResultFlags = VkFlags;
 
 bitflags! {
-    pub flags VkBufferCreateFlagBits: u32 {
+    pub flags VkBufferCreateFlagBits: VkFlags {
         const VK_BUFFER_CREATE_SPARSE_BINDING_BIT = 0x00000001,
         const VK_BUFFER_CREATE_SPARSE_RESIDENCY_BIT = 0x00000002,
         const VK_BUFFER_CREATE_SPARSE_ALIASED_BIT = 0x00000004
@@ -986,7 +986,7 @@ bitflags! {
 pub type VkBufferCreateFlags = VkFlags;
 
 bitflags! {
-    pub flags VkBufferUsageFlagBits: u32 {
+    pub flags VkBufferUsageFlagBits: VkFlags {
         const VK_BUFFER_USAGE_TRANSFER_SRC_BIT = 0x00000001,
         const VK_BUFFER_USAGE_TRANSFER_DST_BIT = 0x00000002,
         const VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT = 0x00000004,
@@ -1005,7 +1005,7 @@ pub type VkShaderModuleCreateFlags = VkFlags;
 pub type VkPipelineCacheCreateFlags = VkFlags;
 
 bitflags! {
-    pub flags VkPipelineCreateFlagBits: u32 {
+    pub flags VkPipelineCreateFlagBits: VkFlags {
         const VK_PIPELINE_CREATE_DISABLE_OPTIMIZATION_BIT = 0x00000001,
         const VK_PIPELINE_CREATE_ALLOW_DERIVATIVES_BIT = 0x00000002,
         const VK_PIPELINE_CREATE_DERIVATIVE_BIT = 0x00000004
@@ -1015,7 +1015,7 @@ pub type VkPipelineCreateFlags = VkFlags;
 pub type VkPipelineShaderStageCreateFlags = VkFlags;
 
 bitflags! {
-    pub flags VkShaderStageFlagBits: u32 {
+    pub flags VkShaderStageFlagBits: VkFlags {
         const VK_SHADER_STAGE_VERTEX_BIT = 0x00000001,
         const VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT = 0x00000002,
         const VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT = 0x00000004,
@@ -1033,7 +1033,7 @@ pub type VkPipelineViewportStateCreateFlags = VkFlags;
 pub type VkPipelineRasterizationStateCreateFlags = VkFlags;
 
 bitflags! {
-    pub flags VkCullModeFlagBits: u32 {
+    pub flags VkCullModeFlagBits: VkFlags {
         const VK_CULL_MODE_NONE = 0,
         const VK_CULL_MODE_FRONT_BIT = 0x00000001,
         const VK_CULL_MODE_BACK_BIT = 0x00000002,
@@ -1046,7 +1046,7 @@ pub type VkPipelineDepthStencilStateCreateFlags = VkFlags;
 pub type VkPipelineColorBlendStateCreateFlags = VkFlags;
 
 bitflags! {
-    pub flags VkColorComponentFlagBits: u32 {
+    pub flags VkColorComponentFlagBits: VkFlags {
         const VK_COLOR_COMPONENT_R_BIT = 0x00000001,
         const VK_COLOR_COMPONENT_G_BIT = 0x00000002,
         const VK_COLOR_COMPONENT_B_BIT = 0x00000004,
@@ -1061,7 +1061,7 @@ pub type VkSamplerCreateFlags = VkFlags;
 pub type VkDescriptorSetLayoutCreateFlags = VkFlags;
 
 bitflags! {
-    pub flags VkDescriptorPoolCreateFlagBits: u32 {
+    pub flags VkDescriptorPoolCreateFlagBits: VkFlags {
         const VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT = 0x00000001
     }
 }
@@ -1071,7 +1071,7 @@ pub type VkFramebufferCreateFlags = VkFlags;
 pub type VkRenderPassCreateFlags = VkFlags;
 
 bitflags! {
-    pub flags VkAttachmentDescriptionFlagBits: u32 {
+    pub flags VkAttachmentDescriptionFlagBits: VkFlags {
         const VK_ATTACHMENT_DESCRIPTION_MAY_ALIAS_BIT = 0x00000001
     }
 }
@@ -1079,7 +1079,7 @@ pub type VkAttachmentDescriptionFlags = VkFlags;
 pub type VkSubpassDescriptionFlags = VkFlags;
 
 bitflags! {
-    pub flags VkAccessFlagBits: u32 {
+    pub flags VkAccessFlagBits: VkFlags {
         const VK_ACCESS_INDIRECT_COMMAND_READ_BIT = 0x00000001,
         const VK_ACCESS_INDEX_READ_BIT = 0x00000002,
         const VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT = 0x00000004,
@@ -1102,14 +1102,14 @@ bitflags! {
 pub type VkAccessFlags = VkFlags;
 
 bitflags! {
-    pub flags VkDependencyFlagBits: u32 {
+    pub flags VkDependencyFlagBits: VkFlags {
         const VK_DEPENDENCY_BY_REGION_BIT = 0x00000001
     }
 }
 pub type VkDependencyFlags = VkFlags;
 
 bitflags! {
-    pub flags VkCommandPoolCreateFlagBits: u32 {
+    pub flags VkCommandPoolCreateFlagBits: VkFlags {
         const VK_COMMAND_POOL_CREATE_TRANSIENT_BIT = 0x00000001,
         const VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT = 0x00000002
     }
@@ -1117,14 +1117,14 @@ bitflags! {
 pub type VkCommandPoolCreateFlags = VkFlags;
 
 bitflags! {
-    pub flags VkCommandPoolResetFlagBits: u32 {
+    pub flags VkCommandPoolResetFlagBits: VkFlags {
         const VK_COMMAND_POOL_RESET_RELEASE_RESOURCES_BIT = 0x00000001
     }
 }
 pub type VkCommandPoolResetFlags = VkFlags;
 
 bitflags! {
-    pub flags VkCommandBufferUsageFlagBits: u32 {
+    pub flags VkCommandBufferUsageFlagBits: VkFlags {
         const VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT = 0x00000001,
         const VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT = 0x00000002,
         const VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT = 0x00000004
@@ -1133,21 +1133,21 @@ bitflags! {
 pub type VkCommandBufferUsageFlags = VkFlags;
 
 bitflags! {
-    pub flags VkQueryControlFlagBits: u32 {
+    pub flags VkQueryControlFlagBits: VkFlags {
         const VK_QUERY_CONTROL_PRECISE_BIT = 0x00000001
     }
 }
 pub type VkQueryControlFlags = VkFlags;
 
 bitflags! {
-    pub flags VkCommandBufferResetFlagBits: u32 {
+    pub flags VkCommandBufferResetFlagBits: VkFlags {
         const VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT = 0x00000001
     }
 }
 pub type VkCommandBufferResetFlags = VkFlags;
 
 bitflags! {
-    pub flags VkStencilFaceFlagBits: u32 {
+    pub flags VkStencilFaceFlagBits: VkFlags {
         const VK_STENCIL_FACE_FRONT_BIT = 0x00000001,
         const VK_STENCIL_FACE_BACK_BIT = 0x00000002,
         const VK_STENCIL_FRONT_AND_BACK = 0x00000003
