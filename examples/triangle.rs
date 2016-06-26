@@ -58,7 +58,8 @@ impl Application {
                 enabledExtensionCount: 0,
                 ppEnabledExtensionNames: null()
             };
-            self.vulkan_core.vkCreateInstance(&instance_create_info, null(), &mut self.vk_instance);
+            assert_eq!(self.vulkan_core.vkCreateInstance(&instance_create_info, null(), &mut self.vk_instance), VkResult::VK_SUCCESS);
+            self.vulkan_core.load(self.vk_instance).unwrap();
         }
     }
 }

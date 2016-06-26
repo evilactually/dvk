@@ -15,6 +15,8 @@ winapi = "0.2.7"
 gdi32-sys = "0.2.0"
 kernel32-sys = "0.2.2"
 user32-sys = "0.2.0"
+dvk_khr_surface = { git = "https://gitlab.com/vlsh/dvk_khr_surface.git" }
+dvk_khr_win32_surface = { git = "https://gitlab.com/vlsh/dvk_khr_win32_surface.git" }
 #bitflags = "0.7.0"
 #winapi = "0.2.7"
 #gdi32-sys = "0.2.0"

@@ -141,13 +141,13 @@ pub enum VkResult {
     VK_ERROR_INCOMPATIBLE_DRIVER = -9,
     VK_ERROR_TOO_MANY_OBJECTS = -10,
     VK_ERROR_FORMAT_NOT_SUPPORTED = -11,
-    VK_ERROR_SURFACE_LOST_KHR = -1000000000,
-    VK_ERROR_NATIVE_WINDOW_IN_USE_KHR = -1000000001,
-    VK_SUBOPTIMAL_KHR = 1000001003,
-    VK_ERROR_OUT_OF_DATE_KHR = -1000001004,
-    VK_ERROR_INCOMPATIBLE_DISPLAY_KHR = -1000003001,
-    VK_ERROR_VALIDATION_FAILED_EXT = -1000011001,
-    VK_ERROR_INVALID_SHADER_NV = -1000012000
+    //VK_ERROR_SURFACE_LOST_KHR = -1000000000,
+    //VK_ERROR_NATIVE_WINDOW_IN_USE_KHR = -1000000001,
+    //VK_SUBOPTIMAL_KHR = 1000001003,
+    //VK_ERROR_OUT_OF_DATE_KHR = -1000001004,
+    //VK_ERROR_INCOMPATIBLE_DISPLAY_KHR = -1000003001,
+    //VK_ERROR_VALIDATION_FAILED_EXT = -1000011001,
+    //VK_ERROR_INVALID_SHADER_NV = -1000012000
 }
 
 #[repr(u32)]
@@ -204,22 +204,22 @@ pub enum VkStructureType {
     VK_STRUCTURE_TYPE_MEMORY_BARRIER = 46,
     VK_STRUCTURE_TYPE_LOADER_INSTANCE_CREATE_INFO = 47,
     VK_STRUCTURE_TYPE_LOADER_DEVICE_CREATE_INFO = 48,
-    VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR = 1000001000,
-    VK_STRUCTURE_TYPE_PRESENT_INFO_KHR = 1000001001,
-    VK_STRUCTURE_TYPE_DISPLAY_MODE_CREATE_INFO_KHR = 1000002000,
-    VK_STRUCTURE_TYPE_DISPLAY_SURFACE_CREATE_INFO_KHR = 1000002001,
-    VK_STRUCTURE_TYPE_DISPLAY_PRESENT_INFO_KHR = 1000003000,
-    VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR = 1000004000,
-    VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR = 1000005000,
-    VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR = 1000006000,
-    VK_STRUCTURE_TYPE_MIR_SURFACE_CREATE_INFO_KHR = 1000007000,
-    VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR = 1000008000,
-    VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR = 1000009000,
-    VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT = 1000011000,
-    VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_RASTERIZATION_ORDER_AMD = 1000018000,
-    VK_STRUCTURE_TYPE_DEBUG_MARKER_OBJECT_NAME_INFO_EXT = 1000022000,
-    VK_STRUCTURE_TYPE_DEBUG_MARKER_OBJECT_TAG_INFO_EXT = 1000022001,
-    VK_STRUCTURE_TYPE_DEBUG_MARKER_MARKER_INFO_EXT = 1000022002,
+    //VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR = 1000001000,
+    //VK_STRUCTURE_TYPE_PRESENT_INFO_KHR = 1000001001,
+    //VK_STRUCTURE_TYPE_DISPLAY_MODE_CREATE_INFO_KHR = 1000002000,
+    //VK_STRUCTURE_TYPE_DISPLAY_SURFACE_CREATE_INFO_KHR = 1000002001,
+    //VK_STRUCTURE_TYPE_DISPLAY_PRESENT_INFO_KHR = 1000003000,
+    //VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR = 1000004000,
+    //VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR = 1000005000,
+    //VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR = 1000006000,
+    //VK_STRUCTURE_TYPE_MIR_SURFACE_CREATE_INFO_KHR = 1000007000,
+    //VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR = 1000008000,
+    //VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR = 1000009000,
+    //VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT = 1000011000,
+    //VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_RASTERIZATION_ORDER_AMD = 1000018000,
+    //VK_STRUCTURE_TYPE_DEBUG_MARKER_OBJECT_NAME_INFO_EXT = 1000022000,
+    //VK_STRUCTURE_TYPE_DEBUG_MARKER_OBJECT_TAG_INFO_EXT = 1000022001,
+    //VK_STRUCTURE_TYPE_DEBUG_MARKER_MARKER_INFO_EXT = 1000022002,
 }
 
 #[repr(u32)]
@@ -498,7 +498,7 @@ pub enum VkImageLayout {
     VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL = 6,
     VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL = 7,
     VK_IMAGE_LAYOUT_PREINITIALIZED = 8,
-    VK_IMAGE_LAYOUT_PRESENT_SRC_KHR = 1000001002
+    //VK_IMAGE_LAYOUT_PRESENT_SRC_KHR = 1000001002
 }
 
 #[repr(u32)]
@@ -3226,28 +3226,18 @@ pub struct VulkanCore {
     vkCmdExecuteCommands: Option<vkCmdExecuteCommandsFn>,
 }
 
+#[cfg(windows)]
 static VULKAN_LIBRARY: &'static str = "vulkan-1.dll";
 
-pub trait VulkanLoader: Sized {
-    unsafe fn vkGetInstanceProcAddr(&self, instance: VkInstance, pName: *const c_char) -> vkVoidFunctionFn;
-    unsafe fn load_command(&self, instance: VkInstance, name: &str) -> Result<vkVoidFunctionFn, String> {
-        let fn_ptr = self.vkGetInstanceProcAddr(instance, CString::new(name).unwrap().as_ptr());
-        if fn_ptr != std::ptr::null() {
-            Ok(fn_ptr)
-        } else {
-            Err(format!("Failed to load {}",name))
-        }
-    }
-    fn new() -> Result<Self, String>;
-    fn load(&mut self, instance: VkInstance) -> Result<(), String>;
-}
+#[cfg(unix)]
+static VULKAN_LIBRARY: &'static str = "libvulkan-1.so";
 
-impl VulkanLoader for VulkanCore {
+impl VulkanCore {
     fn new() -> Result<VulkanCore, String> {
         let mut vulkan_core: VulkanCore = Default::default();
         let library_path = Path::new(VULKAN_LIBRARY);
         vulkan_core.library = match DynamicLibrary::open(Some(library_path)) {
-            Err(error) => return Err(format!("Failed to load {}: {}",VULKAN_LIBRARY,error)),
+            Err(error) => return Err(format!("Failed to load {}: {}", VULKAN_LIBRARY, error)),
             Ok(library) => Some(library),
         };
         unsafe {
@@ -3259,8 +3249,13 @@ impl VulkanLoader for VulkanCore {
         Ok(vulkan_core)
     }
 
-    unsafe fn vkGetInstanceProcAddr(&self, instance: VkInstance, pName: *const c_char) -> vkVoidFunctionFn {
-        (self.vkGetInstanceProcAddr.as_ref().unwrap())(instance, pName)
+    unsafe fn load_command(&self, instance: VkInstance, name: &str) -> Result<vkVoidFunctionFn, String> {
+        let fn_ptr = (self.vkGetInstanceProcAddr.as_ref().unwrap())(instance, CString::new(name).unwrap().as_ptr());
+        if fn_ptr != std::ptr::null() {
+            Ok(fn_ptr)
+        } else {
+            Err(format!("Failed to load {}",name))
+        }
     }
 
     fn load(&mut self, instance: VkInstance) -> Result<(), String> {
@@ -3405,16 +3400,15 @@ impl VulkanLoader for VulkanCore {
         }
         Ok(())
     }
-}
 
-impl VulkanCore {
-    pub unsafe fn vkCreateInstance(&self, 
-                               pCreateInfo: *const VkInstanceCreateInfo, 
-                               pAllocator: *const VkAllocationCallbacks, 
-                               pInstance: *mut VkInstance) -> VkResult {
-        (self.vkCreateInstance.as_ref().unwrap())(pCreateInfo, pAllocator, pInstance)
+    unsafe fn vkGetInstanceProcAddr(&self, instance: VkInstance, pName: *const c_char) -> vkVoidFunctionFn {
+        (self.vkGetInstanceProcAddr.as_ref().unwrap())(instance, pName)
     }
 
-    // TODO: Write the stubs!
-    // TODO: Maybe group the functions, so I don't have to unwrap them every time!
+    pub unsafe fn vkCreateInstance(&self, 
+                                   pCreateInfo: *const VkInstanceCreateInfo, 
+                                   pAllocator: *const VkAllocationCallbacks, 
+                                   pInstance: *mut VkInstance) -> VkResult {
+        (self.vkCreateInstance.as_ref().unwrap())(pCreateInfo, pAllocator, pInstance)
+    }
 }
