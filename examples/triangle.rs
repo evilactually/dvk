@@ -17,7 +17,7 @@ use winapi::*;
 use gdi32::*;
 use user32::*;
 use kernel32::*;
-use libc::{uint32_t};
+use libc::{uint32_t, uint64_t, int32_t};
 use dvk::*;
 use dvk_khr_surface::*;
 use dvk_khr_win32_surface::*;
@@ -34,42 +34,36 @@ unsafe extern "system" fn WindowProc(hwnd: HWND, uMsg: UINT, wParam: WPARAM, lPa
     DefWindowProcA(hwnd, uMsg, wParam, lParam)
 }
 
+unsafe extern "stdcall" fn DebugReportCallbackEXT(flags: VkDebugReportFlagsEXT,
+                                                  objectType: VkDebugReportObjectTypeEXT,
+                                                  object: uint64_t,
+                                                  location: size_t,
+                                                  messageCode: int32_t,
+                                                  pLayerPrefix: *const c_char,
+                                                  pMessage: *const c_char,
+                                                  pUserData: *mut c_void) -> VkBool32 {
+    println!("{:?} {:?}", CStr::from_ptr(pLayerPrefix), CStr::from_ptr(pMessage));
+    VK_FALSE
+}
+
 struct VulkanContext {
     pub core: VulkanCore,
+    pub ext_debug_report: VulkanExtDebugReport,
+    pub khr_surface: VulkanKhrSurface,
+    pub khr_win32_surface: VulkanKhrWin32Surface,
     pub instance: VkInstance,
+    pub callback: VkDebugReportCallbackEXT
 }
 
 impl VulkanContext {
     pub fn new() -> VulkanContext {
         VulkanContext{core: VulkanCore::new().unwrap(),
-                      instance: VkInstance::null()}
+                      khr_surface: VulkanKhrSurface::new().unwrap(),
+                      khr_win32_surface: VulkanKhrWin32Surface::new().unwrap(),
+                      ext_debug_report: VulkanExtDebugReport::new().unwrap(),
+                      instance: VkInstance::null(),
+                      callback: VkDebugReportCallbackEXT::null()}
     }
-
-    // pub fn initialize(&mut self) {
-    //     unsafe {
-    //         let application_info = VkApplicationInfo {
-    //             sType: VkStructureType::VK_STRUCTURE_TYPE_APPLICATION_INFO,
-    //             pNext: null(),
-    //             pApplicationName: CString::new("Triangle").unwrap().as_ptr(),
-    //             applicationVersion: 1,
-    //             pEngineName: null(),
-    //             engineVersion: 0,
-    //             apiVersion: VK_MAKE_VERSION!(1,0,0)};
-
-    //         let instance_create_info = VkInstanceCreateInfo {
-    //             sType: VkStructureType::VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
-    //             pNext: null(),
-    //             flags: 0,
-    //             pApplicationInfo: &application_info,
-    //             enabledLayerCount: 0,
-    //             ppEnabledLayerNames: null(),
-    //             enabledExtensionCount: 0,
-    //             ppEnabledExtensionNames: null()
-    //         };
-    //         assert_eq!(self.vulkan_core.vkCreateInstance(&instance_create_info, null(), &mut self.vk_instance), VkResult::VK_SUCCESS);
-    //         self.vulkan_core.load(self.vk_instance).unwrap();
-    //     }
-    // }
 }
 
 fn main() {
@@ -154,14 +148,17 @@ fn main() {
             pNext: null(),
             flags: 0,
             pApplicationInfo: &application_info,
-            enabledLayerCount: 0,
-            ppEnabledLayerNames: null(),
-            enabledExtensionCount: 0,
-            ppEnabledExtensionNames: null()
+            enabledLayerCount: layers.len() as u32,
+            ppEnabledLayerNames: &layers as *const *const c_char,
+            enabledExtensionCount: extensions.len() as u32,
+            ppEnabledExtensionNames: &extensions as *const *const c_char
         };
-        
+
         assert_eq!(context.core.vkCreateInstance(&instance_create_info, null(), &mut context.instance), VkResult::VK_SUCCESS);
         context.core.load(context.instance).unwrap();
+        context.ext_debug_report.load(context.instance).unwrap();
+        //context.khr_surface.load(context.instance).unwrap();
+        //context.khr_win32_surface.load(context.instance).unwrap();
         
 
         ShowWindow(hwnd, SW_SHOW);
