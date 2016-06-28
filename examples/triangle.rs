@@ -1,3 +1,4 @@
+#![feature(box_syntax)]
 extern crate winapi;
 extern crate gdi32;
 extern crate user32;
@@ -5,15 +6,22 @@ extern crate kernel32;
 extern crate libc;
 #[macro_use]
 extern crate dvk;
+extern crate dvk_khr_surface;
+extern crate dvk_khr_win32_surface;
+extern crate dvk_ext_debug_report;
 
 use std::mem::{size_of};
-use std::ffi::{CString};
-use std::ptr::*;
+use std::ffi::{CString, CStr};
+use std::ptr::{null, null_mut};
 use winapi::*;
 use gdi32::*;
 use user32::*;
 use kernel32::*;
+use libc::{uint32_t};
 use dvk::*;
+use dvk_khr_surface::*;
+use dvk_khr_win32_surface::*;
+use dvk_ext_debug_report::*;
 
 unsafe extern "system" fn WindowProc(hwnd: HWND, uMsg: UINT, wParam: WPARAM, lParam: LPARAM) -> LRESULT {
     match uMsg {
@@ -26,46 +34,45 @@ unsafe extern "system" fn WindowProc(hwnd: HWND, uMsg: UINT, wParam: WPARAM, lPa
     DefWindowProcA(hwnd, uMsg, wParam, lParam)
 }
 
-struct Application {
-    vulkan_core: VulkanCore,
-    vk_instance: VkInstance
+struct VulkanContext {
+    pub core: VulkanCore,
+    pub instance: VkInstance,
 }
 
-impl Application {
-    pub fn new() -> Application{
-        Application{vulkan_core: VulkanCore::new().unwrap(),
-                    vk_instance: VkInstance::null()}
+impl VulkanContext {
+    pub fn new() -> VulkanContext {
+        VulkanContext{core: VulkanCore::new().unwrap(),
+                      instance: VkInstance::null()}
     }
 
-    pub fn initialize(&mut self) {
-        unsafe {
-            let application_info = VkApplicationInfo {
-                sType: VkStructureType::VK_STRUCTURE_TYPE_APPLICATION_INFO,
-                pNext: null(),
-                pApplicationName: CString::new("Triangle").unwrap().as_ptr(),
-                applicationVersion: 1,
-                pEngineName: null(),
-                engineVersion: 0,
-                apiVersion: VK_MAKE_VERSION!(1,0,0)};
+    // pub fn initialize(&mut self) {
+    //     unsafe {
+    //         let application_info = VkApplicationInfo {
+    //             sType: VkStructureType::VK_STRUCTURE_TYPE_APPLICATION_INFO,
+    //             pNext: null(),
+    //             pApplicationName: CString::new("Triangle").unwrap().as_ptr(),
+    //             applicationVersion: 1,
+    //             pEngineName: null(),
+    //             engineVersion: 0,
+    //             apiVersion: VK_MAKE_VERSION!(1,0,0)};
 
-            let instance_create_info = VkInstanceCreateInfo {
-                sType: VkStructureType::VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
-                pNext: null(),
-                flags: 0,
-                pApplicationInfo: &application_info,
-                enabledLayerCount: 0,
-                ppEnabledLayerNames: null(),
-                enabledExtensionCount: 0,
-                ppEnabledExtensionNames: null()
-            };
-            assert_eq!(self.vulkan_core.vkCreateInstance(&instance_create_info, null(), &mut self.vk_instance), VkResult::VK_SUCCESS);
-            self.vulkan_core.load(self.vk_instance).unwrap();
-        }
-    }
+    //         let instance_create_info = VkInstanceCreateInfo {
+    //             sType: VkStructureType::VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
+    //             pNext: null(),
+    //             flags: 0,
+    //             pApplicationInfo: &application_info,
+    //             enabledLayerCount: 0,
+    //             ppEnabledLayerNames: null(),
+    //             enabledExtensionCount: 0,
+    //             ppEnabledExtensionNames: null()
+    //         };
+    //         assert_eq!(self.vulkan_core.vkCreateInstance(&instance_create_info, null(), &mut self.vk_instance), VkResult::VK_SUCCESS);
+    //         self.vulkan_core.load(self.vk_instance).unwrap();
+    //     }
+    // }
 }
 
 fn main() {
-    Application::new().initialize();
     unsafe {
         let instance = GetModuleHandleA(null());
         let window_class = WNDCLASSEXW {
@@ -95,10 +102,72 @@ fn main() {
                                    null_mut(),
                                    instance,
                                    null_mut());
+
+        let VK_LUNARG_STANDARD_VALIDATION_NAME = CString::new("VK_LAYER_LUNARG_standard_validation").unwrap();
+
+        // check validation layers
+        let mut context = VulkanContext::new();
+        let mut layerCount: uint32_t = 0;
+        context.core.vkEnumerateInstanceLayerProperties(&mut layerCount, null_mut());
+        let mut layersAvailable:Vec<VkLayerProperties> = Vec::with_capacity(layerCount as usize);
+        context.core.vkEnumerateInstanceLayerProperties(&mut layerCount, layersAvailable.as_mut_ptr());
+        layersAvailable.set_len(layerCount as usize);
+
+        assert!(layersAvailable.iter().any(|layer| {
+            let name = CStr::from_ptr(&layer.layerName as *const c_char);
+            name == VK_LUNARG_STANDARD_VALIDATION_NAME.as_ref()
+        }));
+        let layers = [VK_LUNARG_STANDARD_VALIDATION_NAME.as_ptr()];
+
+        // check extensions
+        let mut extensionCount: uint32_t = 0;
+        context.core.vkEnumerateInstanceExtensionProperties(null(), &mut extensionCount, null_mut());
+        let mut extensionsAvailable:Vec<VkExtensionProperties> = Vec::with_capacity(extensionCount as usize);
+        context.core.vkEnumerateInstanceExtensionProperties(null(), &mut extensionCount, extensionsAvailable.as_mut_ptr());
+        extensionsAvailable.set_len(extensionCount as usize);
+
+        let extensions = [VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_WIN32_SURFACE_EXTENSION_NAME];
+        assert_eq!(extensionsAvailable.iter().fold(0, |count, extension| {
+            let name = CStr::from_ptr(&extension.extensionName as *const c_char);
+            let found = extensions.iter().any(|x| {
+                CStr::from_ptr(*x) == name
+            });
+            if found {
+                count + 1
+            } else {
+                count
+            }   
+        }), extensions.len());
+
+        let application_info = VkApplicationInfo {
+            sType: VkStructureType::VK_STRUCTURE_TYPE_APPLICATION_INFO,
+            pNext: null(),
+            pApplicationName: CString::new("Triangle").unwrap().as_ptr(),
+            applicationVersion: 1,
+            pEngineName: null(),
+            engineVersion: 0,
+            apiVersion: VK_MAKE_VERSION!(1,0,0)
+        };
+
+        let instance_create_info = VkInstanceCreateInfo {
+            sType: VkStructureType::VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
+            pNext: null(),
+            flags: 0,
+            pApplicationInfo: &application_info,
+            enabledLayerCount: 0,
+            ppEnabledLayerNames: null(),
+            enabledExtensionCount: 0,
+            ppEnabledExtensionNames: null()
+        };
+        
+        assert_eq!(context.core.vkCreateInstance(&instance_create_info, null(), &mut context.instance), VkResult::VK_SUCCESS);
+        context.core.load(context.instance).unwrap();
+        
+
         ShowWindow(hwnd, SW_SHOW);
         let mut msg: MSG = std::mem::zeroed();
         let mut done: bool = false;
-        while (!done) 
+        while (!done)
         {
             PeekMessageW(&mut msg, std::ptr::null_mut(), 0, 0, PM_REMOVE);
             if (msg.message == WM_QUIT)
