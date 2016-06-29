@@ -120,7 +120,7 @@ fn main() {
         context.core.vkEnumerateInstanceExtensionProperties(null(), &mut extensionCount, extensionsAvailable.as_mut_ptr());
         extensionsAvailable.set_len(extensionCount as usize);
 
-        let extensions = [VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_WIN32_SURFACE_EXTENSION_NAME];
+        let extensions = [VK_EXT_DEBUG_REPORT_EXTENSION_NAME, VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_WIN32_SURFACE_EXTENSION_NAME];
         assert_eq!(extensionsAvailable.iter().fold(0, |count, extension| {
             let name = CStr::from_ptr(&extension.extensionName as *const c_char);
             let found = extensions.iter().any(|x| {
@@ -155,10 +155,12 @@ fn main() {
         };
 
         assert_eq!(context.core.vkCreateInstance(&instance_create_info, null(), &mut context.instance), VkResult::VK_SUCCESS);
+
+        // load functions
         context.core.load(context.instance).unwrap();
         context.ext_debug_report.load(context.instance).unwrap();
-        //context.khr_surface.load(context.instance).unwrap();
-        //context.khr_win32_surface.load(context.instance).unwrap();
+        context.khr_surface.load(context.instance).unwrap();
+        context.khr_win32_surface.load(context.instance).unwrap();
         
 
         ShowWindow(hwnd, SW_SHOW);
