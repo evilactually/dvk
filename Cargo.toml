@@ -1,8 +1,11 @@
 [package]
 name = "dvk"
 version = "0.1.0"
+description = "Dynamic loader for Vulkan core functionality"
 authors = ["Vlad Shcherbakov <vlad.shcherbakov@gmail.com>"]
-description = "Dynamic loader and definitions for core Vulkan 1.0"
+repository = "https://gitlab.com/vlsh/dvk.git"
+readme = "README.md"
+keywords = ["vk", "vulkan", "ffi", "api"]
 license = "MIT"
 
 [dependencies]
