@@ -141,13 +141,13 @@ pub enum VkResult {
     VK_ERROR_INCOMPATIBLE_DRIVER = -9,
     VK_ERROR_TOO_MANY_OBJECTS = -10,
     VK_ERROR_FORMAT_NOT_SUPPORTED = -11,
-    //VK_ERROR_SURFACE_LOST_KHR = -1000000000,
-    //VK_ERROR_NATIVE_WINDOW_IN_USE_KHR = -1000000001,
-    //VK_SUBOPTIMAL_KHR = 1000001003,
-    //VK_ERROR_OUT_OF_DATE_KHR = -1000001004,
-    //VK_ERROR_INCOMPATIBLE_DISPLAY_KHR = -1000003001,
-    //VK_ERROR_VALIDATION_FAILED_EXT = -1000011001,
-    //VK_ERROR_INVALID_SHADER_NV = -1000012000
+    VK_ERROR_SURFACE_LOST_KHR = -1000000000,
+    VK_ERROR_NATIVE_WINDOW_IN_USE_KHR = -1000000001,
+    VK_SUBOPTIMAL_KHR = 1000001003,
+    VK_ERROR_OUT_OF_DATE_KHR = -1000001004,
+    VK_ERROR_INCOMPATIBLE_DISPLAY_KHR = -1000003001,
+    VK_ERROR_VALIDATION_FAILED_EXT = -1000011001,
+    VK_ERROR_INVALID_SHADER_NV = -1000012000
 }
 
 #[repr(u32)]
@@ -204,22 +204,22 @@ pub enum VkStructureType {
     VK_STRUCTURE_TYPE_MEMORY_BARRIER = 46,
     VK_STRUCTURE_TYPE_LOADER_INSTANCE_CREATE_INFO = 47,
     VK_STRUCTURE_TYPE_LOADER_DEVICE_CREATE_INFO = 48,
-    //VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR = 1000001000,
-    //VK_STRUCTURE_TYPE_PRESENT_INFO_KHR = 1000001001,
-    //VK_STRUCTURE_TYPE_DISPLAY_MODE_CREATE_INFO_KHR = 1000002000,
-    //VK_STRUCTURE_TYPE_DISPLAY_SURFACE_CREATE_INFO_KHR = 1000002001,
-    //VK_STRUCTURE_TYPE_DISPLAY_PRESENT_INFO_KHR = 1000003000,
+    VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR = 1000001000,
+    VK_STRUCTURE_TYPE_PRESENT_INFO_KHR = 1000001001,
+    VK_STRUCTURE_TYPE_DISPLAY_MODE_CREATE_INFO_KHR = 1000002000,
+    VK_STRUCTURE_TYPE_DISPLAY_SURFACE_CREATE_INFO_KHR = 1000002001,
+    VK_STRUCTURE_TYPE_DISPLAY_PRESENT_INFO_KHR = 1000003000,
     //VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR = 1000004000,
     //VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR = 1000005000,
     //VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR = 1000006000,
     //VK_STRUCTURE_TYPE_MIR_SURFACE_CREATE_INFO_KHR = 1000007000,
     //VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR = 1000008000,
     //VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR = 1000009000,
-    //VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT = 1000011000,
-    //VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_RASTERIZATION_ORDER_AMD = 1000018000,
-    //VK_STRUCTURE_TYPE_DEBUG_MARKER_OBJECT_NAME_INFO_EXT = 1000022000,
-    //VK_STRUCTURE_TYPE_DEBUG_MARKER_OBJECT_TAG_INFO_EXT = 1000022001,
-    //VK_STRUCTURE_TYPE_DEBUG_MARKER_MARKER_INFO_EXT = 1000022002,
+    VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT = 1000011000,
+    VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_RASTERIZATION_ORDER_AMD = 1000018000,
+    VK_STRUCTURE_TYPE_DEBUG_MARKER_OBJECT_NAME_INFO_EXT = 1000022000,
+    VK_STRUCTURE_TYPE_DEBUG_MARKER_OBJECT_TAG_INFO_EXT = 1000022001,
+    VK_STRUCTURE_TYPE_DEBUG_MARKER_MARKER_INFO_EXT = 1000022002
 }
 
 #[repr(u32)]
@@ -498,7 +498,7 @@ pub enum VkImageLayout {
     VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL = 6,
     VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL = 7,
     VK_IMAGE_LAYOUT_PREINITIALIZED = 8,
-    //VK_IMAGE_LAYOUT_PRESENT_SRC_KHR = 1000001002
+    VK_IMAGE_LAYOUT_PRESENT_SRC_KHR = 1000001002
 }
 
 #[repr(u32)]
@@ -689,7 +689,7 @@ pub enum VkDynamicState {
 pub enum VkFilter {
     VK_FILTER_NEAREST = 0,
     VK_FILTER_LINEAR = 1,
-    //VK_FILTER_CUBIC_IMG = 1000015000
+    VK_FILTER_CUBIC_IMG = 1000015000
 }
 
 #[repr(u32)]
@@ -3947,5 +3947,824 @@ impl VulkanCore {
 
     pub unsafe fn vkCmdExecuteCommands(&self, commandBuffer: VkCommandBuffer, commandBufferCount: uint32_t, pCommandBuffers: *const VkCommandBuffer) {
         (self.vkCmdExecuteCommands.as_ref().unwrap())(commandBuffer, commandBufferCount, pCommandBuffers)
+    }
+}
+
+VK_DEFINE_NON_DISPATCHABLE_HANDLE!(VkSurfaceKHR);
+
+pub const VK_KHR_SURFACE_SPEC_VERSION: uint32_t = 25;
+pub const VK_KHR_SURFACE_EXTENSION_NAME: *const c_char = b"VK_KHR_surface\0" as *const u8 as *const c_char;
+pub const VK_COLORSPACE_SRGB_NONLINEAR_KHR: VkColorSpaceKHR = VkColorSpaceKHR::VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+
+#[repr(i32)]
+#[derive(Eq)]
+#[derive(PartialEq)]
+#[derive(Debug)]
+pub enum VkColorSpaceKHR {
+    VK_COLOR_SPACE_SRGB_NONLINEAR_KHR = 0
+}
+
+#[repr(i32)]
+#[derive(Eq)]
+#[derive(PartialEq)]
+#[derive(Debug)]
+pub enum VkPresentModeKHR {
+    VK_PRESENT_MODE_IMMEDIATE_KHR = 0,
+    VK_PRESENT_MODE_MAILBOX_KHR = 1,
+    VK_PRESENT_MODE_FIFO_KHR = 2,
+    VK_PRESENT_MODE_FIFO_RELAXED_KHR = 3
+}
+
+bitflags! {
+    pub flags VkSurfaceTransformFlagBitsKHR: VkFlags {
+        const VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR = 0x00000001,
+        const VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR = 0x00000002,
+        const VK_SURFACE_TRANSFORM_ROTATE_180_BIT_KHR = 0x00000004,
+        const VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR = 0x00000008,
+        const VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_BIT_KHR = 0x00000010,
+        const VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_90_BIT_KHR = 0x00000020,
+        const VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_180_BIT_KHR = 0x00000040,
+        const VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_270_BIT_KHR = 0x00000080,
+        const VK_SURFACE_TRANSFORM_INHERIT_BIT_KHR = 0x00000100
+    }
+}
+
+pub type VkSurfaceTransformFlagsKHR = VkFlags;
+
+bitflags! { 
+    pub flags VkCompositeAlphaFlagBitsKHR: VkFlags {
+        const VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR = 0x00000001,
+        const VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR = 0x00000002,
+        const VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR = 0x00000004,
+        const VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR = 0x00000008
+    }
+}
+
+pub type VkCompositeAlphaFlagsKHR = VkFlags;
+
+#[repr(C)]
+pub struct VkSurfaceCapabilitiesKHR {
+    pub minImageCount: uint32_t,
+    pub maxImageCount: uint32_t,
+    pub currentExtent: VkExtent2D,
+    pub minImageExtent: VkExtent2D,
+    pub maxImageExtent: VkExtent2D,
+    pub maxImageArrayLayers: uint32_t,
+    pub supportedTransforms: VkSurfaceTransformFlagsKHR,
+    pub currentTransform: VkSurfaceTransformFlagBitsKHR,
+    pub supportedCompositeAlpha: VkCompositeAlphaFlagsKHR,
+    pub supportedUsageFlags: VkImageUsageFlags
+}
+
+#[repr(C)]
+pub struct VkSurfaceFormatKHR {
+    pub format: VkFormat,
+    pub colorSpace: VkColorSpaceKHR
+}
+
+pub type vkDestroySurfaceKHRFn = unsafe extern "stdcall" fn(instance: VkInstance,
+                                                            surface: VkSurfaceKHR,
+                                                            pAllocator: *const VkAllocationCallbacks);
+
+pub type vkGetPhysicalDeviceSurfaceSupportKHRFn = unsafe extern "stdcall" fn(physicalDevice: VkPhysicalDevice,
+                                                                             queueFamilyIndex: uint32_t,
+                                                                             surface: VkSurfaceKHR,
+                                                                             pSupported: *mut VkBool32) -> VkResult;
+
+pub type vkGetPhysicalDeviceSurfaceCapabilitiesKHRFn = unsafe extern "stdcall" fn(physicalDevice: VkPhysicalDevice,
+                                                                                  surface: VkSurfaceKHR,
+                                                                                  pSurfaceCapabilities: *mut VkSurfaceCapabilitiesKHR) -> VkResult;
+
+pub type vkGetPhysicalDeviceSurfaceFormatsKHRFn = unsafe extern "stdcall" fn(physicalDevice: VkPhysicalDevice,
+                                                                             surface: VkSurfaceKHR,
+                                                                             pSurfaceFormatCount: *mut uint32_t,
+                                                                             pSurfaceFormats: *mut VkSurfaceFormatKHR) -> VkResult;
+
+pub type vkGetPhysicalDeviceSurfacePresentModesKHRFn = unsafe extern "stdcall" fn(physicalDevice: VkPhysicalDevice,
+                                                                                  surface: VkSurfaceKHR,
+                                                                                  pPresentModeCount: *mut uint32_t,
+                                                                                  pPresentModes: *mut VkPresentModeKHR) -> VkResult;
+
+#[derive(Default)]
+pub struct VulkanKhrSurface {
+   library: Option<DynamicLibrary>,
+   vkGetInstanceProcAddr: Option<vkGetInstanceProcAddrFn>,
+   vkDestroySurfaceKHR: Option<vkDestroySurfaceKHRFn>,
+   vkGetPhysicalDeviceSurfaceSupportKHR: Option<vkGetPhysicalDeviceSurfaceSupportKHRFn>,
+   vkGetPhysicalDeviceSurfaceCapabilitiesKHR: Option<vkGetPhysicalDeviceSurfaceCapabilitiesKHRFn>,
+   vkGetPhysicalDeviceSurfaceFormatsKHR: Option<vkGetPhysicalDeviceSurfaceFormatsKHRFn>,
+   vkGetPhysicalDeviceSurfacePresentModesKHR: Option<vkGetPhysicalDeviceSurfacePresentModesKHRFn>
+}
+
+impl VulkanKhrSurface {
+    pub fn new() -> Result<VulkanKhrSurface, String> {
+        let mut vulkan_khr_surface: VulkanKhrSurface = Default::default();
+        let library_path = Path::new(VULKAN_LIBRARY);
+        vulkan_khr_surface.library = match DynamicLibrary::open(Some(library_path)) {
+            Err(error) => return Err(format!("Failed to load {}: {}",VULKAN_LIBRARY,error)),
+            Ok(library) => Some(library),
+        };
+        unsafe {
+            vulkan_khr_surface.vkGetInstanceProcAddr = Some(std::mem::transmute(try!(vulkan_khr_surface.library.as_ref().unwrap().symbol::<u8>("vkGetInstanceProcAddr"))));
+        }
+        Ok(vulkan_khr_surface)
+    }
+
+    unsafe fn load_command(&self, instance: VkInstance, name: &str) -> Result<vkVoidFunctionFn, String> {
+        let fn_ptr = (self.vkGetInstanceProcAddr.as_ref().unwrap())(instance, CString::new(name).unwrap().as_ptr());
+        if fn_ptr != std::ptr::null() {
+            Ok(fn_ptr)
+        } else {
+            Err(format!("Failed to load {}",name))
+        }
+    }
+
+    pub fn load(&mut self, instance: VkInstance) -> Result<(), String> {
+        unsafe {
+            self.vkDestroySurfaceKHR = Some(std::mem::transmute(try!(self.load_command(instance, "vkDestroySurfaceKHR"))));
+            self.vkGetPhysicalDeviceSurfaceSupportKHR = Some(std::mem::transmute(try!(self.load_command(instance, "vkGetPhysicalDeviceSurfaceSupportKHR"))));
+            self.vkGetPhysicalDeviceSurfaceCapabilitiesKHR = Some(std::mem::transmute(try!(self.load_command(instance, "vkGetPhysicalDeviceSurfaceCapabilitiesKHR"))));
+            self.vkGetPhysicalDeviceSurfaceFormatsKHR = Some(std::mem::transmute(try!(self.load_command(instance, "vkGetPhysicalDeviceSurfaceFormatsKHR"))));
+            self.vkGetPhysicalDeviceSurfacePresentModesKHR = Some(std::mem::transmute(try!(self.load_command(instance, "vkGetPhysicalDeviceSurfacePresentModesKHR"))));
+        }
+        Ok(())
+    }
+
+    pub unsafe fn vkDestroySurfaceKHR(&self, 
+                                      instance: VkInstance,
+                                      surface: VkSurfaceKHR,
+                                      pAllocator: *const VkAllocationCallbacks) {
+        (self.vkDestroySurfaceKHR.as_ref().unwrap())(instance, surface, pAllocator)
+    }
+
+    pub unsafe fn vkGetPhysicalDeviceSurfaceSupportKHR(&self, 
+                                                       physicalDevice: VkPhysicalDevice,
+                                                       queueFamilyIndex: uint32_t,
+                                                       surface: VkSurfaceKHR,
+                                                       pSupported: *mut VkBool32) -> VkResult {
+        (self.vkGetPhysicalDeviceSurfaceSupportKHR.as_ref().unwrap())(physicalDevice, queueFamilyIndex, surface, pSupported)
+    }
+    
+    pub unsafe fn vkGetPhysicalDeviceSurfaceCapabilitiesKHR(&self, 
+                                                            physicalDevice: VkPhysicalDevice,
+                                                            surface: VkSurfaceKHR,
+                                                            pSurfaceCapabilities: *mut VkSurfaceCapabilitiesKHR) -> VkResult {
+        (self.vkGetPhysicalDeviceSurfaceCapabilitiesKHR.as_ref().unwrap())(physicalDevice, surface, pSurfaceCapabilities)
+    }
+    
+    pub unsafe fn vkGetPhysicalDeviceSurfaceFormatsKHR(&self, 
+                                                       physicalDevice: VkPhysicalDevice,
+                                                       surface: VkSurfaceKHR,
+                                                       pSurfaceFormatCount: *mut uint32_t,
+                                                       pSurfaceFormats: *mut VkSurfaceFormatKHR) -> VkResult {
+        (self.vkGetPhysicalDeviceSurfaceFormatsKHR.as_ref().unwrap())(physicalDevice, surface, pSurfaceFormatCount, pSurfaceFormats)
+    }
+    
+    pub unsafe fn vkGetPhysicalDeviceSurfacePresentModesKHR(&self, 
+                                                            physicalDevice: VkPhysicalDevice,
+                                                            surface: VkSurfaceKHR,
+                                                            pPresentModeCount: *mut uint32_t,
+                                                            pPresentModes: *mut VkPresentModeKHR) -> VkResult {
+        (self.vkGetPhysicalDeviceSurfacePresentModesKHR.as_ref().unwrap())(physicalDevice, surface, pPresentModeCount, pPresentModes)
+    }
+
+}
+
+VK_DEFINE_NON_DISPATCHABLE_HANDLE!(VkSwapchainKHR);
+
+pub const VK_KHR_SWAPCHAIN_SPEC_VERSION: uint32_t = 68;
+pub const VK_KHR_SWAPCHAIN_EXTENSION_NAME: *const c_char = b"VK_KHR_swapchain\0" as *const u8 as *const c_char;
+
+#[repr(u32)]
+#[derive(Eq)]
+#[derive(PartialEq)]
+#[derive(Debug)]
+pub enum VkKhrSwapchainImageLayout {
+    VK_IMAGE_LAYOUT_PRESENT_SRC_KHR = 1000001002
+}
+
+impl From<VkKhrSwapchainImageLayout> for VkImageLayout {
+    fn from(imageLayout:VkKhrSwapchainImageLayout) -> Self {
+        unsafe {
+            std::mem::transmute(imageLayout)
+        }
+    }
+}
+
+pub type VkSwapchainCreateFlagsKHR = VkFlags;
+
+#[repr(C)]
+pub struct VkSwapchainCreateInfoKHR {
+    pub sType: VkStructureType,
+    pub pNext: *const c_void,
+    pub flags: VkSwapchainCreateFlagsKHR,
+    pub surface: VkSurfaceKHR,
+    pub minImageCount: uint32_t,
+    pub imageFormat: VkFormat,
+    pub imageColorSpace: VkColorSpaceKHR,
+    pub imageExtent: VkExtent2D,
+    pub imageArrayLayers: uint32_t,
+    pub imageUsage: VkImageUsageFlags,
+    pub imageSharingMode: VkSharingMode,
+    pub queueFamilyIndexCount: uint32_t,
+    pub pQueueFamilyIndices: *const uint32_t,
+    pub preTransform: VkSurfaceTransformFlagBitsKHR,
+    pub compositeAlpha: VkCompositeAlphaFlagBitsKHR,
+    pub presentMode: VkPresentModeKHR,
+    pub clipped: VkBool32,
+    pub oldSwapchain: VkSwapchainKHR
+}
+
+#[repr(C)]
+pub struct VkPresentInfoKHR {
+    pub sType: VkStructureType,
+    pub pNext: *const c_void,
+    pub waitSemaphoreCount: uint32_t,
+    pub pWaitSemaphores: *const VkSemaphore,
+    pub swapchainCount: uint32_t,
+    pub pSwapchains: *const VkSwapchainKHR,
+    pub pImageIndices: *const uint32_t,
+    pub pResults: *mut VkResult
+}
+
+pub type vkCreateSwapchainKHRFn = unsafe extern "stdcall" fn(device: VkDevice, 
+                                                             pCreateInfo: *const VkSwapchainCreateInfoKHR,
+                                                             pAllocator: *const VkAllocationCallbacks,
+                                                             pSwapchain: *mut VkSwapchainKHR) -> VkResult;
+
+pub type vkDestroySwapchainKHRFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                              swapchain: VkSwapchainKHR,
+                                                              pAllocator: *const VkAllocationCallbacks);
+
+pub type vkGetSwapchainImagesKHRFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                                swapchain: VkSwapchainKHR,
+                                                                pSwapchainImageCount: *mut uint32_t,
+                                                                pSwapchainImages: *mut VkImage) -> VkResult;
+
+pub type vkAcquireNextImageKHRFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                              swapchain: VkSwapchainKHR,
+                                                              timeout: uint64_t,
+                                                              semaphore: VkSemaphore,
+                                                              fence: VkFence,
+                                                              pImageIndex: *mut uint32_t) -> VkResult;
+
+pub type vkQueuePresentKHRFn = unsafe extern "stdcall" fn(queue: VkQueue,
+                                                          pPresentInfo: *const VkPresentInfoKHR) -> VkResult;
+
+#[derive(Default)]
+pub struct VulkanKhrSwapchain {
+   library: Option<DynamicLibrary>,
+   vkGetInstanceProcAddr: Option<vkGetInstanceProcAddrFn>,
+   vkCreateSwapchainKHR: Option<vkCreateSwapchainKHRFn>,
+   vkDestroySwapchainKHR: Option<vkDestroySwapchainKHRFn>,
+   vkGetSwapchainImagesKHR: Option<vkGetSwapchainImagesKHRFn>,
+   vkAcquireNextImageKHR: Option<vkAcquireNextImageKHRFn>,
+   vkQueuePresentKHR: Option<vkQueuePresentKHRFn>
+}
+
+impl VulkanKhrSwapchain {
+    pub fn new() -> Result<VulkanKhrSwapchain, String> {
+        let mut vulkan_khr_swapchain: VulkanKhrSwapchain = Default::default();
+        let library_path = Path::new(VULKAN_LIBRARY);
+        vulkan_khr_swapchain.library = match DynamicLibrary::open(Some(library_path)) {
+            Err(error) => return Err(format!("Failed to load {}: {}",VULKAN_LIBRARY,error)),
+            Ok(library) => Some(library),
+        };
+        unsafe {
+            vulkan_khr_swapchain.vkGetInstanceProcAddr = Some(std::mem::transmute(try!(vulkan_khr_swapchain.library.as_ref().unwrap().symbol::<u8>("vkGetInstanceProcAddr"))));
+        }
+        Ok(vulkan_khr_swapchain)
+    }
+
+    unsafe fn load_command(&self, instance: VkInstance, name: &str) -> Result<vkVoidFunctionFn, String> {
+        let fn_ptr = (self.vkGetInstanceProcAddr.as_ref().unwrap())(instance, CString::new(name).unwrap().as_ptr());
+        if fn_ptr != std::ptr::null() {
+            Ok(fn_ptr)
+        } else {
+            Err(format!("Failed to load {}",name))
+        }
+    }
+
+    pub fn load(&mut self, instance: VkInstance) -> Result<(), String> {
+        unsafe {
+            self.vkCreateSwapchainKHR = Some(std::mem::transmute(try!(self.load_command(instance, "vkCreateSwapchainKHR"))));
+            self.vkDestroySwapchainKHR = Some(std::mem::transmute(try!(self.load_command(instance, "vkDestroySwapchainKHR"))));
+            self.vkGetSwapchainImagesKHR = Some(std::mem::transmute(try!(self.load_command(instance, "vkGetSwapchainImagesKHR"))));
+            self.vkAcquireNextImageKHR = Some(std::mem::transmute(try!(self.load_command(instance, "vkAcquireNextImageKHR"))));
+            self.vkQueuePresentKHR = Some(std::mem::transmute(try!(self.load_command(instance, "vkQueuePresentKHR"))));
+        }
+        Ok(())
+    }
+
+    pub unsafe fn vkCreateSwapchainKHR(&self,
+                                         device: VkDevice, 
+                                         pCreateInfo: *const VkSwapchainCreateInfoKHR,
+                                         pAllocator: *const VkAllocationCallbacks,
+                                         pSwapchain: *mut VkSwapchainKHR) -> VkResult {
+        (self.vkCreateSwapchainKHR.as_ref().unwrap())(device, pCreateInfo, pAllocator, pSwapchain)
+    }
+
+    pub unsafe fn vkDestroySwapchainKHR(&self,
+                                         device: VkDevice,
+                                         swapchain: VkSwapchainKHR,
+                                         pAllocator: *const VkAllocationCallbacks) {
+        (self.vkDestroySwapchainKHR.as_ref().unwrap())(device,swapchain,pAllocator)
+    }
+    pub unsafe fn vkGetSwapchainImagesKHR(&self,
+                                         device: VkDevice,
+                                         swapchain: VkSwapchainKHR,
+                                         pSwapchainImageCount: *mut uint32_t,
+                                         pSwapchainImages: *mut VkImage) -> VkResult {
+        (self.vkGetSwapchainImagesKHR.as_ref().unwrap())(device,swapchain,pSwapchainImageCount,pSwapchainImages)
+    }
+
+    pub unsafe fn vkAcquireNextImageKHR(&self,
+                                         device: VkDevice,
+                                         swapchain: VkSwapchainKHR,
+                                         timeout: uint64_t,
+                                         semaphore: VkSemaphore,
+                                         fence: VkFence,
+                                         pImageIndex: *mut uint32_t) -> VkResult {
+        (self.vkAcquireNextImageKHR.as_ref().unwrap())(device,swapchain,timeout,semaphore,fence,pImageIndex)
+    }
+
+    pub unsafe fn vkQueuePresentKHR(&self,
+                                    queue: VkQueue,
+                                    pPresentInfo: *const VkPresentInfoKHR) -> VkResult {
+        (self.vkQueuePresentKHR.as_ref().unwrap())(queue,pPresentInfo)
+    }
+}
+
+VK_DEFINE_NON_DISPATCHABLE_HANDLE!(VkDisplayKHR);
+VK_DEFINE_NON_DISPATCHABLE_HANDLE!(VkDisplayModeKHR);
+
+pub const VK_KHR_DISPLAY_SPEC_VERSION: uint32_t = 21;
+pub const VK_KHR_DISPLAY_EXTENSION_NAME: *const c_char = b"VK_KHR_display\0" as *const u8 as *const c_char;
+
+bitflags! {
+    pub flags VkDisplayPlaneAlphaFlagBitsKHR: VkFlags {
+        const VK_DISPLAY_PLANE_ALPHA_OPAQUE_BIT_KHR = 0x00000001,
+        const VK_DISPLAY_PLANE_ALPHA_GLOBAL_BIT_KHR = 0x00000002,
+        const VK_DISPLAY_PLANE_ALPHA_PER_PIXEL_BIT_KHR = 0x00000004,
+        const VK_DISPLAY_PLANE_ALPHA_PER_PIXEL_PREMULTIPLIED_BIT_KHR = 0x00000008
+    }
+}
+
+pub type VkDisplayPlaneAlphaFlagsKHR = VkFlags;
+
+pub type VkDisplayModeCreateFlagsKHR = VkFlags;
+pub type VkDisplaySurfaceCreateFlagsKHR = VkFlags;
+
+#[repr(C)]
+pub struct VkDisplayPropertiesKHR {
+    pub display: VkDisplayKHR,
+    pub displayName: *const c_char,
+    pub physicalDimensions: VkExtent2D,
+    pub physicalResolution: VkExtent2D,
+    pub supportedTransforms: VkSurfaceTransformFlagsKHR,
+    pub planeReorderPossible: VkBool32,
+    pub persistentContent: VkBool32
+}
+
+#[repr(C)]
+pub struct VkDisplayModeParametersKHR {
+    pub visibleRegion: VkExtent2D,
+    pub refreshRate: uint32_t
+}
+
+#[repr(C)]
+pub struct VkDisplayModePropertiesKHR {
+    pub displayMode: VkDisplayModeKHR,
+    pub parameters: VkDisplayModeParametersKHR
+}
+
+#[repr(C)]
+pub struct VkDisplayModeCreateInfoKHR {
+    pub sType: VkStructureType,
+    pub pNext: *const c_void,
+    pub flags: VkDisplayModeCreateFlagsKHR,
+    pub parameters: VkDisplayModeParametersKHR
+}
+
+#[repr(C)]
+pub struct VkDisplayPlaneCapabilitiesKHR {
+    pub supportedAlpha: VkDisplayPlaneAlphaFlagsKHR,
+    pub minSrcPosition: VkOffset2D,
+    pub maxSrcPosition: VkOffset2D,
+    pub minSrcExtent: VkExtent2D,
+    pub maxSrcExtent: VkExtent2D,
+    pub minDstPosition: VkOffset2D,
+    pub maxDstPosition: VkOffset2D,
+    pub minDstExtent: VkExtent2D,
+    pub maxDstExtent: VkExtent2D
+}
+
+#[repr(C)]
+pub struct VkDisplayPlanePropertiesKHR {
+    pub currentDisplay: VkDisplayKHR,
+    pub currentStackIndex: uint32_t
+}
+
+#[repr(C)]
+pub struct VkDisplaySurfaceCreateInfoKHR {
+    pub sType: VkStructureType,
+    pub pNext: *const c_void,
+    pub flags: VkDisplaySurfaceCreateFlagsKHR,
+    pub displayMode: VkDisplayModeKHR,
+    pub planeIndex: uint32_t,
+    pub planeStackIndex: uint32_t,
+    pub transform: VkSurfaceTransformFlagBitsKHR,
+    pub globalAlpha: c_float,
+    pub alphaMode: VkDisplayPlaneAlphaFlagBitsKHR,
+    pub imageExtent: VkExtent2D
+}
+
+pub type vkGetPhysicalDeviceDisplayPropertiesKHRFn = unsafe extern "stdcall" fn(physicalDevice: VkPhysicalDevice, 
+                                                                                pPropertyCount: *mut uint32_t,
+                                                                                pProperties: *mut VkDisplayPropertiesKHR) -> VkResult;
+
+pub type vkGetPhysicalDeviceDisplayPlanePropertiesKHRFn = unsafe extern "stdcall" fn(physicalDevice: VkPhysicalDevice,
+                                                                                     pPropertyCount: *mut uint32_t,
+                                                                                     pProperties: *mut VkDisplayPlanePropertiesKHR) -> VkResult;
+
+pub type vkGetDisplayPlaneSupportedDisplaysKHRFn = unsafe extern "stdcall" fn(physicalDevice: VkPhysicalDevice,
+                                                                              planeIndex: uint32_t,
+                                                                              pDisplayCount: *mut uint32_t,
+                                                                              pDisplays: *mut VkDisplayKHR) -> VkResult;
+
+pub type vkGetDisplayModePropertiesKHRFn = unsafe extern "stdcall" fn(physicalDevice: VkPhysicalDevice,
+                                                                      display: VkDisplayKHR, 
+                                                                      pPropertyCount: *mut uint32_t,
+                                                                      pProperties: *mut VkDisplayModePropertiesKHR) -> VkResult;
+
+pub type vkCreateDisplayModeKHRFn = unsafe extern "stdcall" fn(physicalDevice: VkPhysicalDevice,
+                                                               display: VkDisplayKHR,
+                                                               pCreateInfo: *const VkDisplayModeCreateInfoKHR,
+                                                               pAllocator: *const VkAllocationCallbacks,
+                                                               pMode: *mut VkDisplayModeKHR) -> VkResult;
+
+pub type vkGetDisplayPlaneCapabilitiesKHRFn = unsafe extern "stdcall" fn(physicalDevice: VkPhysicalDevice,
+                                                                         mode: VkDisplayModeKHR,
+                                                                         planeIndex: uint32_t,
+                                                                         pCapabilities: *mut VkDisplayPlaneCapabilitiesKHR) -> VkResult;
+
+pub type vkCreateDisplayPlaneSurfaceKHRFn = unsafe extern "stdcall" fn(instance: VkInstance,
+                                                                       pCreateInfo: *const VkDisplaySurfaceCreateInfoKHR,
+                                                                       pAllocator: *const VkAllocationCallbacks,
+                                                                       pSurface: *mut VkSurfaceKHR) -> VkResult;
+
+#[derive(Default)]
+pub struct VulkanKhrDisplay {
+    library: Option<DynamicLibrary>,
+    vkGetInstanceProcAddr: Option<vkGetInstanceProcAddrFn>,
+    vkGetPhysicalDeviceDisplayPropertiesKHR: Option<vkGetPhysicalDeviceDisplayPropertiesKHRFn>,
+    vkGetPhysicalDeviceDisplayPlanePropertiesKHR: Option<vkGetPhysicalDeviceDisplayPlanePropertiesKHRFn>,
+    vkGetDisplayPlaneSupportedDisplaysKHR: Option<vkGetDisplayPlaneSupportedDisplaysKHRFn>,
+    vkGetDisplayModePropertiesKHR: Option<vkGetDisplayModePropertiesKHRFn>,
+    vkCreateDisplayModeKHR: Option<vkCreateDisplayModeKHRFn>,
+    vkGetDisplayPlaneCapabilitiesKHR: Option<vkGetDisplayPlaneCapabilitiesKHRFn>,
+    vkCreateDisplayPlaneSurfaceKHR: Option<vkCreateDisplayPlaneSurfaceKHRFn>
+}
+
+impl VulkanKhrDisplay {
+    pub fn new() -> Result<VulkanKhrDisplay, String> {
+        let mut vulkan_khr_display: VulkanKhrDisplay = Default::default();
+        let library_path = Path::new(VULKAN_LIBRARY);
+        vulkan_khr_display.library = match DynamicLibrary::open(Some(library_path)) {
+            Err(error) => return Err(format!("Failed to load {}: {}",VULKAN_LIBRARY,error)),
+            Ok(library) => Some(library),
+        };
+        unsafe {
+            vulkan_khr_display.vkGetInstanceProcAddr = Some(std::mem::transmute(try!(vulkan_khr_display.library.as_ref().unwrap().symbol::<u8>("vkGetInstanceProcAddr"))));
+        }
+        Ok(vulkan_khr_display)
+    }
+
+    unsafe fn load_command(&self, instance: VkInstance, name: &str) -> Result<vkVoidFunctionFn, String> {
+        let fn_ptr = (self.vkGetInstanceProcAddr.as_ref().unwrap())(instance, CString::new(name).unwrap().as_ptr());
+        if fn_ptr != std::ptr::null() {
+            Ok(fn_ptr)
+        } else {
+            Err(format!("Failed to load {}",name))
+        }
+    }
+
+    pub fn load(&mut self, instance: VkInstance) -> Result<(), String> {
+        unsafe {
+            self.vkGetPhysicalDeviceDisplayPropertiesKHR = Some(std::mem::transmute(try!(self.load_command(instance, "vkGetPhysicalDeviceDisplayPropertiesKHR"))));
+            self.vkGetPhysicalDeviceDisplayPlanePropertiesKHR = Some(std::mem::transmute(try!(self.load_command(instance, "vkGetPhysicalDeviceDisplayPlanePropertiesKHR"))));
+            self.vkGetDisplayPlaneSupportedDisplaysKHR = Some(std::mem::transmute(try!(self.load_command(instance, "vkGetDisplayPlaneSupportedDisplaysKHR"))));
+            self.vkGetDisplayModePropertiesKHR = Some(std::mem::transmute(try!(self.load_command(instance, "vkGetDisplayModePropertiesKHR"))));
+            self.vkCreateDisplayModeKHR = Some(std::mem::transmute(try!(self.load_command(instance, "vkCreateDisplayModeKHR"))));
+            self.vkGetDisplayPlaneCapabilitiesKHR = Some(std::mem::transmute(try!(self.load_command(instance, "vkGetDisplayPlaneCapabilitiesKHR"))));
+            self.vkCreateDisplayPlaneSurfaceKHR = Some(std::mem::transmute(try!(self.load_command(instance, "vkCreateDisplayPlaneSurfaceKHR"))));
+        }
+        Ok(())
+    }
+
+    pub unsafe fn vkGetPhysicalDeviceDisplayPropertiesKHR(&self, 
+                                                          physicalDevice: VkPhysicalDevice, 
+                                                          pPropertyCount: *mut uint32_t,
+                                                          pProperties: *mut VkDisplayPropertiesKHR) -> VkResult {
+        (self.vkGetPhysicalDeviceDisplayPropertiesKHR.as_ref().unwrap())(physicalDevice, pPropertyCount, pProperties)
+    }
+
+    pub unsafe fn vkGetPhysicalDeviceDisplayPlanePropertiesKHR(&self, 
+                                                               physicalDevice: VkPhysicalDevice,
+                                                               pPropertyCount: *mut uint32_t,
+                                                               pProperties: *mut VkDisplayPlanePropertiesKHR) -> VkResult {
+        (self.vkGetPhysicalDeviceDisplayPlanePropertiesKHR.as_ref().unwrap())(physicalDevice, pPropertyCount, pProperties)
+    }
+    
+    pub unsafe fn vkGetDisplayPlaneSupportedDisplaysKHR(&self, 
+                                                        physicalDevice: VkPhysicalDevice,
+                                                        planeIndex: uint32_t,
+                                                        pDisplayCount: *mut uint32_t,
+                                                        pDisplays: *mut VkDisplayKHR) -> VkResult {
+        (self.vkGetDisplayPlaneSupportedDisplaysKHR.as_ref().unwrap())(physicalDevice, planeIndex, pDisplayCount, pDisplays)
+    }
+    
+    pub unsafe fn vkGetDisplayModePropertiesKHR(&self, 
+                                                physicalDevice: VkPhysicalDevice,
+                                                display: VkDisplayKHR, 
+                                                pPropertyCount: *mut uint32_t,
+                                                pProperties: *mut VkDisplayModePropertiesKHR) -> VkResult {
+        (self.vkGetDisplayModePropertiesKHR.as_ref().unwrap())(physicalDevice, display, pPropertyCount, pProperties)
+    }
+    
+    pub unsafe fn vkCreateDisplayModeKHR(&self, 
+                                         physicalDevice: VkPhysicalDevice,
+                                         display: VkDisplayKHR,
+                                         pCreateInfo: *const VkDisplayModeCreateInfoKHR,
+                                         pAllocator: *const VkAllocationCallbacks,
+                                         pMode: *mut VkDisplayModeKHR) -> VkResult {
+        (self.vkCreateDisplayModeKHR.as_ref().unwrap())(physicalDevice, display, pCreateInfo, pAllocator, pMode)
+    }
+    
+    pub unsafe fn vkGetDisplayPlaneCapabilitiesKHR(&self, 
+                                                   physicalDevice: VkPhysicalDevice,
+                                                   mode: VkDisplayModeKHR,
+                                                   planeIndex: uint32_t,
+                                                   pCapabilities: *mut VkDisplayPlaneCapabilitiesKHR) -> VkResult {
+        (self.vkGetDisplayPlaneCapabilitiesKHR.as_ref().unwrap())(physicalDevice, mode, planeIndex, pCapabilities)
+    }
+    
+    pub unsafe fn vkCreateDisplayPlaneSurfaceKHR(&self, 
+                                                 instance: VkInstance,
+                                                 pCreateInfo: *const VkDisplaySurfaceCreateInfoKHR,
+                                                 pAllocator: *const VkAllocationCallbacks,
+                                                 pSurface: *mut VkSurfaceKHR) -> VkResult {
+        (self.vkCreateDisplayPlaneSurfaceKHR.as_ref().unwrap())(instance, pCreateInfo, pAllocator, pSurface)
+    }
+}
+
+pub const VK_KHR_DISPLAY_SWAPCHAIN_SPEC_VERSION: uint32_t = 9;
+pub const VK_KHR_DISPLAY_SWAPCHAIN_EXTENSION_NAME: *const c_char = b"VK_KHR_display_swapchain\0" as *const u8 as *const c_char;
+
+#[repr(C)]
+pub struct VkDisplayPresentInfoKHR {
+    pub sType: VkStructureType,
+    pub pNext: *const c_void,
+    pub srcRect: VkRect2D,
+    pub dstRect: VkRect2D,
+    pub persistent: VkBool32
+}
+
+pub type vkCreateSharedSwapchainsKHRFn = unsafe extern "stdcall" fn(device: VkDevice,
+                                                                    swapchainCount: uint32_t,
+                                                                    pCreateInfos: *const VkSwapchainCreateInfoKHR,
+                                                                    pAllocator: *const VkAllocationCallbacks,
+                                                                    pSwapchains: *mut VkSwapchainKHR) -> VkResult;
+
+#[derive(Default)]
+pub struct VulkanKhrDisplaySwapchain {
+    library: Option<DynamicLibrary>,
+    vkGetInstanceProcAddr: Option<vkGetInstanceProcAddrFn>,
+    vkCreateSharedSwapchainsKHR: Option<vkCreateSharedSwapchainsKHRFn>,
+}
+
+impl VulkanKhrDisplaySwapchain {
+    pub fn new() -> Result<VulkanKhrDisplaySwapchain, String> {
+        let mut vulkan_khr_display_swapchain: VulkanKhrDisplaySwapchain = Default::default();
+        let library_path = Path::new(VULKAN_LIBRARY);
+        vulkan_khr_display_swapchain.library = match DynamicLibrary::open(Some(library_path)) {
+            Err(error) => return Err(format!("Failed to load {}: {}",VULKAN_LIBRARY,error)),
+            Ok(library) => Some(library),
+        };
+        unsafe {
+            vulkan_khr_display_swapchain.vkGetInstanceProcAddr = Some(std::mem::transmute(try!(vulkan_khr_display_swapchain.library.as_ref().unwrap().symbol::<u8>("vkGetInstanceProcAddr"))));
+        }
+        Ok(vulkan_khr_display_swapchain)
+    }
+
+    unsafe fn load_command(&self, instance: VkInstance, name: &str) -> Result<vkVoidFunctionFn, String> {
+        let fn_ptr = (self.vkGetInstanceProcAddr.as_ref().unwrap())(instance, CString::new(name).unwrap().as_ptr());
+        if fn_ptr != std::ptr::null() {
+            Ok(fn_ptr)
+        } else {
+            Err(format!("Failed to load {}",name))
+        }
+    }
+
+    pub fn load(&mut self, instance: VkInstance) -> Result<(), String> {
+        unsafe {
+            self.vkCreateSharedSwapchainsKHR = Some(std::mem::transmute(try!(self.load_command(instance, "vkCreateSharedSwapchainsKHR"))));
+        }
+        Ok(())
+    }
+
+    pub unsafe fn vkCreateSharedSwapchainsKHR(&self, 
+                                              device: VkDevice,
+                                              swapchainCount: uint32_t,
+                                              pCreateInfos: *const VkSwapchainCreateInfoKHR,
+                                              pAllocator: *const VkAllocationCallbacks,
+                                              pSwapchains: *mut VkSwapchainKHR) -> VkResult {
+        (self.vkCreateSharedSwapchainsKHR.as_ref().unwrap())(device, swapchainCount, pCreateInfos, pAllocator, pSwapchains)
+    }
+}
+
+VK_DEFINE_NON_DISPATCHABLE_HANDLE!(VkDebugReportCallbackEXT);
+
+pub const VK_EXT_DEBUG_REPORT_SPEC_VERSION: uint32_t = 2;
+pub const VK_EXT_DEBUG_REPORT_EXTENSION_NAME: *const c_char = b"VK_EXT_debug_report\0" as *const u8 as *const c_char;
+pub const VK_STRUCTURE_TYPE_DEBUG_REPORT_CREATE_INFO_EXT: VkExtDebugReportStructureType = VkExtDebugReportStructureType::VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
+
+// WARNING: It's not documented anywhere what VkResult values vkCreateDebugReportCallbackEXT may return
+#[repr(i32)]
+#[derive(Eq)]
+#[derive(PartialEq)]
+#[derive(Debug)]
+pub enum VkExtDebugReportResult {
+    VK_SUCCESS = 0,
+    VK_ERROR_OUT_OF_HOST_MEMORY = -1,
+    VK_ERROR_OUT_OF_DEVICE_MEMORY = -2,
+    VK_ERROR_VALIDATION_FAILED_EXT = -1000011001
+}
+
+#[repr(i32)]
+#[derive(Eq)]
+#[derive(PartialEq)]
+#[derive(Debug)]
+pub enum VkExtDebugReportStructureType {
+    VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT = 1000011000
+}
+
+#[repr(i32)]
+#[derive(Eq)]
+#[derive(PartialEq)]
+#[derive(Debug)]
+pub enum VkDebugReportObjectTypeEXT {
+    VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT = 0,
+    VK_DEBUG_REPORT_OBJECT_TYPE_INSTANCE_EXT = 1,
+    VK_DEBUG_REPORT_OBJECT_TYPE_PHYSICAL_DEVICE_EXT = 2,
+    VK_DEBUG_REPORT_OBJECT_TYPE_DEVICE_EXT = 3,
+    VK_DEBUG_REPORT_OBJECT_TYPE_QUEUE_EXT = 4,
+    VK_DEBUG_REPORT_OBJECT_TYPE_SEMAPHORE_EXT = 5,
+    VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_BUFFER_EXT = 6,
+    VK_DEBUG_REPORT_OBJECT_TYPE_FENCE_EXT = 7,
+    VK_DEBUG_REPORT_OBJECT_TYPE_DEVICE_MEMORY_EXT = 8,
+    VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_EXT = 9,
+    VK_DEBUG_REPORT_OBJECT_TYPE_IMAGE_EXT = 10,
+    VK_DEBUG_REPORT_OBJECT_TYPE_EVENT_EXT = 11,
+    VK_DEBUG_REPORT_OBJECT_TYPE_QUERY_POOL_EXT = 12,
+    VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_VIEW_EXT = 13,
+    VK_DEBUG_REPORT_OBJECT_TYPE_IMAGE_VIEW_EXT = 14,
+    VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT = 15,
+    VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_CACHE_EXT = 16,
+    VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_LAYOUT_EXT = 17,
+    VK_DEBUG_REPORT_OBJECT_TYPE_RENDER_PASS_EXT = 18,
+    VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_EXT = 19,
+    VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT_EXT = 20,
+    VK_DEBUG_REPORT_OBJECT_TYPE_SAMPLER_EXT = 21,
+    VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_POOL_EXT = 22,
+    VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_SET_EXT = 23,
+    VK_DEBUG_REPORT_OBJECT_TYPE_FRAMEBUFFER_EXT = 24,
+    VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_POOL_EXT = 25,
+    VK_DEBUG_REPORT_OBJECT_TYPE_SURFACE_KHR_EXT = 26,
+    VK_DEBUG_REPORT_OBJECT_TYPE_SWAPCHAIN_KHR_EXT = 27,
+    VK_DEBUG_REPORT_OBJECT_TYPE_DEBUG_REPORT_EXT = 28
+}
+
+#[repr(i32)]
+#[derive(Eq)]
+#[derive(PartialEq)]
+#[derive(Debug)]
+pub enum VkDebugReportErrorEXT {
+    VK_DEBUG_REPORT_ERROR_NONE_EXT = 0,
+    VK_DEBUG_REPORT_ERROR_CALLBACK_REF_EXT = 1
+}
+
+bitflags! { 
+    pub flags VkDebugReportFlagBitsEXT: VkFlags {
+        const VK_DEBUG_REPORT_INFORMATION_BIT_EXT = 0x00000001,
+        const VK_DEBUG_REPORT_WARNING_BIT_EXT = 0x00000002,
+        const VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT = 0x00000004,
+        const VK_DEBUG_REPORT_ERROR_BIT_EXT = 0x00000008,
+        const VK_DEBUG_REPORT_DEBUG_BIT_EXT = 0x00000010
+    }
+}
+pub type VkDebugReportFlagsEXT = VkFlags;
+
+pub type vkDebugReportCallbackEXTFn = unsafe extern "stdcall" fn(flags: VkDebugReportFlagsEXT,
+                                                                 objectType: VkDebugReportObjectTypeEXT,
+                                                                 object: uint64_t,
+                                                                 location: size_t,
+                                                                 messageCode: int32_t,
+                                                                 pLayerPrefix: *const c_char,
+                                                                 pMessage: *const c_char,
+                                                                 pUserData: *mut c_void) -> VkBool32;
+#[repr(C)]
+pub struct VkDebugReportCallbackCreateInfoEXT {
+    pub sType: VkExtDebugReportStructureType,
+    pub pNext: *const c_void,
+    pub flags: VkDebugReportFlagsEXT,
+    pub pfnCallback: vkDebugReportCallbackEXTFn,
+    pub pUserData: *mut c_void
+}
+
+pub type vkCreateDebugReportCallbackEXTFn = unsafe extern "stdcall" fn(instance: VkInstance,
+                                                                       pCreateInfo: *const VkDebugReportCallbackCreateInfoEXT,
+                                                                       pAllocator: *const VkAllocationCallbacks, 
+                                                                       pCallback: *mut VkDebugReportCallbackEXT) -> VkExtDebugReportResult;
+
+pub type vkDestroyDebugReportCallbackEXTFn = unsafe extern "stdcall" fn(instance: VkInstance,
+                                                                        callback: VkDebugReportCallbackEXT,
+                                                                        pAllocator: *const VkAllocationCallbacks);
+
+pub type vkDebugReportMessageEXTFn = unsafe extern "stdcall" fn(instance: VkInstance,
+                                                                flags: VkDebugReportFlagsEXT,
+                                                                objectType: VkDebugReportObjectTypeEXT,
+                                                                object: uint64_t,
+                                                                location: size_t,
+                                                                messageCode: int32_t,
+                                                                pLayerPrefix: *const c_char,
+                                                                pMessage: *const c_char);
+
+#[derive(Default)]
+pub struct VulkanExtDebugReport {
+   library: Option<DynamicLibrary>,
+   vkGetInstanceProcAddr: Option<vkGetInstanceProcAddrFn>,
+   vkCreateDebugReportCallbackEXT: Option<vkCreateDebugReportCallbackEXTFn>,
+   vkDestroyDebugReportCallbackEXT: Option<vkDestroyDebugReportCallbackEXTFn>,
+   vkDebugReportMessageEXT: Option<vkDebugReportMessageEXTFn>
+}
+
+impl VulkanExtDebugReport {
+    pub fn new() -> Result<VulkanExtDebugReport, String> {
+        let mut vulkan_ext_debug_report: VulkanExtDebugReport = Default::default();
+        let library_path = Path::new(VULKAN_LIBRARY);
+        vulkan_ext_debug_report.library = match DynamicLibrary::open(Some(library_path)) {
+            Err(error) => return Err(format!("Failed to load {}: {}",VULKAN_LIBRARY,error)),
+            Ok(library) => Some(library),
+        };
+        unsafe {
+            vulkan_ext_debug_report.vkGetInstanceProcAddr = Some(std::mem::transmute(try!(vulkan_ext_debug_report.library.as_ref().unwrap().symbol::<u8>("vkGetInstanceProcAddr"))));
+        }
+        Ok(vulkan_ext_debug_report)
+    }
+
+    unsafe fn load_command(&self, instance: VkInstance, name: &str) -> Result<vkVoidFunctionFn, String> {
+        let fn_ptr = (self.vkGetInstanceProcAddr.as_ref().unwrap())(instance, CString::new(name).unwrap().as_ptr());
+        if fn_ptr != std::ptr::null() {
+            Ok(fn_ptr)
+        } else {
+            Err(format!("Failed to load {}",name))
+        }
+    }
+
+    pub fn load(&mut self, instance: VkInstance) -> Result<(), String> {
+        unsafe {
+            self.vkCreateDebugReportCallbackEXT = Some(std::mem::transmute(try!(self.load_command(instance, "vkCreateDebugReportCallbackEXT"))));
+            self.vkDestroyDebugReportCallbackEXT = Some(std::mem::transmute(try!(self.load_command(instance, "vkDestroyDebugReportCallbackEXT"))));
+            self.vkDebugReportMessageEXT = Some(std::mem::transmute(try!(self.load_command(instance, "vkDebugReportMessageEXT"))));
+        }
+        Ok(())
+    }
+
+    pub unsafe fn vkCreateDebugReportCallbackEXT(&self,
+                                                 instance: VkInstance,
+                                                 pCreateInfo: *const VkDebugReportCallbackCreateInfoEXT,
+                                                 pAllocator: *const VkAllocationCallbacks, 
+                                                 pCallback: *mut VkDebugReportCallbackEXT) -> VkExtDebugReportResult {
+        (self.vkCreateDebugReportCallbackEXT.as_ref().unwrap())(instance, pCreateInfo, pAllocator, pCallback)
+    }
+
+    pub unsafe fn vkDestroyDebugReportCallbackEXT(&self,
+                                                  instance: VkInstance,
+                                                  callback: VkDebugReportCallbackEXT,
+                                                  pAllocator: *const VkAllocationCallbacks) {
+        (self.vkDestroyDebugReportCallbackEXT.as_ref().unwrap())(instance, callback, pAllocator)
+    }
+
+    pub unsafe fn vkDebugReportMessageEXT(&self,
+                                          instance: VkInstance,
+                                          flags: VkDebugReportFlagsEXT,
+                                          objectType: VkDebugReportObjectTypeEXT,
+                                          object: uint64_t,
+                                          location: size_t,
+                                          messageCode: int32_t,
+                                          pLayerPrefix: *const c_char,
+                                          pMessage: *const c_char) {
+        (self.vkDebugReportMessageEXT.as_ref().unwrap())(instance, flags, objectType, object, location, messageCode, pLayerPrefix, pMessage)
     }
 }
