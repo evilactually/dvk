@@ -689,7 +689,7 @@ pub enum VkDynamicState {
 pub enum VkFilter {
     VK_FILTER_NEAREST = 0,
     VK_FILTER_LINEAR = 1,
-    VK_FILTER_CUBIC_IMG = 1000015000
+    //VK_FILTER_CUBIC_IMG = 1000015000
 }
 
 #[repr(u32)]
