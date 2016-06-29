@@ -23,6 +23,9 @@ let mut instance = VkInstance::null();
 // that can be loaded without an instance object
 core.vkCreateInstance(&instance_create_info, null(), &mut context.instance);
 
+// Calling unloaded command will cause a panic
+core.vkEnumeratePhysicalDevices(...); // ERROR!
+
 // After you've acquired an instance object the remaining commands can be loaded
 core.load(instance).unwrap(); 
 
