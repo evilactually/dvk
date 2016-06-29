@@ -13,7 +13,7 @@ extern crate dvk;
 use dvk::*;
 
 ...
-// This will load the vulkan shared library and the 3 global commands
+// This will load vulkan shared library and 3 global commands
 let mut core = VulkanCore::new().unwrap(); 
 
 // The null method is used to get type-safe "NULL" handles
