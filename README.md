@@ -8,6 +8,7 @@ This crate provides the definitions and a dynamic loader for core Vulkan API. To
 
 Here's a short example to give you the feel for the approach taken by this library:
 
+```
 #[macro_use]
 extern crate dvk;
 
@@ -31,4 +32,4 @@ core.load(instance).unwrap();
 core.vkEnumeratePhysicalDevices(...); 
 core.vkCreateDevice(...); 
 core.vkQueueSubmit(...);
-
+```
