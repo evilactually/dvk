@@ -4,7 +4,7 @@ Dvk is a family of packages providing definitions and dynamic loaders for core V
 # About This Crate
 This crate provides the definitions and a dynamic loader for core Vulkan API. To get access to commands you have to create a new instance of VulkanCore struct, by calling VulkanCore::new(). Initially only the 3 global commands will be loaded: vkEnumerateInstanceExtensionProperties, vkEnumerateInstanceLayerProperties, and vkCreateInstance. To load the remaining 134 commands you have to first create an instance using vkCreateInstance command and pass it to load method of VulkanCore. Current thread will panic if you attempt to call any of instance-specific functions before they were loaded.
 
-Here's a short example to give you a feel for the approach taken by this library:
+Here's a short example to give you a feel this library:
 
 ```
 #[macro_use]
