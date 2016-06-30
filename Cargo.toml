@@ -1,7 +1,7 @@
 [package]
 name = "dvk"
 version = "0.1.0"
-description = "Definitions and a dynamic loader for core Vulkan API"
+description = "Definitions and a dynamic loaders for Vulkan API and extensions"
 authors = ["Vlad Shcherbakov <vlad.shcherbakov@gmail.com>"]
 repository = "https://gitlab.com/vlsh/dvk.git"
 readme = "README.md"
@@ -12,3 +12,6 @@ license = "MIT"
 shared_library = "0.1.4"
 libc = "0.2.11"
 bitflags = "0.7.0"
+
+[target.'cfg(windows)'.dependencies]
+winapi = "0.2.7"
