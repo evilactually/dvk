@@ -4552,7 +4552,6 @@ pub mod khr_display_swapchain {
     use ::VULKAN_LIBRARY;
     #[macro_use]
     use ::core::*;
-    //use ::khr_surface::*;
     use ::khr_swapchain::*;
 
     pub const VK_KHR_DISPLAY_SWAPCHAIN_SPEC_VERSION: uint32_t = 9;
