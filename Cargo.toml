@@ -1,6 +1,6 @@
 [package]
 name = "dvk"
-version = "0.1.1"
+version = "0.1.2"
 description = "Definitions and a dynamic loaders for Vulkan API and extensions"
 authors = ["Vlad Shcherbakov <vlad.shcherbakov@gmail.com>"]
 repository = "https://gitlab.com/vlsh/dvk.git"
