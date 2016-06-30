@@ -12,3 +12,10 @@ license = "MIT"
 shared_library = "0.1.4"
 libc = "0.2.11"
 bitflags = "0.7.0"
+
+[target.'cfg(windows)'.dev-dependencies]
+libc = "0.2.11"
+winapi = "0.2.7"
+gdi32-sys = "0.2.0"
+kernel32-sys = "0.2.2"
+user32-sys = "0.2.0"
