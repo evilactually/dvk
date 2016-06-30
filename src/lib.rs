@@ -6,11 +6,14 @@
 extern crate bitflags;
 extern crate libc;
 extern crate shared_library;
+#[cfg(windows)]
+extern crate winapi;
 
 use self::libc::{c_void, c_char, uint32_t, size_t, uint64_t, c_float, int32_t, uint8_t};
 use self::shared_library::dynamic_library::DynamicLibrary;
 use std::path::{Path};
 use std::ffi::CString;
+use std::mem::transmute;
 
 #[macro_export]
 macro_rules! VK_MAKE_VERSION {
@@ -2281,13 +2284,13 @@ impl From<VkClearColorValueUnion> for VkClearColorValue {
         unsafe {
             match union {
                 VkClearColorValueUnion::Float32(color4f) => {
-                    VkClearColorValue{union_data:std::mem::transmute(color4f)}
+                    VkClearColorValue{union_data:transmute(color4f)}
                 },
                 VkClearColorValueUnion::Int32(color4i) => {
-                    VkClearColorValue{union_data:std::mem::transmute(color4i)}
+                    VkClearColorValue{union_data:transmute(color4i)}
                 },
                 VkClearColorValueUnion::UInt32(color4u) => {
-                    VkClearColorValue{union_data:std::mem::transmute(color4u)}
+                    VkClearColorValue{union_data:transmute(color4u)}
                 },
             }
         }
@@ -2320,7 +2323,7 @@ impl From<VkClearValueUnion> for VkClearValue {
                 VkClearValueUnion::DepthStencil(clear_depth_stencil_value) => {
                     let mut clear_value:VkClearValue = std::mem::zeroed();
                     {
-                        let clear_color_bytes: [u8;8] = std::mem::transmute(clear_depth_stencil_value);
+                        let clear_color_bytes: [u8;8] = transmute(clear_depth_stencil_value);
                         let union_data_slice: &mut[u8] = &mut clear_value.union_data[0..8];
                         union_data_slice.clone_from_slice(&clear_color_bytes);
                     }
@@ -3232,6 +3235,21 @@ static VULKAN_LIBRARY: &'static str = "vulkan-1.dll";
 #[cfg(unix)]
 static VULKAN_LIBRARY: &'static str = "libvulkan-1.so";
 
+#[macro_export]
+macro_rules! load_command {
+    ($commands:expr,$instance:expr,$name:expr) => (
+        {
+            let fn_ptr = ($commands.vkGetInstanceProcAddr.as_ref().unwrap())($instance, CString::new($name).unwrap().as_ptr());
+            try!(
+                if fn_ptr != ::std::ptr::null() {
+                    Ok(fn_ptr)
+                } else {
+                    Err(format!("Failed to load {}",$name))
+                })
+        }
+    );
+}
+
 impl VulkanCore {
     pub fn new() -> Result<VulkanCore, String> {
         let mut vulkan_core: VulkanCore = Default::default();
@@ -3241,162 +3259,153 @@ impl VulkanCore {
             Ok(library) => Some(library),
         };
         unsafe {
-            vulkan_core.vkGetInstanceProcAddr = Some(std::mem::transmute(try!(vulkan_core.library.as_ref().unwrap().symbol::<u8>("vkGetInstanceProcAddr"))));
-            vulkan_core.vkCreateInstance = Some(std::mem::transmute(try!(vulkan_core.load_command(VkInstance::null(), "vkCreateInstance"))));
-            vulkan_core.vkEnumerateInstanceExtensionProperties = Some(std::mem::transmute(try!(vulkan_core.load_command(VkInstance::null(), "vkEnumerateInstanceExtensionProperties"))));
-            vulkan_core.vkEnumerateInstanceLayerProperties = Some(std::mem::transmute(try!(vulkan_core.load_command(VkInstance::null(), "vkEnumerateInstanceLayerProperties"))));
+            vulkan_core.vkGetInstanceProcAddr = Some(transmute(try!(vulkan_core.library.as_ref().unwrap().symbol::<u8>("vkGetInstanceProcAddr"))));
+            vulkan_core.vkCreateInstance = Some(transmute(load_command!(vulkan_core, VkInstance::null(), "vkCreateInstance")));
+            vulkan_core.vkEnumerateInstanceExtensionProperties = Some(transmute(load_command!(vulkan_core, VkInstance::null(), "vkEnumerateInstanceExtensionProperties")));
+            vulkan_core.vkEnumerateInstanceLayerProperties = Some(transmute(load_command!(vulkan_core, VkInstance::null(), "vkEnumerateInstanceLayerProperties")));
         }
         Ok(vulkan_core)
     }
 
-    unsafe fn load_command(&self, instance: VkInstance, name: &str) -> Result<vkVoidFunctionFn, String> {
-        let fn_ptr = (self.vkGetInstanceProcAddr.as_ref().unwrap())(instance, CString::new(name).unwrap().as_ptr());
-        if fn_ptr != std::ptr::null() {
-            Ok(fn_ptr)
-        } else {
-            Err(format!("Failed to load {}",name))
-        }
-    }
-
     pub fn load(&mut self, instance: VkInstance) -> Result<(), String> {
         unsafe {
-            //self.vkCreateInstance = Some(std::mem::transmute(try!(self.load_command(instance, "vkCreateInstance"))));
-            self.vkDestroyInstance = Some(std::mem::transmute(try!(self.load_command(instance, "vkDestroyInstance"))));
-            self.vkEnumeratePhysicalDevices = Some(std::mem::transmute(try!(self.load_command(instance, "vkEnumeratePhysicalDevices"))));
-            self.vkGetPhysicalDeviceFeatures = Some(std::mem::transmute(try!(self.load_command(instance, "vkGetPhysicalDeviceFeatures"))));
-            self.vkGetPhysicalDeviceFormatProperties = Some(std::mem::transmute(try!(self.load_command(instance, "vkGetPhysicalDeviceFormatProperties"))));
-            self.vkGetPhysicalDeviceImageFormatProperties = Some(std::mem::transmute(try!(self.load_command(instance, "vkGetPhysicalDeviceImageFormatProperties"))));
-            self.vkGetPhysicalDeviceProperties = Some(std::mem::transmute(try!(self.load_command(instance, "vkGetPhysicalDeviceProperties"))));
-            self.vkGetPhysicalDeviceQueueFamilyProperties = Some(std::mem::transmute(try!(self.load_command(instance, "vkGetPhysicalDeviceQueueFamilyProperties"))));
-            self.vkGetPhysicalDeviceMemoryProperties = Some(std::mem::transmute(try!(self.load_command(instance, "vkGetPhysicalDeviceMemoryProperties"))));
-            self.vkGetInstanceProcAddr = Some(std::mem::transmute(try!(self.load_command(instance, "vkGetInstanceProcAddr"))));
-            self.vkGetDeviceProcAddr = Some(std::mem::transmute(try!(self.load_command(instance, "vkGetDeviceProcAddr"))));
-            self.vkCreateDevice = Some(std::mem::transmute(try!(self.load_command(instance, "vkCreateDevice"))));
-            self.vkDestroyDevice = Some(std::mem::transmute(try!(self.load_command(instance, "vkDestroyDevice"))));
-            //self.vkEnumerateInstanceExtensionProperties = Some(std::mem::transmute(try!(self.load_command(instance, "vkEnumerateInstanceExtensionProperties"))));
-            self.vkEnumerateDeviceExtensionProperties = Some(std::mem::transmute(try!(self.load_command(instance, "vkEnumerateDeviceExtensionProperties"))));
-            //self.vkEnumerateInstanceLayerProperties = Some(std::mem::transmute(try!(self.load_command(instance, "vkEnumerateInstanceLayerProperties"))));
-            self.vkEnumerateDeviceLayerProperties = Some(std::mem::transmute(try!(self.load_command(instance, "vkEnumerateDeviceLayerProperties"))));
-            self.vkGetDeviceQueue = Some(std::mem::transmute(try!(self.load_command(instance, "vkGetDeviceQueue"))));
-            self.vkQueueSubmit = Some(std::mem::transmute(try!(self.load_command(instance, "vkQueueSubmit"))));
-            self.vkQueueWaitIdle = Some(std::mem::transmute(try!(self.load_command(instance, "vkQueueWaitIdle"))));
-            self.vkDeviceWaitIdle = Some(std::mem::transmute(try!(self.load_command(instance, "vkDeviceWaitIdle"))));
-            self.vkAllocateMemory = Some(std::mem::transmute(try!(self.load_command(instance, "vkAllocateMemory"))));
-            self.vkFreeMemory = Some(std::mem::transmute(try!(self.load_command(instance, "vkFreeMemory"))));
-            self.vkMapMemory = Some(std::mem::transmute(try!(self.load_command(instance, "vkMapMemory"))));
-            self.vkUnmapMemory = Some(std::mem::transmute(try!(self.load_command(instance, "vkUnmapMemory"))));
-            self.vkFlushMappedMemoryRanges = Some(std::mem::transmute(try!(self.load_command(instance, "vkFlushMappedMemoryRanges"))));
-            self.vkInvalidateMappedMemoryRanges = Some(std::mem::transmute(try!(self.load_command(instance, "vkInvalidateMappedMemoryRanges"))));
-            self.vkGetDeviceMemoryCommitment = Some(std::mem::transmute(try!(self.load_command(instance, "vkGetDeviceMemoryCommitment"))));
-            self.vkBindBufferMemory = Some(std::mem::transmute(try!(self.load_command(instance, "vkBindBufferMemory"))));
-            self.vkBindImageMemory = Some(std::mem::transmute(try!(self.load_command(instance, "vkBindImageMemory"))));
-            self.vkGetBufferMemoryRequirements = Some(std::mem::transmute(try!(self.load_command(instance, "vkGetBufferMemoryRequirements"))));
-            self.vkGetImageMemoryRequirements = Some(std::mem::transmute(try!(self.load_command(instance, "vkGetImageMemoryRequirements"))));
-            self.vkGetImageSparseMemoryRequirements = Some(std::mem::transmute(try!(self.load_command(instance, "vkGetImageSparseMemoryRequirements"))));
-            self.vkGetPhysicalDeviceSparseImageFormatProperties = Some(std::mem::transmute(try!(self.load_command(instance, "vkGetPhysicalDeviceSparseImageFormatProperties"))));
-            self.vkQueueBindSparse = Some(std::mem::transmute(try!(self.load_command(instance, "vkQueueBindSparse"))));
-            self.vkCreateFence = Some(std::mem::transmute(try!(self.load_command(instance, "vkCreateFence"))));
-            self.vkDestroyFence = Some(std::mem::transmute(try!(self.load_command(instance, "vkDestroyFence"))));
-            self.vkResetFences = Some(std::mem::transmute(try!(self.load_command(instance, "vkResetFences"))));
-            self.vkGetFenceStatus = Some(std::mem::transmute(try!(self.load_command(instance, "vkGetFenceStatus"))));
-            self.vkWaitForFences = Some(std::mem::transmute(try!(self.load_command(instance, "vkWaitForFences"))));
-            self.vkCreateSemaphore = Some(std::mem::transmute(try!(self.load_command(instance, "vkCreateSemaphore"))));
-            self.vkDestroySemaphore = Some(std::mem::transmute(try!(self.load_command(instance, "vkDestroySemaphore"))));
-            self.vkCreateEvent = Some(std::mem::transmute(try!(self.load_command(instance, "vkCreateEvent"))));
-            self.vkDestroyEvent = Some(std::mem::transmute(try!(self.load_command(instance, "vkDestroyEvent"))));
-            self.vkGetEventStatus = Some(std::mem::transmute(try!(self.load_command(instance, "vkGetEventStatus"))));
-            self.vkSetEvent = Some(std::mem::transmute(try!(self.load_command(instance, "vkSetEvent"))));
-            self.vkResetEvent = Some(std::mem::transmute(try!(self.load_command(instance, "vkResetEvent"))));
-            self.vkCreateQueryPool = Some(std::mem::transmute(try!(self.load_command(instance, "vkCreateQueryPool"))));
-            self.vkDestroyQueryPool = Some(std::mem::transmute(try!(self.load_command(instance, "vkDestroyQueryPool"))));
-            self.vkGetQueryPoolResults = Some(std::mem::transmute(try!(self.load_command(instance, "vkGetQueryPoolResults"))));
-            self.vkCreateBuffer = Some(std::mem::transmute(try!(self.load_command(instance, "vkCreateBuffer"))));
-            self.vkDestroyBuffer = Some(std::mem::transmute(try!(self.load_command(instance, "vkDestroyBuffer"))));
-            self.vkCreateBufferView = Some(std::mem::transmute(try!(self.load_command(instance, "vkCreateBufferView"))));
-            self.vkDestroyBufferView = Some(std::mem::transmute(try!(self.load_command(instance, "vkDestroyBufferView"))));
-            self.vkCreateImage = Some(std::mem::transmute(try!(self.load_command(instance, "vkCreateImage"))));
-            self.vkDestroyImage = Some(std::mem::transmute(try!(self.load_command(instance, "vkDestroyImage"))));
-            self.vkGetImageSubresourceLayout = Some(std::mem::transmute(try!(self.load_command(instance, "vkGetImageSubresourceLayout"))));
-            self.vkCreateImageView = Some(std::mem::transmute(try!(self.load_command(instance, "vkCreateImageView"))));
-            self.vkDestroyImageView = Some(std::mem::transmute(try!(self.load_command(instance, "vkDestroyImageView"))));
-            self.vkCreateShaderModule = Some(std::mem::transmute(try!(self.load_command(instance, "vkCreateShaderModule"))));
-            self.vkDestroyShaderModule = Some(std::mem::transmute(try!(self.load_command(instance, "vkDestroyShaderModule"))));
-            self.vkCreatePipelineCache = Some(std::mem::transmute(try!(self.load_command(instance, "vkCreatePipelineCache"))));
-            self.vkDestroyPipelineCache = Some(std::mem::transmute(try!(self.load_command(instance, "vkDestroyPipelineCache"))));
-            self.vkGetPipelineCacheData = Some(std::mem::transmute(try!(self.load_command(instance, "vkGetPipelineCacheData"))));
-            self.vkMergePipelineCaches = Some(std::mem::transmute(try!(self.load_command(instance, "vkMergePipelineCaches"))));
-            self.vkCreateGraphicsPipelines = Some(std::mem::transmute(try!(self.load_command(instance, "vkCreateGraphicsPipelines"))));
-            self.vkCreateComputePipelines = Some(std::mem::transmute(try!(self.load_command(instance, "vkCreateComputePipelines"))));
-            self.vkDestroyPipeline = Some(std::mem::transmute(try!(self.load_command(instance, "vkDestroyPipeline"))));
-            self.vkCreatePipelineLayout = Some(std::mem::transmute(try!(self.load_command(instance, "vkCreatePipelineLayout"))));
-            self.vkDestroyPipelineLayout = Some(std::mem::transmute(try!(self.load_command(instance, "vkDestroyPipelineLayout"))));
-            self.vkCreateSampler = Some(std::mem::transmute(try!(self.load_command(instance, "vkCreateSampler"))));
-            self.vkDestroySampler = Some(std::mem::transmute(try!(self.load_command(instance, "vkDestroySampler"))));
-            self.vkCreateDescriptorSetLayout = Some(std::mem::transmute(try!(self.load_command(instance, "vkCreateDescriptorSetLayout"))));
-            self.vkDestroyDescriptorSetLayout = Some(std::mem::transmute(try!(self.load_command(instance, "vkDestroyDescriptorSetLayout"))));
-            self.vkCreateDescriptorPool = Some(std::mem::transmute(try!(self.load_command(instance, "vkCreateDescriptorPool"))));
-            self.vkDestroyDescriptorPool = Some(std::mem::transmute(try!(self.load_command(instance, "vkDestroyDescriptorPool"))));
-            self.vkResetDescriptorPool = Some(std::mem::transmute(try!(self.load_command(instance, "vkResetDescriptorPool"))));
-            self.vkAllocateDescriptorSets = Some(std::mem::transmute(try!(self.load_command(instance, "vkAllocateDescriptorSets"))));
-            self.vkFreeDescriptorSets = Some(std::mem::transmute(try!(self.load_command(instance, "vkFreeDescriptorSets"))));
-            self.vkUpdateDescriptorSets = Some(std::mem::transmute(try!(self.load_command(instance, "vkUpdateDescriptorSets"))));
-            self.vkCreateFramebuffer = Some(std::mem::transmute(try!(self.load_command(instance, "vkCreateFramebuffer"))));
-            self.vkDestroyFramebuffer = Some(std::mem::transmute(try!(self.load_command(instance, "vkDestroyFramebuffer"))));
-            self.vkCreateRenderPass = Some(std::mem::transmute(try!(self.load_command(instance, "vkCreateRenderPass"))));
-            self.vkDestroyRenderPass = Some(std::mem::transmute(try!(self.load_command(instance, "vkDestroyRenderPass"))));
-            self.vkGetRenderAreaGranularity = Some(std::mem::transmute(try!(self.load_command(instance, "vkGetRenderAreaGranularity"))));
-            self.vkCreateCommandPool = Some(std::mem::transmute(try!(self.load_command(instance, "vkCreateCommandPool"))));
-            self.vkDestroyCommandPool = Some(std::mem::transmute(try!(self.load_command(instance, "vkDestroyCommandPool"))));
-            self.vkResetCommandPool = Some(std::mem::transmute(try!(self.load_command(instance, "vkResetCommandPool"))));
-            self.vkAllocateCommandBuffers = Some(std::mem::transmute(try!(self.load_command(instance, "vkAllocateCommandBuffers"))));
-            self.vkFreeCommandBuffers = Some(std::mem::transmute(try!(self.load_command(instance, "vkFreeCommandBuffers"))));
-            self.vkBeginCommandBuffer = Some(std::mem::transmute(try!(self.load_command(instance, "vkBeginCommandBuffer"))));
-            self.vkEndCommandBuffer = Some(std::mem::transmute(try!(self.load_command(instance, "vkEndCommandBuffer"))));
-            self.vkResetCommandBuffer = Some(std::mem::transmute(try!(self.load_command(instance, "vkResetCommandBuffer"))));
-            self.vkCmdBindPipeline = Some(std::mem::transmute(try!(self.load_command(instance, "vkCmdBindPipeline"))));
-            self.vkCmdSetViewport = Some(std::mem::transmute(try!(self.load_command(instance, "vkCmdSetViewport"))));
-            self.vkCmdSetScissor = Some(std::mem::transmute(try!(self.load_command(instance, "vkCmdSetScissor"))));
-            self.vkCmdSetLineWidth = Some(std::mem::transmute(try!(self.load_command(instance, "vkCmdSetLineWidth"))));
-            self.vkCmdSetDepthBias = Some(std::mem::transmute(try!(self.load_command(instance, "vkCmdSetDepthBias"))));
-            self.vkCmdSetBlendConstants = Some(std::mem::transmute(try!(self.load_command(instance, "vkCmdSetBlendConstants"))));
-            self.vkCmdSetDepthBounds = Some(std::mem::transmute(try!(self.load_command(instance, "vkCmdSetDepthBounds"))));
-            self.vkCmdSetStencilCompareMask = Some(std::mem::transmute(try!(self.load_command(instance, "vkCmdSetStencilCompareMask"))));
-            self.vkCmdSetStencilWriteMask = Some(std::mem::transmute(try!(self.load_command(instance, "vkCmdSetStencilWriteMask"))));
-            self.vkCmdSetStencilReference = Some(std::mem::transmute(try!(self.load_command(instance, "vkCmdSetStencilReference"))));
-            self.vkCmdBindDescriptorSets = Some(std::mem::transmute(try!(self.load_command(instance, "vkCmdBindDescriptorSets"))));
-            self.vkCmdBindIndexBuffer = Some(std::mem::transmute(try!(self.load_command(instance, "vkCmdBindIndexBuffer"))));
-            self.vkCmdBindVertexBuffers = Some(std::mem::transmute(try!(self.load_command(instance, "vkCmdBindVertexBuffers"))));
-            self.vkCmdDraw = Some(std::mem::transmute(try!(self.load_command(instance, "vkCmdDraw"))));
-            self.vkCmdDrawIndexed = Some(std::mem::transmute(try!(self.load_command(instance, "vkCmdDrawIndexed"))));
-            self.vkCmdDrawIndirect = Some(std::mem::transmute(try!(self.load_command(instance, "vkCmdDrawIndirect"))));
-            self.vkCmdDrawIndexedIndirect = Some(std::mem::transmute(try!(self.load_command(instance, "vkCmdDrawIndexedIndirect"))));
-            self.vkCmdDispatch = Some(std::mem::transmute(try!(self.load_command(instance, "vkCmdDispatch"))));
-            self.vkCmdDispatchIndirect = Some(std::mem::transmute(try!(self.load_command(instance, "vkCmdDispatchIndirect"))));
-            self.vkCmdCopyBuffer = Some(std::mem::transmute(try!(self.load_command(instance, "vkCmdCopyBuffer"))));
-            self.vkCmdCopyImage = Some(std::mem::transmute(try!(self.load_command(instance, "vkCmdCopyImage"))));
-            self.vkCmdBlitImage = Some(std::mem::transmute(try!(self.load_command(instance, "vkCmdBlitImage"))));
-            self.vkCmdCopyBufferToImage = Some(std::mem::transmute(try!(self.load_command(instance, "vkCmdCopyBufferToImage"))));
-            self.vkCmdCopyImageToBuffer = Some(std::mem::transmute(try!(self.load_command(instance, "vkCmdCopyImageToBuffer"))));
-            self.vkCmdUpdateBuffer = Some(std::mem::transmute(try!(self.load_command(instance, "vkCmdUpdateBuffer"))));
-            self.vkCmdFillBuffer = Some(std::mem::transmute(try!(self.load_command(instance, "vkCmdFillBuffer"))));
-            self.vkCmdClearColorImage = Some(std::mem::transmute(try!(self.load_command(instance, "vkCmdClearColorImage"))));
-            self.vkCmdClearDepthStencilImage = Some(std::mem::transmute(try!(self.load_command(instance, "vkCmdClearDepthStencilImage"))));
-            self.vkCmdClearAttachments = Some(std::mem::transmute(try!(self.load_command(instance, "vkCmdClearAttachments"))));
-            self.vkCmdResolveImage = Some(std::mem::transmute(try!(self.load_command(instance, "vkCmdResolveImage"))));
-            self.vkCmdSetEvent = Some(std::mem::transmute(try!(self.load_command(instance, "vkCmdSetEvent"))));
-            self.vkCmdResetEvent = Some(std::mem::transmute(try!(self.load_command(instance, "vkCmdResetEvent"))));
-            self.vkCmdWaitEvents = Some(std::mem::transmute(try!(self.load_command(instance, "vkCmdWaitEvents"))));
-            self.vkCmdPipelineBarrier = Some(std::mem::transmute(try!(self.load_command(instance, "vkCmdPipelineBarrier"))));
-            self.vkCmdBeginQuery = Some(std::mem::transmute(try!(self.load_command(instance, "vkCmdBeginQuery"))));
-            self.vkCmdEndQuery = Some(std::mem::transmute(try!(self.load_command(instance, "vkCmdEndQuery"))));
-            self.vkCmdResetQueryPool = Some(std::mem::transmute(try!(self.load_command(instance, "vkCmdResetQueryPool"))));
-            self.vkCmdWriteTimestamp = Some(std::mem::transmute(try!(self.load_command(instance, "vkCmdWriteTimestamp"))));
-            self.vkCmdCopyQueryPoolResults = Some(std::mem::transmute(try!(self.load_command(instance, "vkCmdCopyQueryPoolResults"))));
-            self.vkCmdPushConstants = Some(std::mem::transmute(try!(self.load_command(instance, "vkCmdPushConstants"))));
-            self.vkCmdBeginRenderPass = Some(std::mem::transmute(try!(self.load_command(instance, "vkCmdBeginRenderPass"))));
-            self.vkCmdNextSubpass = Some(std::mem::transmute(try!(self.load_command(instance, "vkCmdNextSubpass"))));
-            self.vkCmdEndRenderPass = Some(std::mem::transmute(try!(self.load_command(instance, "vkCmdEndRenderPass"))));
-            self.vkCmdExecuteCommands = Some(std::mem::transmute(try!(self.load_command(instance, "vkCmdExecuteCommands"))));
+            //self.vkCreateInstance = Some(transmute(load_command!(self, instance, "vkCreateInstance")));
+            self.vkDestroyInstance = Some(transmute(load_command!(self, instance, "vkDestroyInstance")));
+            self.vkEnumeratePhysicalDevices = Some(transmute(load_command!(self, instance, "vkEnumeratePhysicalDevices")));
+            self.vkGetPhysicalDeviceFeatures = Some(transmute(load_command!(self, instance, "vkGetPhysicalDeviceFeatures")));
+            self.vkGetPhysicalDeviceFormatProperties = Some(transmute(load_command!(self, instance, "vkGetPhysicalDeviceFormatProperties")));
+            self.vkGetPhysicalDeviceImageFormatProperties = Some(transmute(load_command!(self, instance, "vkGetPhysicalDeviceImageFormatProperties")));
+            self.vkGetPhysicalDeviceProperties = Some(transmute(load_command!(self, instance, "vkGetPhysicalDeviceProperties")));
+            self.vkGetPhysicalDeviceQueueFamilyProperties = Some(transmute(load_command!(self, instance, "vkGetPhysicalDeviceQueueFamilyProperties")));
+            self.vkGetPhysicalDeviceMemoryProperties = Some(transmute(load_command!(self, instance, "vkGetPhysicalDeviceMemoryProperties")));
+            self.vkGetInstanceProcAddr = Some(transmute(load_command!(self, instance, "vkGetInstanceProcAddr")));
+            self.vkGetDeviceProcAddr = Some(transmute(load_command!(self, instance, "vkGetDeviceProcAddr")));
+            self.vkCreateDevice = Some(transmute(load_command!(self, instance, "vkCreateDevice")));
+            self.vkDestroyDevice = Some(transmute(load_command!(self, instance, "vkDestroyDevice")));
+            //self.vkEnumerateInstanceExtensionProperties = Some(transmute(load_command!(self, instance, "vkEnumerateInstanceExtensionProperties")));
+            self.vkEnumerateDeviceExtensionProperties = Some(transmute(load_command!(self, instance, "vkEnumerateDeviceExtensionProperties")));
+            //self.vkEnumerateInstanceLayerProperties = Some(transmute(load_command!(self, instance, "vkEnumerateInstanceLayerProperties")));
+            self.vkEnumerateDeviceLayerProperties = Some(transmute(load_command!(self, instance, "vkEnumerateDeviceLayerProperties")));
+            self.vkGetDeviceQueue = Some(transmute(load_command!(self, instance, "vkGetDeviceQueue")));
+            self.vkQueueSubmit = Some(transmute(load_command!(self, instance, "vkQueueSubmit")));
+            self.vkQueueWaitIdle = Some(transmute(load_command!(self, instance, "vkQueueWaitIdle")));
+            self.vkDeviceWaitIdle = Some(transmute(load_command!(self, instance, "vkDeviceWaitIdle")));
+            self.vkAllocateMemory = Some(transmute(load_command!(self, instance, "vkAllocateMemory")));
+            self.vkFreeMemory = Some(transmute(load_command!(self, instance, "vkFreeMemory")));
+            self.vkMapMemory = Some(transmute(load_command!(self, instance, "vkMapMemory")));
+            self.vkUnmapMemory = Some(transmute(load_command!(self, instance, "vkUnmapMemory")));
+            self.vkFlushMappedMemoryRanges = Some(transmute(load_command!(self, instance, "vkFlushMappedMemoryRanges")));
+            self.vkInvalidateMappedMemoryRanges = Some(transmute(load_command!(self, instance, "vkInvalidateMappedMemoryRanges")));
+            self.vkGetDeviceMemoryCommitment = Some(transmute(load_command!(self, instance, "vkGetDeviceMemoryCommitment")));
+            self.vkBindBufferMemory = Some(transmute(load_command!(self, instance, "vkBindBufferMemory")));
+            self.vkBindImageMemory = Some(transmute(load_command!(self, instance, "vkBindImageMemory")));
+            self.vkGetBufferMemoryRequirements = Some(transmute(load_command!(self, instance, "vkGetBufferMemoryRequirements")));
+            self.vkGetImageMemoryRequirements = Some(transmute(load_command!(self, instance, "vkGetImageMemoryRequirements")));
+            self.vkGetImageSparseMemoryRequirements = Some(transmute(load_command!(self, instance, "vkGetImageSparseMemoryRequirements")));
+            self.vkGetPhysicalDeviceSparseImageFormatProperties = Some(transmute(load_command!(self, instance, "vkGetPhysicalDeviceSparseImageFormatProperties")));
+            self.vkQueueBindSparse = Some(transmute(load_command!(self, instance, "vkQueueBindSparse")));
+            self.vkCreateFence = Some(transmute(load_command!(self, instance, "vkCreateFence")));
+            self.vkDestroyFence = Some(transmute(load_command!(self, instance, "vkDestroyFence")));
+            self.vkResetFences = Some(transmute(load_command!(self, instance, "vkResetFences")));
+            self.vkGetFenceStatus = Some(transmute(load_command!(self, instance, "vkGetFenceStatus")));
+            self.vkWaitForFences = Some(transmute(load_command!(self, instance, "vkWaitForFences")));
+            self.vkCreateSemaphore = Some(transmute(load_command!(self, instance, "vkCreateSemaphore")));
+            self.vkDestroySemaphore = Some(transmute(load_command!(self, instance, "vkDestroySemaphore")));
+            self.vkCreateEvent = Some(transmute(load_command!(self, instance, "vkCreateEvent")));
+            self.vkDestroyEvent = Some(transmute(load_command!(self, instance, "vkDestroyEvent")));
+            self.vkGetEventStatus = Some(transmute(load_command!(self, instance, "vkGetEventStatus")));
+            self.vkSetEvent = Some(transmute(load_command!(self, instance, "vkSetEvent")));
+            self.vkResetEvent = Some(transmute(load_command!(self, instance, "vkResetEvent")));
+            self.vkCreateQueryPool = Some(transmute(load_command!(self, instance, "vkCreateQueryPool")));
+            self.vkDestroyQueryPool = Some(transmute(load_command!(self, instance, "vkDestroyQueryPool")));
+            self.vkGetQueryPoolResults = Some(transmute(load_command!(self, instance, "vkGetQueryPoolResults")));
+            self.vkCreateBuffer = Some(transmute(load_command!(self, instance, "vkCreateBuffer")));
+            self.vkDestroyBuffer = Some(transmute(load_command!(self, instance, "vkDestroyBuffer")));
+            self.vkCreateBufferView = Some(transmute(load_command!(self, instance, "vkCreateBufferView")));
+            self.vkDestroyBufferView = Some(transmute(load_command!(self, instance, "vkDestroyBufferView")));
+            self.vkCreateImage = Some(transmute(load_command!(self, instance, "vkCreateImage")));
+            self.vkDestroyImage = Some(transmute(load_command!(self, instance, "vkDestroyImage")));
+            self.vkGetImageSubresourceLayout = Some(transmute(load_command!(self, instance, "vkGetImageSubresourceLayout")));
+            self.vkCreateImageView = Some(transmute(load_command!(self, instance, "vkCreateImageView")));
+            self.vkDestroyImageView = Some(transmute(load_command!(self, instance, "vkDestroyImageView")));
+            self.vkCreateShaderModule = Some(transmute(load_command!(self, instance, "vkCreateShaderModule")));
+            self.vkDestroyShaderModule = Some(transmute(load_command!(self, instance, "vkDestroyShaderModule")));
+            self.vkCreatePipelineCache = Some(transmute(load_command!(self, instance, "vkCreatePipelineCache")));
+            self.vkDestroyPipelineCache = Some(transmute(load_command!(self, instance, "vkDestroyPipelineCache")));
+            self.vkGetPipelineCacheData = Some(transmute(load_command!(self, instance, "vkGetPipelineCacheData")));
+            self.vkMergePipelineCaches = Some(transmute(load_command!(self, instance, "vkMergePipelineCaches")));
+            self.vkCreateGraphicsPipelines = Some(transmute(load_command!(self, instance, "vkCreateGraphicsPipelines")));
+            self.vkCreateComputePipelines = Some(transmute(load_command!(self, instance, "vkCreateComputePipelines")));
+            self.vkDestroyPipeline = Some(transmute(load_command!(self, instance, "vkDestroyPipeline")));
+            self.vkCreatePipelineLayout = Some(transmute(load_command!(self, instance, "vkCreatePipelineLayout")));
+            self.vkDestroyPipelineLayout = Some(transmute(load_command!(self, instance, "vkDestroyPipelineLayout")));
+            self.vkCreateSampler = Some(transmute(load_command!(self, instance, "vkCreateSampler")));
+            self.vkDestroySampler = Some(transmute(load_command!(self, instance, "vkDestroySampler")));
+            self.vkCreateDescriptorSetLayout = Some(transmute(load_command!(self, instance, "vkCreateDescriptorSetLayout")));
+            self.vkDestroyDescriptorSetLayout = Some(transmute(load_command!(self, instance, "vkDestroyDescriptorSetLayout")));
+            self.vkCreateDescriptorPool = Some(transmute(load_command!(self, instance, "vkCreateDescriptorPool")));
+            self.vkDestroyDescriptorPool = Some(transmute(load_command!(self, instance, "vkDestroyDescriptorPool")));
+            self.vkResetDescriptorPool = Some(transmute(load_command!(self, instance, "vkResetDescriptorPool")));
+            self.vkAllocateDescriptorSets = Some(transmute(load_command!(self, instance, "vkAllocateDescriptorSets")));
+            self.vkFreeDescriptorSets = Some(transmute(load_command!(self, instance, "vkFreeDescriptorSets")));
+            self.vkUpdateDescriptorSets = Some(transmute(load_command!(self, instance, "vkUpdateDescriptorSets")));
+            self.vkCreateFramebuffer = Some(transmute(load_command!(self, instance, "vkCreateFramebuffer")));
+            self.vkDestroyFramebuffer = Some(transmute(load_command!(self, instance, "vkDestroyFramebuffer")));
+            self.vkCreateRenderPass = Some(transmute(load_command!(self, instance, "vkCreateRenderPass")));
+            self.vkDestroyRenderPass = Some(transmute(load_command!(self, instance, "vkDestroyRenderPass")));
+            self.vkGetRenderAreaGranularity = Some(transmute(load_command!(self, instance, "vkGetRenderAreaGranularity")));
+            self.vkCreateCommandPool = Some(transmute(load_command!(self, instance, "vkCreateCommandPool")));
+            self.vkDestroyCommandPool = Some(transmute(load_command!(self, instance, "vkDestroyCommandPool")));
+            self.vkResetCommandPool = Some(transmute(load_command!(self, instance, "vkResetCommandPool")));
+            self.vkAllocateCommandBuffers = Some(transmute(load_command!(self, instance, "vkAllocateCommandBuffers")));
+            self.vkFreeCommandBuffers = Some(transmute(load_command!(self, instance, "vkFreeCommandBuffers")));
+            self.vkBeginCommandBuffer = Some(transmute(load_command!(self, instance, "vkBeginCommandBuffer")));
+            self.vkEndCommandBuffer = Some(transmute(load_command!(self, instance, "vkEndCommandBuffer")));
+            self.vkResetCommandBuffer = Some(transmute(load_command!(self, instance, "vkResetCommandBuffer")));
+            self.vkCmdBindPipeline = Some(transmute(load_command!(self, instance, "vkCmdBindPipeline")));
+            self.vkCmdSetViewport = Some(transmute(load_command!(self, instance, "vkCmdSetViewport")));
+            self.vkCmdSetScissor = Some(transmute(load_command!(self, instance, "vkCmdSetScissor")));
+            self.vkCmdSetLineWidth = Some(transmute(load_command!(self, instance, "vkCmdSetLineWidth")));
+            self.vkCmdSetDepthBias = Some(transmute(load_command!(self, instance, "vkCmdSetDepthBias")));
+            self.vkCmdSetBlendConstants = Some(transmute(load_command!(self, instance, "vkCmdSetBlendConstants")));
+            self.vkCmdSetDepthBounds = Some(transmute(load_command!(self, instance, "vkCmdSetDepthBounds")));
+            self.vkCmdSetStencilCompareMask = Some(transmute(load_command!(self, instance, "vkCmdSetStencilCompareMask")));
+            self.vkCmdSetStencilWriteMask = Some(transmute(load_command!(self, instance, "vkCmdSetStencilWriteMask")));
+            self.vkCmdSetStencilReference = Some(transmute(load_command!(self, instance, "vkCmdSetStencilReference")));
+            self.vkCmdBindDescriptorSets = Some(transmute(load_command!(self, instance, "vkCmdBindDescriptorSets")));
+            self.vkCmdBindIndexBuffer = Some(transmute(load_command!(self, instance, "vkCmdBindIndexBuffer")));
+            self.vkCmdBindVertexBuffers = Some(transmute(load_command!(self, instance, "vkCmdBindVertexBuffers")));
+            self.vkCmdDraw = Some(transmute(load_command!(self, instance, "vkCmdDraw")));
+            self.vkCmdDrawIndexed = Some(transmute(load_command!(self, instance, "vkCmdDrawIndexed")));
+            self.vkCmdDrawIndirect = Some(transmute(load_command!(self, instance, "vkCmdDrawIndirect")));
+            self.vkCmdDrawIndexedIndirect = Some(transmute(load_command!(self, instance, "vkCmdDrawIndexedIndirect")));
+            self.vkCmdDispatch = Some(transmute(load_command!(self, instance, "vkCmdDispatch")));
+            self.vkCmdDispatchIndirect = Some(transmute(load_command!(self, instance, "vkCmdDispatchIndirect")));
+            self.vkCmdCopyBuffer = Some(transmute(load_command!(self, instance, "vkCmdCopyBuffer")));
+            self.vkCmdCopyImage = Some(transmute(load_command!(self, instance, "vkCmdCopyImage")));
+            self.vkCmdBlitImage = Some(transmute(load_command!(self, instance, "vkCmdBlitImage")));
+            self.vkCmdCopyBufferToImage = Some(transmute(load_command!(self, instance, "vkCmdCopyBufferToImage")));
+            self.vkCmdCopyImageToBuffer = Some(transmute(load_command!(self, instance, "vkCmdCopyImageToBuffer")));
+            self.vkCmdUpdateBuffer = Some(transmute(load_command!(self, instance, "vkCmdUpdateBuffer")));
+            self.vkCmdFillBuffer = Some(transmute(load_command!(self, instance, "vkCmdFillBuffer")));
+            self.vkCmdClearColorImage = Some(transmute(load_command!(self, instance, "vkCmdClearColorImage")));
+            self.vkCmdClearDepthStencilImage = Some(transmute(load_command!(self, instance, "vkCmdClearDepthStencilImage")));
+            self.vkCmdClearAttachments = Some(transmute(load_command!(self, instance, "vkCmdClearAttachments")));
+            self.vkCmdResolveImage = Some(transmute(load_command!(self, instance, "vkCmdResolveImage")));
+            self.vkCmdSetEvent = Some(transmute(load_command!(self, instance, "vkCmdSetEvent")));
+            self.vkCmdResetEvent = Some(transmute(load_command!(self, instance, "vkCmdResetEvent")));
+            self.vkCmdWaitEvents = Some(transmute(load_command!(self, instance, "vkCmdWaitEvents")));
+            self.vkCmdPipelineBarrier = Some(transmute(load_command!(self, instance, "vkCmdPipelineBarrier")));
+            self.vkCmdBeginQuery = Some(transmute(load_command!(self, instance, "vkCmdBeginQuery")));
+            self.vkCmdEndQuery = Some(transmute(load_command!(self, instance, "vkCmdEndQuery")));
+            self.vkCmdResetQueryPool = Some(transmute(load_command!(self, instance, "vkCmdResetQueryPool")));
+            self.vkCmdWriteTimestamp = Some(transmute(load_command!(self, instance, "vkCmdWriteTimestamp")));
+            self.vkCmdCopyQueryPoolResults = Some(transmute(load_command!(self, instance, "vkCmdCopyQueryPoolResults")));
+            self.vkCmdPushConstants = Some(transmute(load_command!(self, instance, "vkCmdPushConstants")));
+            self.vkCmdBeginRenderPass = Some(transmute(load_command!(self, instance, "vkCmdBeginRenderPass")));
+            self.vkCmdNextSubpass = Some(transmute(load_command!(self, instance, "vkCmdNextSubpass")));
+            self.vkCmdEndRenderPass = Some(transmute(load_command!(self, instance, "vkCmdEndRenderPass")));
+            self.vkCmdExecuteCommands = Some(transmute(load_command!(self, instance, "vkCmdExecuteCommands")));
         }
         Ok(())
     }
@@ -4065,27 +4074,18 @@ impl VulkanKhrSurface {
             Ok(library) => Some(library),
         };
         unsafe {
-            vulkan_khr_surface.vkGetInstanceProcAddr = Some(std::mem::transmute(try!(vulkan_khr_surface.library.as_ref().unwrap().symbol::<u8>("vkGetInstanceProcAddr"))));
+            vulkan_khr_surface.vkGetInstanceProcAddr = Some(transmute(try!(vulkan_khr_surface.library.as_ref().unwrap().symbol::<u8>("vkGetInstanceProcAddr"))));
         }
         Ok(vulkan_khr_surface)
     }
 
-    unsafe fn load_command(&self, instance: VkInstance, name: &str) -> Result<vkVoidFunctionFn, String> {
-        let fn_ptr = (self.vkGetInstanceProcAddr.as_ref().unwrap())(instance, CString::new(name).unwrap().as_ptr());
-        if fn_ptr != std::ptr::null() {
-            Ok(fn_ptr)
-        } else {
-            Err(format!("Failed to load {}",name))
-        }
-    }
-
     pub fn load(&mut self, instance: VkInstance) -> Result<(), String> {
         unsafe {
-            self.vkDestroySurfaceKHR = Some(std::mem::transmute(try!(self.load_command(instance, "vkDestroySurfaceKHR"))));
-            self.vkGetPhysicalDeviceSurfaceSupportKHR = Some(std::mem::transmute(try!(self.load_command(instance, "vkGetPhysicalDeviceSurfaceSupportKHR"))));
-            self.vkGetPhysicalDeviceSurfaceCapabilitiesKHR = Some(std::mem::transmute(try!(self.load_command(instance, "vkGetPhysicalDeviceSurfaceCapabilitiesKHR"))));
-            self.vkGetPhysicalDeviceSurfaceFormatsKHR = Some(std::mem::transmute(try!(self.load_command(instance, "vkGetPhysicalDeviceSurfaceFormatsKHR"))));
-            self.vkGetPhysicalDeviceSurfacePresentModesKHR = Some(std::mem::transmute(try!(self.load_command(instance, "vkGetPhysicalDeviceSurfacePresentModesKHR"))));
+            self.vkDestroySurfaceKHR = Some(transmute(load_command!(self, instance, "vkDestroySurfaceKHR")));
+            self.vkGetPhysicalDeviceSurfaceSupportKHR = Some(transmute(load_command!(self, instance, "vkGetPhysicalDeviceSurfaceSupportKHR")));
+            self.vkGetPhysicalDeviceSurfaceCapabilitiesKHR = Some(transmute(load_command!(self, instance, "vkGetPhysicalDeviceSurfaceCapabilitiesKHR")));
+            self.vkGetPhysicalDeviceSurfaceFormatsKHR = Some(transmute(load_command!(self, instance, "vkGetPhysicalDeviceSurfaceFormatsKHR")));
+            self.vkGetPhysicalDeviceSurfacePresentModesKHR = Some(transmute(load_command!(self, instance, "vkGetPhysicalDeviceSurfacePresentModesKHR")));
         }
         Ok(())
     }
@@ -4146,7 +4146,7 @@ pub enum VkKhrSwapchainImageLayout {
 impl From<VkKhrSwapchainImageLayout> for VkImageLayout {
     fn from(imageLayout:VkKhrSwapchainImageLayout) -> Self {
         unsafe {
-            std::mem::transmute(imageLayout)
+            transmute(imageLayout)
         }
     }
 }
@@ -4231,27 +4231,18 @@ impl VulkanKhrSwapchain {
             Ok(library) => Some(library),
         };
         unsafe {
-            vulkan_khr_swapchain.vkGetInstanceProcAddr = Some(std::mem::transmute(try!(vulkan_khr_swapchain.library.as_ref().unwrap().symbol::<u8>("vkGetInstanceProcAddr"))));
+            vulkan_khr_swapchain.vkGetInstanceProcAddr = Some(transmute(try!(vulkan_khr_swapchain.library.as_ref().unwrap().symbol::<u8>("vkGetInstanceProcAddr"))));
         }
         Ok(vulkan_khr_swapchain)
     }
 
-    unsafe fn load_command(&self, instance: VkInstance, name: &str) -> Result<vkVoidFunctionFn, String> {
-        let fn_ptr = (self.vkGetInstanceProcAddr.as_ref().unwrap())(instance, CString::new(name).unwrap().as_ptr());
-        if fn_ptr != std::ptr::null() {
-            Ok(fn_ptr)
-        } else {
-            Err(format!("Failed to load {}",name))
-        }
-    }
-
     pub fn load(&mut self, instance: VkInstance) -> Result<(), String> {
         unsafe {
-            self.vkCreateSwapchainKHR = Some(std::mem::transmute(try!(self.load_command(instance, "vkCreateSwapchainKHR"))));
-            self.vkDestroySwapchainKHR = Some(std::mem::transmute(try!(self.load_command(instance, "vkDestroySwapchainKHR"))));
-            self.vkGetSwapchainImagesKHR = Some(std::mem::transmute(try!(self.load_command(instance, "vkGetSwapchainImagesKHR"))));
-            self.vkAcquireNextImageKHR = Some(std::mem::transmute(try!(self.load_command(instance, "vkAcquireNextImageKHR"))));
-            self.vkQueuePresentKHR = Some(std::mem::transmute(try!(self.load_command(instance, "vkQueuePresentKHR"))));
+            self.vkCreateSwapchainKHR = Some(transmute(load_command!(self, instance, "vkCreateSwapchainKHR")));
+            self.vkDestroySwapchainKHR = Some(transmute(load_command!(self, instance, "vkDestroySwapchainKHR")));
+            self.vkGetSwapchainImagesKHR = Some(transmute(load_command!(self, instance, "vkGetSwapchainImagesKHR")));
+            self.vkAcquireNextImageKHR = Some(transmute(load_command!(self, instance, "vkAcquireNextImageKHR")));
+            self.vkQueuePresentKHR = Some(transmute(load_command!(self, instance, "vkQueuePresentKHR")));
         }
         Ok(())
     }
@@ -4435,29 +4426,20 @@ impl VulkanKhrDisplay {
             Ok(library) => Some(library),
         };
         unsafe {
-            vulkan_khr_display.vkGetInstanceProcAddr = Some(std::mem::transmute(try!(vulkan_khr_display.library.as_ref().unwrap().symbol::<u8>("vkGetInstanceProcAddr"))));
+            vulkan_khr_display.vkGetInstanceProcAddr = Some(transmute(try!(vulkan_khr_display.library.as_ref().unwrap().symbol::<u8>("vkGetInstanceProcAddr"))));
         }
         Ok(vulkan_khr_display)
     }
 
-    unsafe fn load_command(&self, instance: VkInstance, name: &str) -> Result<vkVoidFunctionFn, String> {
-        let fn_ptr = (self.vkGetInstanceProcAddr.as_ref().unwrap())(instance, CString::new(name).unwrap().as_ptr());
-        if fn_ptr != std::ptr::null() {
-            Ok(fn_ptr)
-        } else {
-            Err(format!("Failed to load {}",name))
-        }
-    }
-
     pub fn load(&mut self, instance: VkInstance) -> Result<(), String> {
         unsafe {
-            self.vkGetPhysicalDeviceDisplayPropertiesKHR = Some(std::mem::transmute(try!(self.load_command(instance, "vkGetPhysicalDeviceDisplayPropertiesKHR"))));
-            self.vkGetPhysicalDeviceDisplayPlanePropertiesKHR = Some(std::mem::transmute(try!(self.load_command(instance, "vkGetPhysicalDeviceDisplayPlanePropertiesKHR"))));
-            self.vkGetDisplayPlaneSupportedDisplaysKHR = Some(std::mem::transmute(try!(self.load_command(instance, "vkGetDisplayPlaneSupportedDisplaysKHR"))));
-            self.vkGetDisplayModePropertiesKHR = Some(std::mem::transmute(try!(self.load_command(instance, "vkGetDisplayModePropertiesKHR"))));
-            self.vkCreateDisplayModeKHR = Some(std::mem::transmute(try!(self.load_command(instance, "vkCreateDisplayModeKHR"))));
-            self.vkGetDisplayPlaneCapabilitiesKHR = Some(std::mem::transmute(try!(self.load_command(instance, "vkGetDisplayPlaneCapabilitiesKHR"))));
-            self.vkCreateDisplayPlaneSurfaceKHR = Some(std::mem::transmute(try!(self.load_command(instance, "vkCreateDisplayPlaneSurfaceKHR"))));
+            self.vkGetPhysicalDeviceDisplayPropertiesKHR = Some(transmute(load_command!(self, instance, "vkGetPhysicalDeviceDisplayPropertiesKHR")));
+            self.vkGetPhysicalDeviceDisplayPlanePropertiesKHR = Some(transmute(load_command!(self, instance, "vkGetPhysicalDeviceDisplayPlanePropertiesKHR")));
+            self.vkGetDisplayPlaneSupportedDisplaysKHR = Some(transmute(load_command!(self, instance, "vkGetDisplayPlaneSupportedDisplaysKHR")));
+            self.vkGetDisplayModePropertiesKHR = Some(transmute(load_command!(self, instance, "vkGetDisplayModePropertiesKHR")));
+            self.vkCreateDisplayModeKHR = Some(transmute(load_command!(self, instance, "vkCreateDisplayModeKHR")));
+            self.vkGetDisplayPlaneCapabilitiesKHR = Some(transmute(load_command!(self, instance, "vkGetDisplayPlaneCapabilitiesKHR")));
+            self.vkCreateDisplayPlaneSurfaceKHR = Some(transmute(load_command!(self, instance, "vkCreateDisplayPlaneSurfaceKHR")));
         }
         Ok(())
     }
@@ -4552,23 +4534,14 @@ impl VulkanKhrDisplaySwapchain {
             Ok(library) => Some(library),
         };
         unsafe {
-            vulkan_khr_display_swapchain.vkGetInstanceProcAddr = Some(std::mem::transmute(try!(vulkan_khr_display_swapchain.library.as_ref().unwrap().symbol::<u8>("vkGetInstanceProcAddr"))));
+            vulkan_khr_display_swapchain.vkGetInstanceProcAddr = Some(transmute(try!(vulkan_khr_display_swapchain.library.as_ref().unwrap().symbol::<u8>("vkGetInstanceProcAddr"))));
         }
         Ok(vulkan_khr_display_swapchain)
     }
 
-    unsafe fn load_command(&self, instance: VkInstance, name: &str) -> Result<vkVoidFunctionFn, String> {
-        let fn_ptr = (self.vkGetInstanceProcAddr.as_ref().unwrap())(instance, CString::new(name).unwrap().as_ptr());
-        if fn_ptr != std::ptr::null() {
-            Ok(fn_ptr)
-        } else {
-            Err(format!("Failed to load {}",name))
-        }
-    }
-
     pub fn load(&mut self, instance: VkInstance) -> Result<(), String> {
         unsafe {
-            self.vkCreateSharedSwapchainsKHR = Some(std::mem::transmute(try!(self.load_command(instance, "vkCreateSharedSwapchainsKHR"))));
+            self.vkCreateSharedSwapchainsKHR = Some(transmute(load_command!(self, instance, "vkCreateSharedSwapchainsKHR")));
         }
         Ok(())
     }
@@ -4580,6 +4553,85 @@ impl VulkanKhrDisplaySwapchain {
                                               pAllocator: *const VkAllocationCallbacks,
                                               pSwapchains: *mut VkSwapchainKHR) -> VkResult {
         (self.vkCreateSharedSwapchainsKHR.as_ref().unwrap())(device, swapchainCount, pCreateInfos, pAllocator, pSwapchains)
+    }
+}
+
+#[cfg(windows)]
+pub mod khr_win32_surface {
+    use super::*;
+    use super::VULKAN_LIBRARY;
+    use ::libc::{c_void, c_char, uint32_t, size_t, uint64_t, c_float, int32_t, uint8_t};
+    use ::shared_library::dynamic_library::DynamicLibrary;
+    use ::std::path::{Path};
+    use ::std::ffi::CString;
+    use ::winapi::{HINSTANCE, HWND};
+    use ::std::mem::transmute;
+
+    pub const VK_KHR_WIN32_SURFACE_SPEC_VERSION: uint32_t = 5;
+    pub const VK_KHR_WIN32_SURFACE_EXTENSION_NAME: *const c_char = b"VK_KHR_win32_surface\0" as *const u8 as *const c_char;
+    
+    pub type VkWin32SurfaceCreateFlagsKHR = VkFlags;
+    
+    #[repr(C)]
+    pub struct VkWin32SurfaceCreateInfoKHR {
+       pub sType: VkStructureType,
+       pub pNext: *const c_void,
+       pub flags: VkWin32SurfaceCreateFlagsKHR,
+       pub hinstance: HINSTANCE,
+       pub hwnd: HWND
+    }
+    
+    pub type vkCreateWin32SurfaceKHRFn = unsafe extern "stdcall" fn(instance: VkInstance, 
+                                                                   pCreateInfo: *const VkWin32SurfaceCreateInfoKHR,
+                                                                   pAllocator: *const VkAllocationCallbacks,
+                                                                   pSurface: *mut VkSurfaceKHR) -> VkResult;
+    
+    pub type vkGetPhysicalDeviceWin32PresentationSupportKHRFn = unsafe extern "stdcall" fn(physicalDevice: VkPhysicalDevice, 
+                                                                                          queueFamilyIndex: uint32_t) -> VkBool32;
+    
+    #[derive(Default)]
+    pub struct VulkanKhrWin32Surface {
+      library: Option<DynamicLibrary>,
+      vkGetInstanceProcAddr: Option<vkGetInstanceProcAddrFn>,
+      vkCreateWin32SurfaceKHR: Option<vkCreateWin32SurfaceKHRFn>,
+      vkGetPhysicalDeviceWin32PresentationSupportKHR: Option<vkGetPhysicalDeviceWin32PresentationSupportKHRFn>
+    }
+    
+    impl VulkanKhrWin32Surface {
+       pub fn new() -> Result<VulkanKhrWin32Surface, String> {
+           let mut vulkan_khr_win32_surface: VulkanKhrWin32Surface = Default::default();
+           let library_path = Path::new(VULKAN_LIBRARY);
+           vulkan_khr_win32_surface.library = match DynamicLibrary::open(Some(library_path)) {
+               Err(error) => return Err(format!("Failed to load {}: {}",VULKAN_LIBRARY,error)),
+               Ok(library) => Some(library),
+           };
+           unsafe {
+               vulkan_khr_win32_surface.vkGetInstanceProcAddr = Some(transmute(try!(vulkan_khr_win32_surface.library.as_ref().unwrap().symbol::<u8>("vkGetInstanceProcAddr"))));
+           }
+           Ok(vulkan_khr_win32_surface)
+       }
+    
+       pub fn load(&mut self, instance: VkInstance) -> Result<(), String> {
+           unsafe {
+               self.vkCreateWin32SurfaceKHR = Some(transmute(load_command!(self, instance, "vkCreateWin32SurfaceKHR")));
+               self.vkGetPhysicalDeviceWin32PresentationSupportKHR = Some(transmute(load_command!(self, instance, "vkGetPhysicalDeviceWin32PresentationSupportKHR")));
+           }
+           Ok(())
+       }
+    
+       pub unsafe fn vkCreateWin32SurfaceKHR(&self,
+                                             instance: VkInstance,
+                                             pCreateInfo: *const VkWin32SurfaceCreateInfoKHR,
+                                             pAllocator: *const VkAllocationCallbacks,
+                                             pSurface: *mut VkSurfaceKHR) -> VkResult {
+           (self.vkCreateWin32SurfaceKHR.as_ref().unwrap())(instance, pCreateInfo, pAllocator, pSurface)
+       }
+    
+       pub unsafe fn vkGetPhysicalDeviceWin32PresentationSupportKHR(&self,
+                                                                    physicalDevice: VkPhysicalDevice,
+                                                                    queueFamilyIndex: uint32_t) -> VkBool32 {
+           (self.vkGetPhysicalDeviceWin32PresentationSupportKHR.as_ref().unwrap())(physicalDevice, queueFamilyIndex)
+       }
     }
 }
 
@@ -4718,25 +4770,16 @@ impl VulkanExtDebugReport {
             Ok(library) => Some(library),
         };
         unsafe {
-            vulkan_ext_debug_report.vkGetInstanceProcAddr = Some(std::mem::transmute(try!(vulkan_ext_debug_report.library.as_ref().unwrap().symbol::<u8>("vkGetInstanceProcAddr"))));
+            vulkan_ext_debug_report.vkGetInstanceProcAddr = Some(transmute(try!(vulkan_ext_debug_report.library.as_ref().unwrap().symbol::<u8>("vkGetInstanceProcAddr"))));
         }
         Ok(vulkan_ext_debug_report)
     }
 
-    unsafe fn load_command(&self, instance: VkInstance, name: &str) -> Result<vkVoidFunctionFn, String> {
-        let fn_ptr = (self.vkGetInstanceProcAddr.as_ref().unwrap())(instance, CString::new(name).unwrap().as_ptr());
-        if fn_ptr != std::ptr::null() {
-            Ok(fn_ptr)
-        } else {
-            Err(format!("Failed to load {}",name))
-        }
-    }
-
     pub fn load(&mut self, instance: VkInstance) -> Result<(), String> {
         unsafe {
-            self.vkCreateDebugReportCallbackEXT = Some(std::mem::transmute(try!(self.load_command(instance, "vkCreateDebugReportCallbackEXT"))));
-            self.vkDestroyDebugReportCallbackEXT = Some(std::mem::transmute(try!(self.load_command(instance, "vkDestroyDebugReportCallbackEXT"))));
-            self.vkDebugReportMessageEXT = Some(std::mem::transmute(try!(self.load_command(instance, "vkDebugReportMessageEXT"))));
+            self.vkCreateDebugReportCallbackEXT = Some(transmute(load_command!(self, instance, "vkCreateDebugReportCallbackEXT")));
+            self.vkDestroyDebugReportCallbackEXT = Some(transmute(load_command!(self, instance, "vkDestroyDebugReportCallbackEXT")));
+            self.vkDebugReportMessageEXT = Some(transmute(load_command!(self, instance, "vkDebugReportMessageEXT")));
         }
         Ok(())
     }
