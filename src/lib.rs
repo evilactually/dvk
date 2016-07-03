@@ -39,7 +39,6 @@ pub mod core {
     use ::VULKAN_LIBRARY;
 
     #[macro_export]
-    #[macro_use]
     macro_rules! VK_MAKE_VERSION {
         ($major:expr, $minor:expr, $patch:expr) => ((($major) << 22) | (($minor) << 12) | ($patch));
     }
@@ -47,25 +46,21 @@ pub mod core {
     pub const VK_API_VERSION_1_0: uint32_t = VK_MAKE_VERSION!(1,0,0);
 
     #[macro_export]
-    #[macro_use]
     macro_rules! VK_VERSION_MAJOR {
         ($version:expr) => ($version >> 22);
     }
 
     #[macro_export]
-    #[macro_use]
     macro_rules! VK_VERSION_MINOR {
         ($version:expr) => (($version >> 12) & 0x3ff);
     }
 
     #[macro_export]
-    #[macro_use]
     macro_rules! VK_VERSION_PATCH {
         ($version:expr) => ($version & 0xfff);
     }
 
     #[macro_export]
-    #[macro_use]
     macro_rules! VK_DEFINE_NON_DISPATCHABLE_HANDLE {
         ($name:ident) => (
             #[derive(Clone)] 
@@ -74,14 +69,16 @@ pub mod core {
             pub struct $name(uint64_t);
             impl $name {
                 pub fn null() -> $name {
-                $name(0)
+                    $name(0)
+                }
+                pub fn is_null(&self) -> bool {
+                    self.0 == 0
                 }
             }
         );
     }
 
     #[macro_export]
-    #[macro_use]
     macro_rules! VK_DEFINE_HANDLE {
         ($name:ident) => (
             #[derive(Clone)] 
@@ -91,6 +88,9 @@ pub mod core {
             impl $name {
                 pub fn null() -> $name {
                     $name(::std::ptr::null())
+                }
+                pub fn is_null(&self) -> bool {
+                    self.0 == ::std::ptr::null()
                 }
             }
         );
