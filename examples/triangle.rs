@@ -23,6 +23,7 @@ use dvk::core::*;
 use dvk::khr_surface::*;
 use dvk::khr_win32_surface::*;
 use dvk::ext_debug_report::*;
+use dvk::khr_swapchain::*;
 
 unsafe extern "system" fn WindowProc(hwnd: HWND, uMsg: UINT, wParam: WPARAM, lParam: LPARAM) -> LRESULT {
     match uMsg {
@@ -57,7 +58,8 @@ struct VulkanContext {
     pub surface: VkSurfaceKHR,
     pub physicalDevice: VkPhysicalDevice,
     pub physicalDeviceProperties: VkPhysicalDeviceProperties,
-    pub presentQueueIdx: uint32_t
+    pub presentQueueIdx: uint32_t,
+    pub device: VkDevice
 }
 
 impl VulkanContext {
@@ -141,7 +143,7 @@ fn main() {
                 count + 1
             } else {
                 count
-            }   
+            }
         }), extensions.len());
         std::mem::drop(extensionsAvailable);
 
@@ -204,7 +206,7 @@ fn main() {
         let result = context.khr_win32_surface.vkCreateWin32SurfaceKHR(context.instance, &surfaceCreateInfo, null(), &mut context.surface);
         assert_eq!(result, VkResult::VK_SUCCESS);
 
-        // device
+        // find physical device and queue family index
         let mut physicalDeviceCount: uint32_t = 0;
         context.core.vkEnumeratePhysicalDevices(context.instance, &mut physicalDeviceCount, null_mut());
         let mut physicalDevices:Vec<VkPhysicalDevice> = Vec::with_capacity(physicalDeviceCount as usize);
@@ -241,6 +243,32 @@ fn main() {
         }
         std::mem::drop(physicalDeviceCount);
         assert!(!context.physicalDevice.is_null());
+
+        // acquire logical device
+        let mut queueCreateInfo = std::mem::zeroed::<VkDeviceQueueCreateInfo>();
+        queueCreateInfo.sType = VkStructureType::VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+        queueCreateInfo.queueFamilyIndex = context.presentQueueIdx;
+        queueCreateInfo.queueCount = 1;
+        let queuePriorities = [1.0f32];
+        queueCreateInfo.pQueuePriorities = &queuePriorities as *const f32;
+
+        let mut deviceInfo = std::mem::zeroed::<VkDeviceCreateInfo>();
+        deviceInfo.sType = VkStructureType::VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+        deviceInfo.queueCreateInfoCount = 1;
+        deviceInfo.pQueueCreateInfos = &queueCreateInfo;
+        deviceInfo.enabledLayerCount = 1;
+        deviceInfo.ppEnabledLayerNames = &layers as *const *const c_char;
+
+        let deviceExtensions = [VK_KHR_SWAPCHAIN_EXTENSION_NAME];
+        deviceInfo.enabledExtensionCount = 1;
+        deviceInfo.ppEnabledExtensionNames = &deviceExtensions as *const *const c_char;
+
+        let mut features = std::mem::zeroed::<VkPhysicalDeviceFeatures>();
+        features.shaderClipDistance = VK_TRUE;
+        deviceInfo.pEnabledFeatures = &features;
+
+        let result = context.core.vkCreateDevice(context.physicalDevice, &deviceInfo, null(), &mut context.device);
+        assert_eq!(result, VkResult::VK_SUCCESS);
 
         ShowWindow(hwnd, SW_SHOW);
         let mut msg: MSG = std::mem::zeroed();
