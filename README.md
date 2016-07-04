@@ -4,11 +4,11 @@ This library is designed following the principle of minimum surprise, it deviate
 
 The following types were introduced:
 
-*Union wrappers*
+### Union wrappers
 *VkClearValueUnion
 *VkClearColorValueUnion 
 
-*Dynamic Command Loaders*
+### Dynamic Command Loaders 
 *VulkanCore
 *VulkanKhrSurface
 *VulkanKhrSwapchain
