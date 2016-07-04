@@ -2,7 +2,8 @@
 
 This library is designed following the principle of minimum surprise, it deviates very little from the official headers and does not pollute official Vulkan namespace with only a few exceptions.
 
-The following types were introduced:
+
+The following types had to be introduced:
 
 ### Union wrappers
 * VkClearValueUnion
