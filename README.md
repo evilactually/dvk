@@ -39,7 +39,7 @@ There are only a handful of places where either language differences or the requ
 * All handle types implement ```null``` function to construct empty handles, as well as corresponding 
 method ```is_null``` to check if a handle is empty.
 
-## Usage
+# Usage
 ```
 #[macro_use]
 extern crate dvk;
@@ -75,7 +75,7 @@ core.vkQueueSubmit(...);
 let clear_depth_stencil_value = VkClearDepthStencilValue{depth:0.0f32, stencil: 0u32};
 let clear_value: VkClearValue = VkClearValueUnion::DepthStencil(clear_depth_stencil_value).into();
 ```
-## Sample code
+# Sample code
 Sample code is available in ```examples/triangle.rs```. To compile( or run) do:
 ```
 > cargo build(or run) --examples triangle
