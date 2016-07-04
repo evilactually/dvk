@@ -5,17 +5,17 @@ This library is designed following the principle of minimum surprise, it deviate
 The following types were introduced:
 
 ### Union wrappers
-*VkClearValueUnion
-*VkClearColorValueUnion 
+* VkClearValueUnion
+* VkClearColorValueUnion 
 
 ### Dynamic Command Loaders 
-*VulkanCore
-*VulkanKhrSurface
-*VulkanKhrSwapchain
-*VulkanKhrDisplay
-*VulkanKhrDisplaySwapchain
-*VulkanKhrWin32Surface
-*VulkanExtDebugReport
+* VulkanCore
+* VulkanKhrSurface
+* VulkanKhrSwapchain
+* VulkanKhrDisplay
+* VulkanKhrDisplaySwapchain
+* VulkanKhrWin32Surface
+* VulkanExtDebugReport
 
 The following functions were introduced:
 
