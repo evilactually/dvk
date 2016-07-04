@@ -26,13 +26,13 @@ There are only a handful of places where either language differences or the requ
 
 * Core commands are loaded in two stages, first global when you call ```Vulkan*::new()``` then instance-specific, when you call ```Vulkan::load(&mut self, VkInstance)```
 
-* When you call ```VulkanCore::new()``` only the following 3 commands are loaded: ```vkCreateInstance```, ```vkEnumerateInstanceExtensionProperties``` and ```vkEnumerateInstanceLayerProperties```.
+* When you call ```VulkanCore::new()``` only the following 3 commands are loaded: ```vkCreateInstance```, ```vkEnumerateInstanceExtensionProperties``` and ```vkEnumerateInstanceLayerProperties```
 
 * Extension commands are always instance-specific, but still follow same loading pattern, first  ```VulkanKhr/Ext*::new()```, then ```VulkanKhr/Ext*::load(&mut self, VkInstance)```
 
 * Platform types are redefined to reduce operating system specific dependencies, use ```std::mem::transmute``` to cast between them.
 
-* Structs are not copyable/clonable because fixed arrays and function pointers in Rust are not. Enums, bitflags, handles, scalar-types are.
+* Structs are not copyable/clonable because fixed arrays and function pointers in Rust are not. Enums, bitflags, handles and scalar-types are.
 
 * Since Rust has no analog to C Unions they are simulated using combination of tagged union types and a From trait.
 
