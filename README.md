@@ -1,7 +1,5 @@
 # QUIRKS & PECULARITIES 
 
-During design of these bindings I had to make some hard decisions, that may not necessarily please everyone, but due to the language differences between Rust and C they nevertheless had to be made.
-
 * Core functions are loaded dynamically and returned in a struct.
 
 * Core functions are loaded in two stages, first global, then instance-specific. 
