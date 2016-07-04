@@ -1,8 +1,33 @@
 # QUIRKS & PECULARITIES 
 
+This library is designed following the principle of minimum surprise, it deviates very little from the official headers and does not pollute official Vulkan namespace with only a few exceptions.
+
+The following types were introduced:
+
+*Union wrappers*
+*VkClearValueUnion
+*VkClearColorValueUnion 
+
+*Dynamic Command Loaders*
+*VulkanCore
+*VulkanKhrSurface
+*VulkanKhrSwapchain
+*VulkanKhrDisplay
+*VulkanKhrDisplaySwapchain
+*VulkanKhrWin32Surface
+*VulkanExtDebugReport
+
+The following functions were introduced:
+
+* Vulkan*::new() and Vulkan::load(&mut self)
+*
+
+
+Other notable deviations from official headers
+
 * Core functions are loaded dynamically and returned in a struct.
 
-* Core functions are loaded in two stages, first global, then instance-specific. 
+* Core functions are loaded in two stages, first global then instance-specific. 
 
 * Extension functions are always instance-specific, but still follow same pattern.
 
