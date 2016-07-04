@@ -147,6 +147,8 @@ pub mod core {
     #[derive(Eq)]
     #[derive(PartialEq)]
     #[derive(Debug)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub enum VkPipelineCacheHeaderVersion {
         VK_PIPELINE_CACHE_HEADER_VERSION_ONE = 1
     }
@@ -155,6 +157,8 @@ pub mod core {
     #[derive(Eq)]
     #[derive(PartialEq)]
     #[derive(Debug)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub enum VkResult {
         VK_SUCCESS = 0,
         VK_NOT_READY = 1,
@@ -186,6 +190,8 @@ pub mod core {
     #[derive(Eq)]
     #[derive(PartialEq)]
     #[derive(Debug)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub enum VkStructureType {
         VK_STRUCTURE_TYPE_APPLICATION_INFO = 0,
         VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO = 1,
@@ -258,6 +264,8 @@ pub mod core {
     #[derive(Eq)]
     #[derive(PartialEq)]
     #[derive(Debug)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub enum VkSystemAllocationScope {
         VK_SYSTEM_ALLOCATION_SCOPE_COMMAND = 0,
         VK_SYSTEM_ALLOCATION_SCOPE_OBJECT = 1,
@@ -270,6 +278,8 @@ pub mod core {
     #[derive(Eq)]
     #[derive(PartialEq)]
     #[derive(Debug)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub enum VkInternalAllocationType {
         VK_INTERNAL_ALLOCATION_TYPE_EXECUTABLE = 0
     }
@@ -278,6 +288,8 @@ pub mod core {
     #[derive(Eq)]
     #[derive(PartialEq)]
     #[derive(Debug)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub enum VkFormat {
         VK_FORMAT_UNDEFINED = 0,
         VK_FORMAT_R4G4_UNORM_PACK8 = 1,
@@ -470,6 +482,8 @@ pub mod core {
     #[derive(Eq)]
     #[derive(PartialEq)]
     #[derive(Debug)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub enum VkImageType {
         VK_IMAGE_TYPE_1D = 0,
         VK_IMAGE_TYPE_2D = 1,
@@ -480,6 +494,8 @@ pub mod core {
     #[derive(Eq)]
     #[derive(PartialEq)]
     #[derive(Debug)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub enum VkImageTiling {
         VK_IMAGE_TILING_OPTIMAL = 0,
         VK_IMAGE_TILING_LINEAR = 1
@@ -489,6 +505,8 @@ pub mod core {
     #[derive(Eq)]
     #[derive(PartialEq)]
     #[derive(Debug)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub enum VkPhysicalDeviceType {
         VK_PHYSICAL_DEVICE_TYPE_OTHER = 0,
         VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU = 1,
@@ -501,6 +519,8 @@ pub mod core {
     #[derive(Eq)]
     #[derive(PartialEq)]
     #[derive(Debug)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub enum VkQueryType {
         VK_QUERY_TYPE_OCCLUSION = 0,
         VK_QUERY_TYPE_PIPELINE_STATISTICS = 1,
@@ -511,6 +531,8 @@ pub mod core {
     #[derive(Eq)]
     #[derive(PartialEq)]
     #[derive(Debug)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub enum VkSharingMode {
         VK_SHARING_MODE_EXCLUSIVE = 0,
         VK_SHARING_MODE_CONCURRENT = 1
@@ -520,6 +542,8 @@ pub mod core {
     #[derive(Eq)]
     #[derive(PartialEq)]
     #[derive(Debug)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub enum VkImageLayout {
         VK_IMAGE_LAYOUT_UNDEFINED = 0,
         VK_IMAGE_LAYOUT_GENERAL = 1,
@@ -537,6 +561,8 @@ pub mod core {
     #[derive(Eq)]
     #[derive(PartialEq)]
     #[derive(Debug)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub enum VkImageViewType {
         VK_IMAGE_VIEW_TYPE_1D = 0,
         VK_IMAGE_VIEW_TYPE_2D = 1,
@@ -551,6 +577,8 @@ pub mod core {
     #[derive(Eq)]
     #[derive(PartialEq)]
     #[derive(Debug)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub enum VkComponentSwizzle {
         VK_COMPONENT_SWIZZLE_IDENTITY = 0,
         VK_COMPONENT_SWIZZLE_ZERO = 1,
@@ -565,6 +593,8 @@ pub mod core {
     #[derive(Eq)]
     #[derive(PartialEq)]
     #[derive(Debug)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub enum VkVertexInputRate {
         VK_VERTEX_INPUT_RATE_VERTEX = 0,
         VK_VERTEX_INPUT_RATE_INSTANCE = 1
@@ -574,6 +604,8 @@ pub mod core {
     #[derive(Eq)]
     #[derive(PartialEq)]
     #[derive(Debug)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub enum VkPrimitiveTopology {
         VK_PRIMITIVE_TOPOLOGY_POINT_LIST = 0,
         VK_PRIMITIVE_TOPOLOGY_LINE_LIST = 1,
@@ -592,6 +624,8 @@ pub mod core {
     #[derive(Eq)]
     #[derive(PartialEq)]
     #[derive(Debug)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub enum VkPolygonMode {
         VK_POLYGON_MODE_FILL = 0,
         VK_POLYGON_MODE_LINE = 1,
@@ -602,6 +636,8 @@ pub mod core {
     #[derive(Eq)]
     #[derive(PartialEq)]
     #[derive(Debug)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub enum VkFrontFace {
         VK_FRONT_FACE_COUNTER_CLOCKWISE = 0,
         VK_FRONT_FACE_CLOCKWISE = 1
@@ -611,6 +647,8 @@ pub mod core {
     #[derive(Eq)]
     #[derive(PartialEq)]
     #[derive(Debug)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub enum VkCompareOp {
         VK_COMPARE_OP_NEVER = 0,
         VK_COMPARE_OP_LESS = 1,
@@ -626,6 +664,8 @@ pub mod core {
     #[derive(Eq)]
     #[derive(PartialEq)]
     #[derive(Debug)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub enum VkStencilOp {
         VK_STENCIL_OP_KEEP = 0,
         VK_STENCIL_OP_ZERO = 1,
@@ -641,6 +681,8 @@ pub mod core {
     #[derive(Eq)]
     #[derive(PartialEq)]
     #[derive(Debug)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub enum VkLogicOp {
         VK_LOGIC_OP_CLEAR = 0,
         VK_LOGIC_OP_AND = 1,
@@ -664,6 +706,8 @@ pub mod core {
     #[derive(Eq)]
     #[derive(PartialEq)]
     #[derive(Debug)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub enum VkBlendFactor {
         VK_BLEND_FACTOR_ZERO = 0,
         VK_BLEND_FACTOR_ONE = 1,
@@ -690,6 +734,8 @@ pub mod core {
     #[derive(Eq)]
     #[derive(PartialEq)]
     #[derive(Debug)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub enum VkBlendOp {
         VK_BLEND_OP_ADD = 0,
         VK_BLEND_OP_SUBTRACT = 1,
@@ -702,6 +748,8 @@ pub mod core {
     #[derive(Eq)]
     #[derive(PartialEq)]
     #[derive(Debug)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub enum VkDynamicState {
         VK_DYNAMIC_STATE_VIEWPORT = 0,
         VK_DYNAMIC_STATE_SCISSOR = 1,
@@ -718,6 +766,8 @@ pub mod core {
     #[derive(Eq)]
     #[derive(PartialEq)]
     #[derive(Debug)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub enum VkFilter {
         VK_FILTER_NEAREST = 0,
         VK_FILTER_LINEAR = 1,
@@ -728,6 +778,8 @@ pub mod core {
     #[derive(Eq)]
     #[derive(PartialEq)]
     #[derive(Debug)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub enum VkSamplerMipmapMode {
         VK_SAMPLER_MIPMAP_MODE_NEAREST = 0,
         VK_SAMPLER_MIPMAP_MODE_LINEAR = 1
@@ -737,6 +789,8 @@ pub mod core {
     #[derive(Eq)]
     #[derive(PartialEq)]
     #[derive(Debug)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub enum VkSamplerAddressMode {
         VK_SAMPLER_ADDRESS_MODE_REPEAT = 0,
         VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT = 1,
@@ -749,6 +803,8 @@ pub mod core {
     #[derive(Eq)]
     #[derive(PartialEq)]
     #[derive(Debug)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub enum VkBorderColor {
         VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK = 0,
         VK_BORDER_COLOR_INT_TRANSPARENT_BLACK = 1,
@@ -762,6 +818,8 @@ pub mod core {
     #[derive(Eq)]
     #[derive(PartialEq)]
     #[derive(Debug)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub enum VkDescriptorType {
         VK_DESCRIPTOR_TYPE_SAMPLER = 0,
         VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER = 1,
@@ -780,6 +838,8 @@ pub mod core {
     #[derive(Eq)]
     #[derive(PartialEq)]
     #[derive(Debug)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub enum VkAttachmentLoadOp {
         VK_ATTACHMENT_LOAD_OP_LOAD = 0,
         VK_ATTACHMENT_LOAD_OP_CLEAR = 1,
@@ -790,6 +850,8 @@ pub mod core {
     #[derive(Eq)]
     #[derive(PartialEq)]
     #[derive(Debug)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub enum VkAttachmentStoreOp {
         VK_ATTACHMENT_STORE_OP_STORE = 0,
         VK_ATTACHMENT_STORE_OP_DONT_CARE = 1
@@ -799,6 +861,8 @@ pub mod core {
     #[derive(Eq)]
     #[derive(PartialEq)]
     #[derive(Debug)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub enum VkPipelineBindPoint {
         VK_PIPELINE_BIND_POINT_GRAPHICS = 0,
         VK_PIPELINE_BIND_POINT_COMPUTE = 1
@@ -808,6 +872,8 @@ pub mod core {
     #[derive(Eq)]
     #[derive(PartialEq)]
     #[derive(Debug)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub enum VkCommandBufferLevel {
         VK_COMMAND_BUFFER_LEVEL_PRIMARY = 0,
         VK_COMMAND_BUFFER_LEVEL_SECONDARY = 1
@@ -817,6 +883,8 @@ pub mod core {
     #[derive(Eq)]
     #[derive(PartialEq)]
     #[derive(Debug)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub enum VkIndexType {
         VK_INDEX_TYPE_UINT16 = 0,
         VK_INDEX_TYPE_UINT32 = 1
@@ -826,6 +894,8 @@ pub mod core {
     #[derive(Eq)]
     #[derive(PartialEq)]
     #[derive(Debug)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub enum VkSubpassContents {
         VK_SUBPASS_CONTENTS_INLINE = 0,
         VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS = 1
@@ -3958,6 +4028,8 @@ pub mod khr_surface {
     #[derive(Eq)]
     #[derive(PartialEq)]
     #[derive(Debug)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub enum VkColorSpaceKHR {
         VK_COLOR_SPACE_SRGB_NONLINEAR_KHR = 0
     }
@@ -3966,6 +4038,8 @@ pub mod khr_surface {
     #[derive(Eq)]
     #[derive(PartialEq)]
     #[derive(Debug)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub enum VkPresentModeKHR {
         VK_PRESENT_MODE_IMMEDIATE_KHR = 0,
         VK_PRESENT_MODE_MAILBOX_KHR = 1,
@@ -4135,6 +4209,8 @@ pub mod khr_swapchain {
     #[derive(Eq)]
     #[derive(PartialEq)]
     #[derive(Debug)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub enum VkKhrSwapchainImageLayout {
         VK_IMAGE_LAYOUT_PRESENT_SRC_KHR = 1000001002
     }
@@ -4679,6 +4755,8 @@ pub mod ext_debug_report {
     #[derive(Eq)]
     #[derive(PartialEq)]
     #[derive(Debug)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub enum VkDebugReportObjectTypeEXT {
         VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT = 0,
         VK_DEBUG_REPORT_OBJECT_TYPE_INSTANCE_EXT = 1,
@@ -4715,6 +4793,8 @@ pub mod ext_debug_report {
     #[derive(Eq)]
     #[derive(PartialEq)]
     #[derive(Debug)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub enum VkDebugReportErrorEXT {
         VK_DEBUG_REPORT_ERROR_NONE_EXT = 0,
         VK_DEBUG_REPORT_ERROR_CALLBACK_REF_EXT = 1
