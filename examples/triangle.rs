@@ -12,10 +12,10 @@ use std::ffi::{CString, CStr};
 use std::ptr::{null, null_mut};
 use winapi::{SW_SHOW, MSG, WM_CLOSE, HWND, WPARAM, LPARAM, LRESULT, CS_OWNDC, CS_VREDRAW, CS_HREDRAW,
              WM_QUIT, RDW_INTERNALPAINT, WS_OVERLAPPEDWINDOW, WS_VISIBLE, ATOM, LPCWSTR, BLACK_BRUSH,
-             IDC_ARROW, UINT, WNDCLASSEXW, HBRUSH, PM_REMOVE};
+             IDC_ARROW, UINT, WNDCLASSEXW, HBRUSH, PM_REMOVE, RECT};
 use gdi32::{GetStockObject};
 use user32::{CreateWindowExW, RedrawWindow, RegisterClassExW, PostQuitMessage, LoadCursorW, DefWindowProcA,
-             ShowWindow, PeekMessageW, DispatchMessageW, TranslateMessage};
+             ShowWindow, PeekMessageW, DispatchMessageW, TranslateMessage, AdjustWindowRect};
 use kernel32::{GetModuleHandleA};
 use libc::{uint32_t, uint64_t, int32_t, size_t, c_char, c_void};
 use std::mem::{transmute};
@@ -49,6 +49,8 @@ unsafe extern "stdcall" fn DebugReportCallback(flags: VkDebugReportFlagsEXT,
 }
 
 struct VulkanContext {
+    pub width: uint32_t,
+    pub height: uint32_t,
     pub core: VulkanCore,
     pub ext_debug_report: VulkanExtDebugReport,
     pub khr_surface: VulkanKhrSurface,
@@ -66,6 +68,8 @@ impl VulkanContext {
     pub fn new() -> VulkanContext {
         unsafe {
             let mut context = std::mem::zeroed::<VulkanContext>();
+            context.width = 640;
+            context.height = 480;
             context.core = VulkanCore::new().unwrap();
             context.khr_surface = VulkanKhrSurface::new().unwrap();
             context.khr_win32_surface = VulkanKhrWin32Surface::new().unwrap();
@@ -77,6 +81,7 @@ impl VulkanContext {
 
 fn main() {
     unsafe {
+        let mut context = VulkanContext::new();
         let hInstance = GetModuleHandleA(null());
         let window_class = WNDCLASSEXW {
             cbSize:size_of::<WNDCLASSEXW>() as UINT,
@@ -93,23 +98,25 @@ fn main() {
             hIconSm: std::ptr::null_mut()
         };
         let class_atom : ATOM = RegisterClassExW(&window_class);
+        let mut window_rectangle = RECT {left: 100,
+                                         top: 100,
+                                         right: 100 + context.width as i32,
+                                         bottom: 100 + context.height as i32};
+        AdjustWindowRect(&mut window_rectangle, WS_OVERLAPPEDWINDOW, 0);
         let hwnd = CreateWindowExW(0,
                                    class_atom as LPCWSTR,
                                    CString::new("Triangle").unwrap().as_ptr() as LPCWSTR,
                                    WS_OVERLAPPEDWINDOW | WS_VISIBLE,
-                                   100,
-                                   100,
-                                   800,
-                                   600,
+                                   window_rectangle.left,
+                                   window_rectangle.top,
+                                   window_rectangle.right - window_rectangle.left,
+                                   window_rectangle.bottom - window_rectangle.top,
                                    null_mut(),
                                    null_mut(),
                                    hInstance,
                                    null_mut());
-
         let VK_LUNARG_STANDARD_VALIDATION_NAME = CString::new("VK_LAYER_LUNARG_standard_validation").unwrap();
         
-        let mut context = VulkanContext::new();
-
         // check validation layers
         let mut layerCount: uint32_t = 0;
         context.core.vkEnumerateInstanceLayerProperties(&mut layerCount, null_mut());
@@ -269,6 +276,62 @@ fn main() {
 
         let result = context.core.vkCreateDevice(context.physicalDevice, &deviceInfo, null(), &mut context.device);
         assert_eq!(result, VkResult::VK_SUCCESS);
+
+        // swap chain
+        let mut formatCount: uint32_t = 0;
+        context.khr_surface.vkGetPhysicalDeviceSurfaceFormatsKHR(context.physicalDevice, context.surface, &mut formatCount, null_mut());
+        let mut surfaceFormats:Vec<VkSurfaceFormatKHR> = Vec::with_capacity(formatCount as usize);
+        context.khr_surface.vkGetPhysicalDeviceSurfaceFormatsKHR(context.physicalDevice,
+                                                                 context.surface,
+                                                                 &mut formatCount,
+                                                                 surfaceFormats.as_mut_ptr());
+        surfaceFormats.set_len(formatCount as usize);
+
+        // If the format list includes just one entry of VK_FORMAT_UNDEFINED, the surface has
+        // no preferred format. Otherwise, at least one supported format will be returned.
+        let colorFormat: VkFormat = if(formatCount == 1 && surfaceFormats[0].format == VkFormat::VK_FORMAT_UNDEFINED) {
+            VkFormat::VK_FORMAT_B8G8R8_UNORM
+        } else {
+            surfaceFormats[0].format
+        };
+
+        let colorSpace: VkColorSpaceKHR = surfaceFormats[0].colorSpace;
+        std::mem::drop(surfaceFormats);
+
+        let mut surfaceCapabilities = std::mem::zeroed::<VkSurfaceCapabilitiesKHR>();
+        context.khr_surface.vkGetPhysicalDeviceSurfaceCapabilitiesKHR(context.physicalDevice, context.surface, &mut surfaceCapabilities);
+
+        // we are effectively looking for double-buffering:
+        // if surfaceCapabilities.maxImageCount == 0 there is actually no limit on the number of images! 
+        let mut desiredImageCount: uint32_t = 2;
+        if desiredImageCount < surfaceCapabilities.minImageCount {
+            desiredImageCount = surfaceCapabilities.minImageCount;
+        } else if surfaceCapabilities.maxImageCount != 0 && 
+                  desiredImageCount > surfaceCapabilities.maxImageCount {
+            desiredImageCount = surfaceCapabilities.maxImageCount;
+        }
+
+        let mut surfaceResolution: VkExtent2D = surfaceCapabilities.currentExtent;
+        if surfaceResolution.width == (-1i32) as u32 {
+            surfaceResolution.width = context.width;
+            surfaceResolution.height = context.height;
+        } else {
+            context.width = surfaceResolution.width;
+            context.height = surfaceResolution.height;
+        }
+
+        let preTransform = if surfaceCapabilities.supportedTransforms.contains(VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR) {
+            VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR
+        } else {
+            surfaceCapabilities.currentTransform
+        };
+
+        let mut presentModeCount: uint32_t = 0;
+        vkGetPhysicalDeviceSurfacePresentModesKHR(context.physicalDevice, context.surface, 
+                                                  &presentModeCount, );
+VkPresentModeKHR *presentModes = new VkPresentModeKHR[presentModeCount];
+vkGetPhysicalDeviceSurfacePresentModesKHR( context.physicalDevice, context.surface, 
+                                           &presentModeCount, presentModes );
 
         ShowWindow(hwnd, SW_SHOW);
         let mut msg: MSG = std::mem::zeroed();
