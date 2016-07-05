@@ -55,13 +55,15 @@ struct VulkanContext {
     pub ext_debug_report: VulkanExtDebugReport,
     pub khr_surface: VulkanKhrSurface,
     pub khr_win32_surface: VulkanKhrWin32Surface,
+    pub khr_swapchain: VulkanKhrSwapchain,
     pub instance: VkInstance,
     pub debug_callback: VkDebugReportCallbackEXT,
     pub surface: VkSurfaceKHR,
     pub physicalDevice: VkPhysicalDevice,
     pub physicalDeviceProperties: VkPhysicalDeviceProperties,
     pub presentQueueIdx: uint32_t,
-    pub device: VkDevice
+    pub device: VkDevice,
+    pub swapChain: VkSwapchainKHR
 }
 
 impl VulkanContext {
@@ -73,6 +75,7 @@ impl VulkanContext {
             context.core = VulkanCore::new().unwrap();
             context.khr_surface = VulkanKhrSurface::new().unwrap();
             context.khr_win32_surface = VulkanKhrWin32Surface::new().unwrap();
+            context.khr_swapchain = VulkanKhrSwapchain::new().unwrap();
             context.ext_debug_report = VulkanExtDebugReport::new().unwrap();
             context
         }
@@ -278,6 +281,8 @@ fn main() {
         assert_eq!(result, VkResult::VK_SUCCESS);
 
         // swap chain
+
+        // format
         let mut formatCount: uint32_t = 0;
         context.khr_surface.vkGetPhysicalDeviceSurfaceFormatsKHR(context.physicalDevice, context.surface, &mut formatCount, null_mut());
         let mut surfaceFormats:Vec<VkSurfaceFormatKHR> = Vec::with_capacity(formatCount as usize);
@@ -301,6 +306,8 @@ fn main() {
         let mut surfaceCapabilities = std::mem::zeroed::<VkSurfaceCapabilitiesKHR>();
         context.khr_surface.vkGetPhysicalDeviceSurfaceCapabilitiesKHR(context.physicalDevice, context.surface, &mut surfaceCapabilities);
 
+        // image count
+
         // we are effectively looking for double-buffering:
         // if surfaceCapabilities.maxImageCount == 0 there is actually no limit on the number of images! 
         let mut desiredImageCount: uint32_t = 2;
@@ -310,6 +317,8 @@ fn main() {
                   desiredImageCount > surfaceCapabilities.maxImageCount {
             desiredImageCount = surfaceCapabilities.maxImageCount;
         }
+
+        // resolution
 
         let mut surfaceResolution: VkExtent2D = surfaceCapabilities.currentExtent;
         if surfaceResolution.width == (-1i32) as u32 {
@@ -326,12 +335,52 @@ fn main() {
             surfaceCapabilities.currentTransform
         };
 
+        // present mode
         let mut presentModeCount: uint32_t = 0;
-        vkGetPhysicalDeviceSurfacePresentModesKHR(context.physicalDevice, context.surface, 
-                                                  &presentModeCount, );
-VkPresentModeKHR *presentModes = new VkPresentModeKHR[presentModeCount];
-vkGetPhysicalDeviceSurfacePresentModesKHR( context.physicalDevice, context.surface, 
-                                           &presentModeCount, presentModes );
+        context.khr_surface.vkGetPhysicalDeviceSurfacePresentModesKHR(context.physicalDevice,
+                                                                      context.surface, 
+                                                                      &mut presentModeCount,
+                                                                      null_mut());
+        let mut presentModes:Vec<VkPresentModeKHR> = Vec::with_capacity(presentModeCount as usize);
+        context.khr_surface.vkGetPhysicalDeviceSurfacePresentModesKHR(context.physicalDevice,
+                                                                      context.surface, 
+                                                                      &mut presentModeCount,
+                                                                      presentModes.as_mut_ptr());
+        presentModes.set_len(presentModeCount as usize);
+
+        let mail_box_supported = presentModes.iter().any(|presentMode| {
+            *presentMode == VkPresentModeKHR::VK_PRESENT_MODE_MAILBOX_KHR
+        });
+
+        let presentationMode = if mail_box_supported {
+            VkPresentModeKHR::VK_PRESENT_MODE_MAILBOX_KHR
+        } else {
+            VkPresentModeKHR::VK_PRESENT_MODE_FIFO_KHR
+        };
+        std::mem::drop(presentModes);
+
+        // create swap chain
+        let swapChainCreateInfo = VkSwapchainCreateInfoKHR {
+            sType: VkStructureType::VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
+            surface: context.surface,
+            minImageCount: desiredImageCount,
+            imageFormat: colorFormat,
+            imageColorSpace: colorSpace,
+            imageExtent: surfaceResolution,
+            imageArrayLayers: 1,
+            imageUsage: VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+            imageSharingMode: VkSharingMode::VK_SHARING_MODE_EXCLUSIVE,   // <--
+            preTransform: preTransform,
+            compositeAlpha: VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
+            presentMode: presentationMode,
+            clipped: VK_TRUE, // If we want clipping outside the extents
+            .. std::mem::zeroed::<VkSwapchainCreateInfoKHR>()}; 
+
+        let result = context.khr_swapchain.vkCreateSwapchainKHR(context.device,
+                                                                &swapChainCreateInfo,
+                                                                null(),
+                                                                &mut context.swapChain);
+        assert_eq!(result, VkResult::VK_SUCCESS);
 
         ShowWindow(hwnd, SW_SHOW);
         let mut msg: MSG = std::mem::zeroed();
