@@ -61,7 +61,7 @@ Since Rust has no analog to *C unions* they are simulated using combination of *
 All handles are type-safe, which unfortunately makes it awkward to produce "NULL" handles. For that reason all handle types implement ```null``` function to construct empty handles, as well as corresponding method ```is_null``` to check if a handle is empty.
 
 ## Usage
-Here's a short example to illustrate basing use
+Here's a short example to illustrate basic use
 
 	#[macro_use]
 	extern crate dvk;
