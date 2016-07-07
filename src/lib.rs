@@ -1304,13 +1304,8 @@ pub mod core {
     // Due to Rust issue #24000
     impl Clone for VkAllocationCallbacks {
         fn clone(&self) -> Self {
-            VkAllocationCallbacks {
-                pfnAllocation: self.pfnAllocation,
-                pfnReallocation: self.pfnReallocation,
-                pfnFree: self.pfnFree,
-                pfnInternalAllocation: self.pfnInternalAllocation,
-                pfnInternalFree: self.pfnInternalFree,
-                .. *self
+            unsafe {
+                ::std::mem::transmute_copy(self)
             }
         }
     }
@@ -4322,6 +4317,8 @@ pub mod khr_surface {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkSurfaceCapabilitiesKHR {
         pub minImageCount: uint32_t,
         pub maxImageCount: uint32_t,
@@ -4336,6 +4333,8 @@ pub mod khr_surface {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkSurfaceFormatKHR {
         pub format: VkFormat,
         pub colorSpace: VkColorSpaceKHR
@@ -4477,6 +4476,8 @@ pub mod khr_swapchain {
     pub type VkSwapchainCreateFlagsKHR = VkFlags;
     
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkSwapchainCreateInfoKHR {
         pub sType: VkStructureType,
         pub pNext: *const c_void,
@@ -4499,6 +4500,8 @@ pub mod khr_swapchain {
     }
     
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkPresentInfoKHR {
         pub sType: VkStructureType,
         pub pNext: *const c_void,
@@ -4640,6 +4643,8 @@ pub mod khr_display {
     pub type VkDisplaySurfaceCreateFlagsKHR = VkFlags;
     
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkDisplayPropertiesKHR {
         pub display: VkDisplayKHR,
         pub displayName: *const c_char,
@@ -4651,18 +4656,24 @@ pub mod khr_display {
     }
     
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkDisplayModeParametersKHR {
         pub visibleRegion: VkExtent2D,
         pub refreshRate: uint32_t
     }
     
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkDisplayModePropertiesKHR {
         pub displayMode: VkDisplayModeKHR,
         pub parameters: VkDisplayModeParametersKHR
     }
     
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkDisplayModeCreateInfoKHR {
         pub sType: VkStructureType,
         pub pNext: *const c_void,
@@ -4671,6 +4682,8 @@ pub mod khr_display {
     }
     
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkDisplayPlaneCapabilitiesKHR {
         pub supportedAlpha: VkDisplayPlaneAlphaFlagsKHR,
         pub minSrcPosition: VkOffset2D,
@@ -4684,12 +4697,16 @@ pub mod khr_display {
     }
     
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkDisplayPlanePropertiesKHR {
         pub currentDisplay: VkDisplayKHR,
         pub currentStackIndex: uint32_t
     }
     
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkDisplaySurfaceCreateInfoKHR {
         pub sType: VkStructureType,
         pub pNext: *const c_void,
@@ -4849,6 +4866,8 @@ pub mod khr_display_swapchain {
     pub const VK_KHR_DISPLAY_SWAPCHAIN_EXTENSION_NAME: *const c_char = b"VK_KHR_display_swapchain\0" as *const u8 as *const c_char;
     
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkDisplayPresentInfoKHR {
         pub sType: VkStructureType,
         pub pNext: *const c_void,
@@ -4924,6 +4943,8 @@ pub mod khr_win32_surface {
     pub type VkWin32SurfaceCreateFlagsKHR = VkFlags;
     
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkWin32SurfaceCreateInfoKHR {
         pub sType: VkStructureType,
         pub pNext: *const c_void,
@@ -5070,14 +5091,24 @@ pub mod ext_debug_report {
                                                                      pMessage: *const c_char,
                                                                      pUserData: *mut c_void) -> VkBool32;
     #[repr(C)]
+    #[derive(Copy)]
     pub struct VkDebugReportCallbackCreateInfoEXT {
         pub sType: VkStructureType,
         pub pNext: *const c_void,
         pub flags: VkDebugReportFlagsEXT,
-        pub pfnCallback: vkDebugReportCallbackEXTFn,
+        pub pfnCallback: Option<vkDebugReportCallbackEXTFn>,
         pub pUserData: *mut c_void
     }
     
+    // Due to Rust issue #24000
+    impl Clone for VkDebugReportCallbackCreateInfoEXT {
+        fn clone(&self) -> Self {
+            unsafe {
+                ::std::mem::transmute_copy(self)
+            }
+        }
+    }
+
     pub type vkCreateDebugReportCallbackEXTFn = unsafe extern "stdcall" fn(instance: VkInstance,
                                                                            pCreateInfo: *const VkDebugReportCallbackCreateInfoEXT,
                                                                            pAllocator: *const VkAllocationCallbacks, 
