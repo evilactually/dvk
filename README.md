@@ -23,42 +23,42 @@ All definitions are orginized into modules, the main one is *core*, the rest *kh
 * VkDescriptorPoolSize.type is renamed to dType due to naming collision with Rust keyword type
 
 ### Functions
-* Vulkan*::new() and Vulkan*::load(&mut self, VkInstance)
-* ::null() and ::is_null(&self) for all handles
-* From trait implementation for *Union types
+* ```Vulkan*::new()``` and ```Vulkan*::load(&mut self, VkInstance)```
+* ```::null()``` and ```::is_null(&self)``` for all handles
+* From trait implementation for ```*Union``` types
 
 ## Loading
 
-Dynamic loading has advantage over static linking in that no static library is needed to compile. Vulkan standard is fairly conservative on that point and only guarantees that a single command will be exported from the dynamic library. That command is *vkGetInstanceProcAddr*. Once that command is acquired, it can be used to load the next tier of API consisting of three *global commands*: 
+Dynamic loading has advantage over static linking in that no static library is needed to compile. Vulkan standard is fairly conservative on that point and only guarantees that a single command will be exported from the dynamic library. That command is ```vkGetInstanceProcAddr```. Once that command is acquired, it can be used to load the next tier of API consisting of three *global commands*: 
 
-1. vkCreateInstance
-2. vkEnumerateInstanceExtensionProperties
-3. vkEnumerateInstanceLayerProperties
+1. ```vkCreateInstance```
+2. ```vkEnumerateInstanceExtensionProperties```
+3. ```vkEnumerateInstanceLayerProperties```
 
-The rest of the API, consisting of 134 core functions can similarly loaded with *vkGetInstanceProcAddr*, but require a *VkInstance* object to load them. A *VkInstance* object not surprisingly can be created via global command *vkCreateInstance*. Extension commands are loaded in exactly the same way.
+The rest of the API, consisting of *134 core commands* can similarly loaded with ```vkGetInstanceProcAddr```, but require a ```VkInstance``` object to load them. A ```VkInstance``` object not surprisingly can be created via global command ```vkCreateInstance```. Extension commands are loaded in exactly the same way.
 
 This library does not export any ready-to-use command prototypes, instead you get all commands dynamically loaded and returned in structs. 
 
-The core of Vulkan functionality resides in *VulkanCore* struct. It provides all the core *Vulkan* commands as methods. When *VulkanCore* is initially created by calling *VulkanCore::new()*, it will already have the *3 global commands* loaded and ready to use. If you attempt to call any of the unloaded commands at this point it will result in *panic*. The next step should be to create a *VkInstance* object and call *VulkanCore::load(&mut self, VkInstance instance) method passing it as argument. Vulkan is ready to use.
+The core of Vulkan functionality resides in ```VulkanCore``` struct. It provides all the core ```Vulkan``` commands as methods. When ```VulkanCore``` is initially created by calling ```VulkanCore::new()```, it will already have the *3 global commands* loaded and ready to use. If you attempt to call any of the unloaded commands at this point it will result in *panic*. The next step should be to create a ```VkInstance``` object and call ```VulkanCore::load(&mut self, VkInstance instance)``` method passing it as argument. Vulkan is ready to use.
 
-Extensions are loaded similarly by *VulkanKhrSurface*, *VulkanKhrSwapchain*, *VulkanKhrDisplay*, *VulkanKhrDisplaySwapchain*, *VulkanKhrWin32Surface*
+Extensions are loaded similarly by ```VulkanKhrSurface```, ```VulkanKhrSwapchain```, ```VulkanKhrDisplay```, ```VulkanKhrDisplaySwapchain```, ```VulkanKhrWin32Surface```
 
-*One thing this library does not support is loading device optimized command pointers using vkGetDeviceProcAddr. The reason for this omission is that loading functions in this way introduces a lot of incidental complexity and makes library awkward to use.*
+*One thing this library does not support is loading device optimized command pointers using ```vkGetDeviceProcAddr```. The reason for this omission is that loading functions in this way introduces a lot of incidental complexity and makes library awkward to use.*
 
 ## Platform types
 
 Platform types are redefined to avoid operating system specific dependencies, use ```std::mem::transmute``` to cast between them. The current platform types are:
 
-* dvk::khr_win32_surface::platform::HINSTANCE
-* dvk::khr_win32_surface::platform::HWND
+* ```dvk::khr_win32_surface::platform::HINSTANCE```
+* ```dvk::khr_win32_surface::platform::HWND```
 
 ## Unions
-Since Rust has no analog to *C unions* they are simulated using combination of *tagged union types* and a *From trait*. Whenever Vulkan demands a union with a name VkSomeTypeName, construct a value of type VkSomeTypeNameUnion and call into(self) method on it to get VkSomeTypeName. For example:
+Since Rust has no analog to *C unions* they are simulated using combination of *tagged union types* and a ```From``` *trait*. Whenever Vulkan demands a union with a name ```VkSomeTypeName```, construct a value of type ```VkSomeTypeNameUnion``` and call ```into(self)``` method on it to get ```VkSomeTypeName```. For example:
 
 	let foo: VkClearColorValue = VkClearColorValueUnion::Float32([1,2,3]).into();
 
 ## Handles
-All handles are type-safe, which unfortunately makes it awkward to produce NULL handles. For that reason all handle types implement *null* function to construct empty handles, as well as corresponding method *is_null* to check if a handle is empty.
+All handles are type-safe, which unfortunately makes it awkward to produce "NULL" handles. For that reason all handle types implement ```null``` function to construct empty handles, as well as corresponding method ```is_null``` to check if a handle is empty.
 
 ## Usage
 Here's a short example to illustrate basing use
