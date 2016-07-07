@@ -1264,6 +1264,8 @@ pub mod core {
     pub type vkVoidFunctionFn = *const u8;
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkApplicationInfo {
         pub sType: VkStructureType,
         pub pNext: *const c_void,
@@ -1275,6 +1277,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkInstanceCreateInfo {
         pub sType: VkStructureType,
         pub pNext: *const c_void,
@@ -1287,16 +1291,33 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
     pub struct VkAllocationCallbacks {
         pub pUserData: *const c_void,
-        pub pfnAllocation: vkAllocationFunctionFn,
-        pub pfnReallocation: vkReallocationFunctionFn,
-        pub pfnFree: vkFreeFunctionFn,
-        pub pfnInternalAllocation: vkInternalAllocationNotificationFn,
-        pub pfnInternalFree: vkInternalFreeNotificationFn
+        pub pfnAllocation: Option<vkAllocationFunctionFn>,
+        pub pfnReallocation: Option<vkReallocationFunctionFn>,
+        pub pfnFree: Option<vkFreeFunctionFn>,
+        pub pfnInternalAllocation: Option<vkInternalAllocationNotificationFn>,
+        pub pfnInternalFree: Option<vkInternalFreeNotificationFn>
+    }
+
+    // Due to Rust issue #24000
+    impl Clone for VkAllocationCallbacks {
+        fn clone(&self) -> Self {
+            VkAllocationCallbacks {
+                pfnAllocation: self.pfnAllocation,
+                pfnReallocation: self.pfnReallocation,
+                pfnFree: self.pfnFree,
+                pfnInternalAllocation: self.pfnInternalAllocation,
+                pfnInternalFree: self.pfnInternalFree,
+                .. *self
+            }
+        }
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkPhysicalDeviceFeatures {
         pub robustBufferAccess: VkBool32,
         pub fullDrawIndexUint32: VkBool32,
@@ -1356,6 +1377,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkFormatProperties {
         pub linearTilingFeatures: VkFormatFeatureFlags,
         pub optimalTilingFeatures: VkFormatFeatureFlags,
@@ -1363,6 +1386,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkExtent3D {
         pub width: uint32_t,
         pub height: uint32_t,
@@ -1370,6 +1395,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkImageFormatProperties {
         pub maxExtent: VkExtent3D,
         pub maxMipLevels: uint32_t,
@@ -1379,6 +1406,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkPhysicalDeviceLimits {
         pub maxImageDimension2D: uint32_t,
         pub maxImageDimension1D: uint32_t,
@@ -1489,6 +1518,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkPhysicalDeviceSparseProperties {
         pub residencyStandard2DBlockShape: VkBool32,
         pub residencyStandard2DMultisampleBlockShape: VkBool32,
@@ -1498,6 +1529,7 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
     pub struct VkPhysicalDeviceProperties {
         pub apiVersion: uint32_t,
         pub driverVersion: uint32_t,
@@ -1510,7 +1542,18 @@ pub mod core {
         pub sparseProperties: VkPhysicalDeviceSparseProperties,
     }
 
+    // Due to Rust issue #7622
+    impl Clone for VkPhysicalDeviceProperties {
+        fn clone(&self) -> Self {
+            unsafe {
+                ::std::mem::transmute_copy(self)
+            }
+        }
+    }
+
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkQueueFamilyProperties {
         pub queueFlags: VkQueueFlags,
         pub queueCount: uint32_t,
@@ -1519,18 +1562,24 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkMemoryType {
         pub propertyFlags: VkMemoryPropertyFlags,
         pub heapIndex: uint32_t
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkMemoryHeap {
         pub size: VkDeviceSize,
         pub flags: VkMemoryHeapFlags
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkPhysicalDeviceMemoryProperties {
         pub memoryTypeCount: uint32_t,
         pub memoryTypes: [VkMemoryType;VK_MAX_MEMORY_TYPES],
@@ -1539,6 +1588,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkDeviceQueueCreateInfo {
         pub sType: VkStructureType,
         pub pNext: *const c_void,
@@ -1549,6 +1600,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkDeviceCreateInfo {
         pub sType: VkStructureType,
         pub pNext: *const c_void,
@@ -1563,12 +1616,23 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
     pub struct VkExtensionProperties {
         pub extensionName: [c_char; VK_MAX_EXTENSION_NAME_SIZE],
         pub specVersion: uint32_t
     }
 
+    // Due to Rust issue #7622
+    impl Clone for VkExtensionProperties {
+        fn clone(&self) -> Self {
+            unsafe {
+                ::std::mem::transmute_copy(self)
+            }
+        }
+    }
+
     #[repr(C)]
+    #[derive(Copy)]
     pub struct VkLayerProperties {
         pub layerName: [c_char;VK_MAX_EXTENSION_NAME_SIZE],
         pub specVersion: uint32_t,
@@ -1576,7 +1640,18 @@ pub mod core {
         pub description: [c_char;VK_MAX_DESCRIPTION_SIZE]
     }
 
+    // Due to Rust issue #7622
+    impl Clone for VkLayerProperties {
+        fn clone(&self) -> Self {
+            unsafe {
+                ::std::mem::transmute_copy(self)
+            }
+        }
+    }
+
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkSubmitInfo {
         pub sType: VkStructureType,
         pub pNext: *const c_void,
@@ -1590,6 +1665,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkMemoryAllocateInfo {
         pub sType: VkStructureType,
         pub pNext: *const c_void,
@@ -1598,6 +1675,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkMappedMemoryRange {
         pub sType: VkStructureType,
         pub pNext: *const c_void,
@@ -1607,6 +1686,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkMemoryRequirements {
         pub size: VkDeviceSize,
         pub alignment: VkDeviceSize,
@@ -1614,6 +1695,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkSparseImageFormatProperties {
         pub aspectMask: VkImageAspectFlags,
         pub imageGranularity: VkExtent3D,
@@ -1621,6 +1704,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkSparseImageMemoryRequirements {
         pub formatProperties: VkSparseImageFormatProperties,
         pub imageMipTailFirstLod: uint32_t,
@@ -1630,6 +1715,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkSparseMemoryBind {
         pub resourceOffset: VkDeviceSize,
         pub size: VkDeviceSize,
@@ -1639,6 +1726,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkSparseBufferMemoryBindInfo {
         pub buffer: VkBuffer,
         pub bindCount: uint32_t,
@@ -1646,6 +1735,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkSparseImageOpaqueMemoryBindInfo {
         pub image: VkImage,
         pub bindCount: uint32_t,
@@ -1653,6 +1744,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkImageSubresource {
         pub aspectMask: VkImageAspectFlags,
         pub mipLevel: uint32_t,
@@ -1660,6 +1753,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkOffset3D {
         pub x: int32_t,
         pub y: int32_t,
@@ -1667,6 +1762,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkSparseImageMemoryBind {
         pub subresource: VkImageSubresource,
         pub offset: VkOffset3D,
@@ -1677,6 +1774,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkSparseImageMemoryBindInfo {
         pub image: VkImage,
         pub bindCount: uint32_t,
@@ -1684,6 +1783,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkBindSparseInfo {
         pub sType: VkStructureType,
         pub pNext: *const c_void,
@@ -1700,6 +1801,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkFenceCreateInfo {
         pub sType: VkStructureType,
         pub pNext: *const c_void,
@@ -1707,6 +1810,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkSemaphoreCreateInfo {
         pub sType: VkStructureType,
         pub pNext: *const c_void,
@@ -1714,6 +1819,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkEventCreateInfo {
         pub sType: VkStructureType,
         pub pNext: *const c_void,
@@ -1721,6 +1828,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkQueryPoolCreateInfo {
         pub sType: VkStructureType,
         pub pNext: *const c_void,
@@ -1731,6 +1840,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkBufferCreateInfo {
         pub sType: VkStructureType,
         pub pNext: *const c_void,
@@ -1743,6 +1854,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkBufferViewCreateInfo {
         pub sType: VkStructureType,
         pub pNext: *const c_void,
@@ -1754,6 +1867,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkImageCreateInfo {
         pub sType: VkStructureType,
         pub pNext: *const c_void,
@@ -1773,6 +1888,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkSubresourceLayout {
         pub offset: VkDeviceSize,
         pub size: VkDeviceSize,
@@ -1782,6 +1899,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkComponentMapping {
         pub r: VkComponentSwizzle,
         pub g: VkComponentSwizzle,
@@ -1790,6 +1909,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkImageSubresourceRange {
         pub aspectMask: VkImageAspectFlags,
         pub baseMipLevel: uint32_t,
@@ -1799,6 +1920,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkImageViewCreateInfo {
         pub sType: VkStructureType,
         pub pNext: *const c_void,
@@ -1811,6 +1934,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkShaderModuleCreateInfo {
         pub sType: VkStructureType,
         pub pNext: *const c_void,
@@ -1820,6 +1945,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkPipelineCacheCreateInfo {
         pub sType: VkStructureType,
         pub pNext: *const c_void,
@@ -1829,6 +1956,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkSpecializationMapEntry {
         pub constantID: uint32_t,
         pub offset: uint32_t,
@@ -1836,6 +1965,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkSpecializationInfo {
         pub mapEntryCount: uint32_t,
         pub pMapEntries: *const VkSpecializationMapEntry,
@@ -1844,6 +1975,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkPipelineShaderStageCreateInfo {
         pub sType: VkStructureType,
         pub pNext: *const c_void,
@@ -1855,6 +1988,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkVertexInputBindingDescription {
         pub binding: uint32_t,
         pub stride: uint32_t,
@@ -1862,6 +1997,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkVertexInputAttributeDescription {
         pub location: uint32_t,
         pub binding: uint32_t,
@@ -1870,6 +2007,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkPipelineVertexInputStateCreateInfo {
         pub sType: VkStructureType,
         pub pNext: *const c_void,
@@ -1881,6 +2020,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkPipelineInputAssemblyStateCreateInfo {
         pub sType: VkStructureType,
         pub pNext: *const c_void,
@@ -1890,6 +2031,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkPipelineTessellationStateCreateInfo {
         pub sType: VkStructureType,
         pub pNext: *const c_void,
@@ -1898,6 +2041,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkViewport {
         pub x: c_float,
         pub y: c_float,
@@ -1908,24 +2053,32 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkOffset2D {
         pub x: int32_t,
         pub y: int32_t
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkExtent2D {
         pub width: uint32_t,
         pub height: uint32_t
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkRect2D {
         pub offset: VkOffset2D,
         pub extent: VkExtent2D
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkPipelineViewportStateCreateInfo {
         pub sType: VkStructureType,
         pub pNext: *const c_void,
@@ -1937,6 +2090,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkPipelineRasterizationStateCreateInfo {
         pub sType: VkStructureType,
         pub pNext: *const c_void,
@@ -1954,6 +2109,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkPipelineMultisampleStateCreateInfo {
         pub sType: VkStructureType,
         pub pNext: *const c_void,
@@ -1967,6 +2124,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkStencilOpState {
         pub failOp: VkStencilOp,
         pub passOp: VkStencilOp,
@@ -1978,6 +2137,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkPipelineDepthStencilStateCreateInfo {
         pub sType: VkStructureType,
         pub pNext: *const c_void,
@@ -1994,6 +2155,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkPipelineColorBlendAttachmentState {
         pub blendEnable: VkBool32,
         pub srcColorBlendFactor: VkBlendFactor,
@@ -2006,6 +2169,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkPipelineColorBlendStateCreateInfo {
         pub sType: VkStructureType,
         pub pNext: *const c_void,
@@ -2018,6 +2183,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkPipelineDynamicStateCreateInfo {
         pub sType: VkStructureType,
         pub pNext: *const c_void,
@@ -2027,6 +2194,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkGraphicsPipelineCreateInfo {
         pub sType: VkStructureType,
         pub pNext: *const c_void,
@@ -2050,6 +2219,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkComputePipelineCreateInfo {
         pub sType: VkStructureType,
         pub pNext: *const c_void,
@@ -2061,6 +2232,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkPushConstantRange {
         pub stageFlags: VkShaderStageFlags,
         pub offset: uint32_t,
@@ -2068,6 +2241,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkPipelineLayoutCreateInfo {
         pub sType: VkStructureType,
         pub pNext: *const c_void,
@@ -2079,6 +2254,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkSamplerCreateInfo {
         pub sType: VkStructureType,
         pub pNext: *const c_void,
@@ -2101,6 +2278,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkDescriptorSetLayoutBinding {
         pub binding: uint32_t,
         pub descriptorType: VkDescriptorType,
@@ -2110,6 +2289,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkDescriptorSetLayoutCreateInfo {
         pub sType: VkStructureType,
         pub pNext: *const c_void,
@@ -2119,6 +2300,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkDescriptorPoolSize {
         /// Renamed from type to dType due to keyword collision
         pub dType: VkDescriptorType,
@@ -2126,6 +2309,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkDescriptorPoolCreateInfo {
         pub sType: VkStructureType,
         pub pNext: *const c_void,
@@ -2136,6 +2321,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkDescriptorSetAllocateInfo {
         pub sType: VkStructureType,
         pub pNext: *const c_void,
@@ -2145,6 +2332,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkDescriptorImageInfo {
         pub sampler: VkSampler,
         pub imageView: VkImageView,
@@ -2152,6 +2341,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkDescriptorBufferInfo {
         pub buffer: VkBuffer,
         pub offset: VkDeviceSize,
@@ -2159,6 +2350,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkWriteDescriptorSet {
         pub sType: VkStructureType,
         pub pNext: *const c_void,
@@ -2173,6 +2366,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkCopyDescriptorSet {
         pub sType: VkStructureType,
         pub pNext: *const c_void,
@@ -2186,6 +2381,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkFramebufferCreateInfo {
         pub sType: VkStructureType,
         pub pNext: *const c_void,
@@ -2199,6 +2396,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkAttachmentDescription {
         pub flags: VkAttachmentDescriptionFlags,
         pub format: VkFormat,
@@ -2212,12 +2411,16 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkAttachmentReference {
         pub attachment: uint32_t,
         pub layout: VkImageLayout
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkSubpassDescription {
         pub flags: VkSubpassDescriptionFlags,
         pub pipelineBindPoint: VkPipelineBindPoint,
@@ -2232,6 +2435,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkSubpassDependency {
         pub srcSubpass: uint32_t,
         pub dstSubpass: uint32_t,
@@ -2243,6 +2448,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkRenderPassCreateInfo {
         pub sType: VkStructureType,
         pub pNext: *const c_void,
@@ -2256,6 +2463,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkCommandPoolCreateInfo {
         pub sType: VkStructureType,
         pub pNext: *const c_void,
@@ -2264,6 +2473,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkCommandBufferAllocateInfo {
         pub sType: VkStructureType,
         pub pNext: *const c_void,
@@ -2273,6 +2484,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkCommandBufferInheritanceInfo {
         pub sType: VkStructureType,
         pub pNext: *const c_void,
@@ -2285,6 +2498,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkCommandBufferBeginInfo {
         pub sType: VkStructureType,
         pub pNext: *const c_void,
@@ -2293,6 +2508,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkBufferCopy {
         pub srcOffset: VkDeviceSize,
         pub dstOffset: VkDeviceSize,
@@ -2300,6 +2517,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkImageSubresourceLayers {
         pub aspectMask: VkImageAspectFlags,
         pub mipLevel: uint32_t,
@@ -2308,6 +2527,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkImageCopy {
         pub srcSubresource: VkImageSubresourceLayers,
         pub srcOffset: VkOffset3D,
@@ -2317,6 +2538,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkImageBlit {
         pub srcSubresource: VkImageSubresourceLayers,
         pub srcOffsets: [VkOffset3D;2],
@@ -2325,6 +2548,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkBufferImageCopy {
         pub bufferOffset: VkDeviceSize,
         pub bufferRowLength: uint32_t,
@@ -2335,6 +2560,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkClearColorValue {
         pub union_data: [u8;16]
     }
@@ -2365,12 +2592,16 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkClearDepthStencilValue {
         depth: c_float,
         stencil: uint32_t
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkClearValue {
         union_data: [u8;16]
     }
@@ -2402,6 +2633,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkClearAttachment {
         aspectMask: VkImageAspectFlags,
         colorAttachment: uint32_t,
@@ -2409,6 +2642,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkClearRect {
         rect: VkRect2D,
         baseArrayLayer: uint32_t,
@@ -2416,6 +2651,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkImageResolve {
         srcSubresource: VkImageSubresourceLayers,
         srcOffset: VkOffset3D,
@@ -2425,6 +2662,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkMemoryBarrier {
         sType: VkStructureType,
         pNext: *const c_void,
@@ -2433,6 +2672,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkBufferMemoryBarrier {
         sType: VkStructureType,
         pNext: *const c_void,
@@ -2446,6 +2687,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkImageMemoryBarrier {
         sType: VkStructureType,
         pNext: *const c_void,
@@ -2460,6 +2703,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkRenderPassBeginInfo {
         sType: VkStructureType,
         pNext: *const c_void,
@@ -2471,6 +2716,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkDispatchIndirectCommand {
         x: uint32_t,
         y: uint32_t,
@@ -2478,6 +2725,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkDrawIndexedIndirectCommand {
         indexCount: uint32_t,
         instanceCount: uint32_t,
@@ -2487,6 +2736,8 @@ pub mod core {
     }
 
     #[repr(C)]
+    #[derive(Copy)]
+    #[derive(Clone)]
     pub struct VkDrawIndirectCommand {
         vertexCount: uint32_t,
         instanceCount: uint32_t,
