@@ -5,7 +5,7 @@ This library is designed following the principle of minimum surprise, it deviate
 NOTE: In current version only khr_win32_surface is complete out of all platform-specific WSI extensions.
 
 ## Organization
-All definitions are orginized into modules, the main one is *core*, the rest *khr_surface*, *ext_debug_report*, *khr_display*, *khr_display_swapchain*, *khr_swapchain*, *khr_win32_surface* are all extensions. This library does not export any read-to-use command prototypes. All definitions are in the same order as in *vulkan.h* header file.
+All definitions are orginized into modules, the main one is *core*, the rest *khr_surface*, *ext_debug_report*, *khr_display*, *khr_display_swapchain*, *khr_swapchain*, *khr_win32_surface* are all extensions. This library does not export any ready-to-use command prototypes. All definitions are in the same order as in *vulkan.h* header file.
 
 ## Changes to official API
 
@@ -37,7 +37,7 @@ Dynamic loading has advantage over static linking in that no static library is n
 
 The rest of the API, consisting of 134 core functions can similarly loaded with *vkGetInstanceProcAddr*, but require a *VkInstance* object to load them. A *VkInstance* object not surprisingly can be created via global command *vkCreateInstance*. Extension commands are loaded in exactly the same way.
 
-This library does not export any read-to-use command prototypes, instead you get all commands dynamically loaded and returned in structs. 
+This library does not export any ready-to-use command prototypes, instead you get all commands dynamically loaded and returned in structs. 
 
 The core of Vulkan functionality resides in *VulkanCore* struct. It provides all the core *Vulkan* commands as methods. When *VulkanCore* is initially created by calling *VulkanCore::new()*, it will already have the *3 global commands* loaded and ready to use. If you attempt to call any of the unloaded commands at this point it will result in *panic*. The next step should be to create a *VkInstance* object and call *VulkanCore::load(&mut self, VkInstance instance) method passing it as argument. Vulkan is ready to use.
 
