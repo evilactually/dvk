@@ -4,6 +4,9 @@ This library is designed following the principle of minimum surprise, it deviate
 
 NOTE: In current version only khr_win32_surface is complete out of all platform-specific WSI extensions.
 
+## Organization
+All definitions are orginized into modules, the main one is *core*, the rest *khr_surface*, *ext_debug_report*, *khr_display*, *khr_display_swapchain*, *khr_swapchain*, *khr_win32_surface* are all extensions. This library does not export any read-to-use command prototypes. All definitions are in the same order as in *vulkan.h* header file.
+
 ## Changes to official API
 
 ### Types
@@ -18,7 +21,6 @@ NOTE: In current version only khr_win32_surface is complete out of all platform-
 * VulkanExtDebugReport
 * No separate ```*FlagBits``` and ```*Flags``` types just ```*Flags```
 * VkDescriptorPoolSize.type is renamed to dType due to naming collision with Rust keyword type
-* All definitions are orginized into modules: core, khr_display, khr_surface, khr_display_swapchain, khr_swapchain, ext_debug_report, khr_win32_surface
 
 ### Functions
 * Vulkan*::new() and Vulkan*::load(&mut self, VkInstance)
