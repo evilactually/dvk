@@ -1,6 +1,6 @@
 Dvk is a library providing bindings to Vulkan API. Unlike many other alternatives Dvk loads all Vulkan commands dynamically at run time, making compilation much more straightforward, to the point that you don't even need Vulkan installed to compile it. 
 
-This library is designed following the principle of minimum surprise, it deviates very little from the official headers and does not needlessly pollute official Vulkan namespace.  There are only a handful of places where either language differences or the requirment to load dynamically had forced design to deviate from canonical, all such peculiarities are thoroughly documented on this page. Regular Khronos documentation should be sufficient to learn about all the types and functions provided by this library. 
+This library is designed following the principle of minimum surprise, it deviates very little from the official headers and does not needlessly pollute official Vulkan namespace.  There are only a handful of places where either language differences or the requirment to load dynamically had forced design to deviate from canonical, all such peculiarities are thoroughly documented on this page. Regular [Khronos documentation](https://www.khronos.org/registry/vulkan/specs/1.0-wsi_extensions/xhtml/vkspec.html) should be sufficient to learn about all the types and functions provided by this library. 
 
 NOTE: In current version only *khr_win32_surface* is complete out of all platform-specific WSI extensions.
 
