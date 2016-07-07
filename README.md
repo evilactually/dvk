@@ -2,7 +2,7 @@ Dvk is a library providing bindings to Vulkan API. Unlike many other alternative
 
 This library is designed following the principle of minimum surprise, it deviates very little from the official headers and does not needlessly pollute official Vulkan namespace.  There are only a handful of places where either language differences or the requirment to load dynamically had forced design to deviate from canonical, all such peculiarities are thoroughly documented on this page. Regular Khronos documentation should be sufficient to learn about all the types and functions provided by this library. 
 
-NOTE: In current version only khr_win32_surface is complete out of all platform-specific WSI extensions.
+NOTE: In current version only *khr_win32_surface* is complete out of all platform-specific WSI extensions.
 
 ## Organization
 All definitions are orginized into modules, the main one is *core*, the rest *khr_surface*, *ext_debug_report*, *khr_display*, *khr_display_swapchain*, *khr_swapchain*, *khr_win32_surface* are all extensions. This library does not export any ready-to-use command prototypes. All definitions are in the same order as in *vulkan.h* header file.
@@ -10,17 +10,17 @@ All definitions are orginized into modules, the main one is *core*, the rest *kh
 ## Changes to official API
 
 ### Types
-* VkClearValueUnion
-* VkClearColorValueUnion 
-* VulkanCore
-* VulkanKhrSurface
-* VulkanKhrSwapchain
-* VulkanKhrDisplay
-* VulkanKhrDisplaySwapchain
-* VulkanKhrWin32Surface
-* VulkanExtDebugReport
+* ```VkClearValueUnion```
+* ```VkClearColorValueUnion ```
+* ```VulkanCore```
+* ```VulkanKhrSurface```
+* ```VulkanKhrSwapchain```
+* ```VulkanKhrDisplay```
+* ```VulkanKhrDisplaySwapchain```
+* ```VulkanKhrWin32Surface```
+* ```VulkanExtDebugReport```
 * No separate ```*FlagBits``` and ```*Flags``` types just ```*Flags```
-* VkDescriptorPoolSize.type is renamed to dType due to naming collision with Rust keyword type
+* ```VkDescriptorPoolSize.type``` is renamed to ```dType``` due to naming collision with Rust keyword ```type```
 
 ### Functions
 * ```Vulkan*::new()``` and ```Vulkan*::load(&mut self, VkInstance)```
