@@ -13,7 +13,6 @@ static VULKAN_LIBRARY: &'static str = "vulkan-1.dll";
 #[cfg(unix)]
 static VULKAN_LIBRARY: &'static str = "libvulkan-1.so";
 
-#[macro_export]
 /// A call to vkGetInstanceProcAddr wrapped in a try block, returns an error message or function pointer
 macro_rules! load_command {
     ($commands:expr,$instance:expr,$name:expr) => (
@@ -27,6 +26,19 @@ macro_rules! load_command {
                 })
         }
     );
+}
+
+/// Call to a stored command with error reporting for unloaded commands
+macro_rules! invoke_command {
+    ($commands:expr,$command:ident,$($x:ident),*) => {
+        {
+            if let Some($command) = $commands.$command.as_ref() {
+                $command($($x,)*)
+            } else {
+                panic!(concat!("Command not loaded: ", stringify!($command)));
+            }
+        }
+    }
 }
 
 #[macro_use]
@@ -3705,551 +3717,551 @@ pub mod core {
         }
 
         pub unsafe fn vkCreateInstance(&self, pCreateInfo: *const VkInstanceCreateInfo, pAllocator: *const VkAllocationCallbacks, pInstance: *mut VkInstance) -> VkResult {
-            (self.vkCreateInstance.as_ref().unwrap())(pCreateInfo, pAllocator, pInstance)
+            invoke_command!(self, vkCreateInstance, pCreateInfo, pAllocator, pInstance)
         }
 
         pub unsafe fn vkDestroyInstance(&self, instance: VkInstance, pAllocator: *const VkAllocationCallbacks) {
-            (self.vkDestroyInstance.as_ref().unwrap())(instance, pAllocator)
+            invoke_command!(self, vkDestroyInstance, instance, pAllocator)
         }
 
         pub unsafe fn vkEnumeratePhysicalDevices(&self, instance: VkInstance, pPhysicalDeviceCount: *mut uint32_t, pPhysicalDevices: *mut VkPhysicalDevice) -> VkResult {
-            (self.vkEnumeratePhysicalDevices.as_ref().unwrap())(instance, pPhysicalDeviceCount, pPhysicalDevices)
+            invoke_command!(self, vkEnumeratePhysicalDevices, instance, pPhysicalDeviceCount, pPhysicalDevices)
         }
 
         pub unsafe fn vkGetPhysicalDeviceFeatures(&self, physicalDevice: VkPhysicalDevice, pFeatures: *mut VkPhysicalDeviceFeatures) {
-            (self.vkGetPhysicalDeviceFeatures.as_ref().unwrap())(physicalDevice, pFeatures)
+            invoke_command!(self, vkGetPhysicalDeviceFeatures, physicalDevice, pFeatures)
         }
 
         pub unsafe fn vkGetPhysicalDeviceFormatProperties(&self, physicalDevice: VkPhysicalDevice, format: VkFormat, pFormatProperties: *mut VkFormatProperties) {
-            (self.vkGetPhysicalDeviceFormatProperties.as_ref().unwrap())(physicalDevice, format, pFormatProperties)
+            invoke_command!(self, vkGetPhysicalDeviceFormatProperties, physicalDevice, format, pFormatProperties)
         }
 
         pub unsafe fn vkGetPhysicalDeviceImageFormatProperties(&self, physicalDevice: VkPhysicalDevice, format: VkFormat, iType: VkImageType, tiling: VkImageTiling, usage: VkImageUsageFlags, flags: VkImageCreateFlags, pImageFormatProperties: *mut VkImageFormatProperties) -> VkResult {
-            (self.vkGetPhysicalDeviceImageFormatProperties.as_ref().unwrap())(physicalDevice, format, iType, tiling, usage, flags, pImageFormatProperties)
+            invoke_command!(self, vkGetPhysicalDeviceImageFormatProperties, physicalDevice, format, iType, tiling, usage, flags, pImageFormatProperties)
         }
 
         pub unsafe fn vkGetPhysicalDeviceProperties(&self, physicalDevice: VkPhysicalDevice, pProperties: *mut VkPhysicalDeviceProperties) {
-            (self.vkGetPhysicalDeviceProperties.as_ref().unwrap())(physicalDevice, pProperties)
+            invoke_command!(self, vkGetPhysicalDeviceProperties, physicalDevice, pProperties)
         }
 
         pub unsafe fn vkGetPhysicalDeviceQueueFamilyProperties(&self, physicalDevice: VkPhysicalDevice, pQueueFamilyPropertyCount: *mut uint32_t, pQueueFamilyProperties: *mut VkQueueFamilyProperties) {
-            (self.vkGetPhysicalDeviceQueueFamilyProperties.as_ref().unwrap())(physicalDevice, pQueueFamilyPropertyCount, pQueueFamilyProperties)
+            invoke_command!(self, vkGetPhysicalDeviceQueueFamilyProperties, physicalDevice, pQueueFamilyPropertyCount, pQueueFamilyProperties)
         }
 
         pub unsafe fn vkGetPhysicalDeviceMemoryProperties(&self, physicalDevice: VkPhysicalDevice, pMemoryProperties: *mut VkPhysicalDeviceMemoryProperties) {
-            (self.vkGetPhysicalDeviceMemoryProperties.as_ref().unwrap())(physicalDevice, pMemoryProperties)
+            invoke_command!(self, vkGetPhysicalDeviceMemoryProperties, physicalDevice, pMemoryProperties)
         }
 
         pub unsafe fn vkGetInstanceProcAddr(&self, instance: VkInstance, pName: *const c_char) -> vkVoidFunctionFn {
-            (self.vkGetInstanceProcAddr.as_ref().unwrap())(instance, pName)
+            invoke_command!(self, vkGetInstanceProcAddr, instance, pName)
         }
 
         pub unsafe fn vkGetDeviceProcAddr(&self, device: VkDevice, pName: *const c_char) -> vkVoidFunctionFn {
-            (self.vkGetDeviceProcAddr.as_ref().unwrap())(device, pName)
+            invoke_command!(self, vkGetDeviceProcAddr, device, pName)
         }
 
         pub unsafe fn vkCreateDevice(&self, physicalDevice: VkPhysicalDevice, pCreateInfo: *const VkDeviceCreateInfo, pAllocator: *const VkAllocationCallbacks, pDevice: *mut VkDevice) -> VkResult {
-            (self.vkCreateDevice.as_ref().unwrap())(physicalDevice, pCreateInfo, pAllocator, pDevice)
+            invoke_command!(self, vkCreateDevice, physicalDevice, pCreateInfo, pAllocator, pDevice)
         }
 
         pub unsafe fn vkDestroyDevice(&self, device: VkDevice, pAllocator: *const VkAllocationCallbacks) {
-            (self.vkDestroyDevice.as_ref().unwrap())(device, pAllocator)
+            invoke_command!(self, vkDestroyDevice, device, pAllocator)
         }
 
         pub unsafe fn vkEnumerateInstanceExtensionProperties(&self, pLayerName: *const c_char, pPropertyCount: *mut uint32_t, pProperties: *mut VkExtensionProperties) -> VkResult {
-            (self.vkEnumerateInstanceExtensionProperties.as_ref().unwrap())(pLayerName, pPropertyCount, pProperties)
+            invoke_command!(self, vkEnumerateInstanceExtensionProperties, pLayerName, pPropertyCount, pProperties)
         }
 
         pub unsafe fn vkEnumerateDeviceExtensionProperties(&self, physicalDevice: VkPhysicalDevice, pLayerName: *const c_char, pPropertyCount: *mut uint32_t, pProperties: *mut VkExtensionProperties) -> VkResult {
-            (self.vkEnumerateDeviceExtensionProperties.as_ref().unwrap())(physicalDevice, pLayerName, pPropertyCount, pProperties)
+            invoke_command!(self, vkEnumerateDeviceExtensionProperties, physicalDevice, pLayerName, pPropertyCount, pProperties)
         }
 
         pub unsafe fn vkEnumerateInstanceLayerProperties(&self, pPropertyCount: *mut uint32_t, pProperties: *mut VkLayerProperties) -> VkResult {
-            (self.vkEnumerateInstanceLayerProperties.as_ref().unwrap())(pPropertyCount, pProperties)
+            invoke_command!(self, vkEnumerateInstanceLayerProperties, pPropertyCount, pProperties)
         }
 
         pub unsafe fn vkEnumerateDeviceLayerProperties(&self, physicalDevice: VkPhysicalDevice, pPropertyCount: *mut uint32_t, pProperties: *mut VkLayerProperties) -> VkResult {
-            (self.vkEnumerateDeviceLayerProperties.as_ref().unwrap())(physicalDevice, pPropertyCount, pProperties)
+            invoke_command!(self, vkEnumerateDeviceLayerProperties, physicalDevice, pPropertyCount, pProperties)
         }
 
         pub unsafe fn vkGetDeviceQueue(&self, device: VkDevice, queueFamilyIndex: uint32_t, queueIndex: uint32_t, pQueue: *mut VkQueue) {
-            (self.vkGetDeviceQueue.as_ref().unwrap())(device, queueFamilyIndex, queueIndex, pQueue)
+            invoke_command!(self, vkGetDeviceQueue, device, queueFamilyIndex, queueIndex, pQueue)
         }
 
         pub unsafe fn vkQueueSubmit(&self, queue: VkQueue, submitCount: uint32_t, pSubmits: *const VkSubmitInfo, fence: VkFence) -> VkResult {
-            (self.vkQueueSubmit.as_ref().unwrap())(queue, submitCount, pSubmits, fence)
+            invoke_command!(self, vkQueueSubmit, queue, submitCount, pSubmits, fence)
         }
 
         pub unsafe fn vkQueueWaitIdle(&self, queue: VkQueue) -> VkResult {
-            (self.vkQueueWaitIdle.as_ref().unwrap())(queue)
+            invoke_command!(self, vkQueueWaitIdle, queue)
         }
 
         pub unsafe fn vkDeviceWaitIdle(&self, device: VkDevice) -> VkResult {
-            (self.vkDeviceWaitIdle.as_ref().unwrap())(device)
+            invoke_command!(self, vkDeviceWaitIdle, device)
         }
 
         pub unsafe fn vkAllocateMemory(&self, device: VkDevice, pAllocateInfo: *const VkMemoryAllocateInfo, pAllocator: *const VkAllocationCallbacks, pMemory: *mut VkDeviceMemory) -> VkResult {
-            (self.vkAllocateMemory.as_ref().unwrap())(device, pAllocateInfo, pAllocator, pMemory)
+            invoke_command!(self, vkAllocateMemory, device, pAllocateInfo, pAllocator, pMemory)
         }
 
         pub unsafe fn vkFreeMemory(&self, device: VkDevice, memory: VkDeviceMemory, pAllocator: *const VkAllocationCallbacks) {
-            (self.vkFreeMemory.as_ref().unwrap())(device, memory, pAllocator)
+            invoke_command!(self, vkFreeMemory, device, memory, pAllocator)
         }
 
         pub unsafe fn vkMapMemory(&self, device: VkDevice, memory: VkDeviceMemory, offset: VkDeviceSize, size: VkDeviceSize, flags: VkMemoryMapFlags, ppData: *mut *mut c_void) -> VkResult {
-            (self.vkMapMemory.as_ref().unwrap())(device, memory, offset, size, flags, ppData)
+            invoke_command!(self, vkMapMemory, device, memory, offset, size, flags, ppData)
         }
 
         pub unsafe fn vkUnmapMemory(&self, device: VkDevice, memory: VkDeviceMemory) {
-            (self.vkUnmapMemory.as_ref().unwrap())(device, memory)
+            invoke_command!(self, vkUnmapMemory, device, memory)
         }
 
         pub unsafe fn vkFlushMappedMemoryRanges(&self, device: VkDevice, memoryRangeCount: uint32_t, pMemoryRanges: *const VkMappedMemoryRange) -> VkResult {
-            (self.vkFlushMappedMemoryRanges.as_ref().unwrap())(device, memoryRangeCount, pMemoryRanges)
+            invoke_command!(self, vkFlushMappedMemoryRanges, device, memoryRangeCount, pMemoryRanges)
         }
 
         pub unsafe fn vkInvalidateMappedMemoryRanges(&self, device: VkDevice, memoryRangeCount: uint32_t, pMemoryRanges: *const VkMappedMemoryRange) -> VkResult {
-            (self.vkInvalidateMappedMemoryRanges.as_ref().unwrap())(device, memoryRangeCount, pMemoryRanges)
+            invoke_command!(self, vkInvalidateMappedMemoryRanges, device, memoryRangeCount, pMemoryRanges)
         }
 
         pub unsafe fn vkGetDeviceMemoryCommitment(&self, device: VkDevice, memory: VkDeviceMemory, pCommittedMemoryInBytes: *mut VkDeviceSize) {
-            (self.vkGetDeviceMemoryCommitment.as_ref().unwrap())(device, memory, pCommittedMemoryInBytes)
+            invoke_command!(self, vkGetDeviceMemoryCommitment, device, memory, pCommittedMemoryInBytes)
         }
 
         pub unsafe fn vkBindBufferMemory(&self, device: VkDevice, buffer: VkBuffer, memory: VkDeviceMemory, memoryOffset: VkDeviceSize) -> VkResult {
-            (self.vkBindBufferMemory.as_ref().unwrap())(device, buffer, memory, memoryOffset)
+            invoke_command!(self, vkBindBufferMemory, device, buffer, memory, memoryOffset)
         }
 
         pub unsafe fn vkBindImageMemory(&self, device: VkDevice, image: VkImage, memory: VkDeviceMemory, memoryOffset: VkDeviceSize) -> VkResult {
-            (self.vkBindImageMemory.as_ref().unwrap())(device, image, memory, memoryOffset)
+            invoke_command!(self, vkBindImageMemory, device, image, memory, memoryOffset)
         }
 
         pub unsafe fn vkGetBufferMemoryRequirements(&self, device: VkDevice, buffer: VkBuffer, pMemoryRequirements: *mut VkMemoryRequirements) {
-            (self.vkGetBufferMemoryRequirements.as_ref().unwrap())(device, buffer, pMemoryRequirements)
+            invoke_command!(self, vkGetBufferMemoryRequirements, device, buffer, pMemoryRequirements)
         }
 
         pub unsafe fn vkGetImageMemoryRequirements(&self, device: VkDevice, image: VkImage, pMemoryRequirements: *mut VkMemoryRequirements) {
-            (self.vkGetImageMemoryRequirements.as_ref().unwrap())(device, image, pMemoryRequirements)
+            invoke_command!(self, vkGetImageMemoryRequirements, device, image, pMemoryRequirements)
         }
 
         pub unsafe fn vkGetImageSparseMemoryRequirements(&self, device: VkDevice, image: VkImage, pSparseMemoryRequirementCount: *mut uint32_t, pSparseMemoryRequirements: *mut VkSparseImageMemoryRequirements) {
-            (self.vkGetImageSparseMemoryRequirements.as_ref().unwrap())(device, image, pSparseMemoryRequirementCount, pSparseMemoryRequirements)
+            invoke_command!(self, vkGetImageSparseMemoryRequirements, device, image, pSparseMemoryRequirementCount, pSparseMemoryRequirements)
         }
 
         pub unsafe fn vkGetPhysicalDeviceSparseImageFormatProperties(&self, physicalDevice: VkPhysicalDevice, format: VkFormat, iType: VkImageType, samples: VkSampleCountFlags, usage: VkImageUsageFlags, tiling: VkImageTiling, pPropertyCount: *mut uint32_t, pProperties: *mut VkSparseImageFormatProperties) {
-            (self.vkGetPhysicalDeviceSparseImageFormatProperties.as_ref().unwrap())(physicalDevice, format, iType, samples, usage, tiling, pPropertyCount, pProperties)
+            invoke_command!(self, vkGetPhysicalDeviceSparseImageFormatProperties, physicalDevice, format, iType, samples, usage, tiling, pPropertyCount, pProperties)
         }
         pub unsafe fn vkQueueBindSparse(&self, queue: VkQueue, bindInfoCount: uint32_t, pBindInfo: *const VkBindSparseInfo, fence: VkFence) -> VkResult {
-            (self.vkQueueBindSparse.as_ref().unwrap())(queue, bindInfoCount, pBindInfo, fence)
+            invoke_command!(self, vkQueueBindSparse, queue, bindInfoCount, pBindInfo, fence)
         }
 
         pub unsafe fn vkCreateFence(&self, device: VkDevice, pCreateInfo: *const VkFenceCreateInfo, pAllocator: *const VkAllocationCallbacks, pFence: *mut VkFence) -> VkResult {
-            (self.vkCreateFence.as_ref().unwrap())(device, pCreateInfo, pAllocator, pFence)
+            invoke_command!(self, vkCreateFence, device, pCreateInfo, pAllocator, pFence)
         }
 
         pub unsafe fn vkDestroyFence(&self, device: VkDevice, fence: VkFence, pAllocator: *const VkAllocationCallbacks) {
-            (self.vkDestroyFence.as_ref().unwrap())(device, fence, pAllocator)
+            invoke_command!(self, vkDestroyFence, device, fence, pAllocator)
         }
 
         pub unsafe fn vkResetFences(&self, device: VkDevice, fenceCount: uint32_t, pFences: *const VkFence) -> VkResult {
-            (self.vkResetFences.as_ref().unwrap())(device, fenceCount, pFences)
+            invoke_command!(self, vkResetFences, device, fenceCount, pFences)
         }
 
         pub unsafe fn vkGetFenceStatus(&self, device: VkDevice, fence: VkFence) -> VkResult {
-            (self.vkGetFenceStatus.as_ref().unwrap())(device, fence)
+            invoke_command!(self, vkGetFenceStatus, device, fence)
         }
 
         pub unsafe fn vkWaitForFences(&self, device: VkDevice, fenceCount: uint32_t, pFences: *const VkFence, waitAll: VkBool32, timeout: uint64_t) -> VkResult {
-            (self.vkWaitForFences.as_ref().unwrap())(device, fenceCount, pFences, waitAll, timeout)
+            invoke_command!(self, vkWaitForFences, device, fenceCount, pFences, waitAll, timeout)
         }
 
         pub unsafe fn vkCreateSemaphore(&self, device: VkDevice, pCreateInfo: *const VkSemaphoreCreateInfo, pAllocator: *const VkAllocationCallbacks, pSemaphore: *mut VkSemaphore) -> VkResult {
-            (self.vkCreateSemaphore.as_ref().unwrap())(device, pCreateInfo, pAllocator, pSemaphore)
+            invoke_command!(self, vkCreateSemaphore, device, pCreateInfo, pAllocator, pSemaphore)
         }
 
         pub unsafe fn vkDestroySemaphore(&self, device: VkDevice, semaphore: VkSemaphore, pAllocator: *const VkAllocationCallbacks) {
-            (self.vkDestroySemaphore.as_ref().unwrap())(device, semaphore, pAllocator)
+            invoke_command!(self, vkDestroySemaphore, device, semaphore, pAllocator)
         }
 
         pub unsafe fn vkCreateEvent(&self, device: VkDevice, pCreateInfo: *const VkEventCreateInfo, pAllocator: *const VkAllocationCallbacks, pEvent: *mut VkEvent) -> VkResult {
-            (self.vkCreateEvent.as_ref().unwrap())(device, pCreateInfo, pAllocator, pEvent)
+            invoke_command!(self, vkCreateEvent, device, pCreateInfo, pAllocator, pEvent)
         }
 
         pub unsafe fn vkDestroyEvent(&self, device: VkDevice, event: VkEvent, pAllocator: *const VkAllocationCallbacks) {
-            (self.vkDestroyEvent.as_ref().unwrap())(device, event, pAllocator)
+            invoke_command!(self, vkDestroyEvent, device, event, pAllocator)
         }
 
         pub unsafe fn vkGetEventStatus(&self, device: VkDevice, event: VkEvent) -> VkResult {
-            (self.vkGetEventStatus.as_ref().unwrap())(device, event)
+            invoke_command!(self, vkGetEventStatus, device, event)
         }
 
         pub unsafe fn vkSetEvent(&self, device: VkDevice, event: VkEvent) -> VkResult {
-            (self.vkSetEvent.as_ref().unwrap())(device, event)
+            invoke_command!(self, vkSetEvent, device, event)
         }
 
         pub unsafe fn vkResetEvent(&self, device: VkDevice, event: VkEvent) -> VkResult {
-            (self.vkResetEvent.as_ref().unwrap())(device, event)
+            invoke_command!(self, vkResetEvent, device, event)
         }
 
         pub unsafe fn vkCreateQueryPool(&self, device: VkDevice, pCreateInfo: *const VkQueryPoolCreateInfo, pAllocator: *const VkAllocationCallbacks, pQueryPool: *mut VkQueryPool) -> VkResult {
-            (self.vkCreateQueryPool.as_ref().unwrap())(device, pCreateInfo, pAllocator, pQueryPool)
+            invoke_command!(self, vkCreateQueryPool, device, pCreateInfo, pAllocator, pQueryPool)
         }
 
         pub unsafe fn vkDestroyQueryPool(&self, device: VkDevice, queryPool: VkQueryPool, pAllocator: *const VkAllocationCallbacks) {
-            (self.vkDestroyQueryPool.as_ref().unwrap())(device, queryPool, pAllocator)
+            invoke_command!(self, vkDestroyQueryPool, device, queryPool, pAllocator)
         }
 
         pub unsafe fn vkGetQueryPoolResults(&self, device: VkDevice, queryPool: VkQueryPool, firstQuery: uint32_t, queryCount: uint32_t, dataSize: size_t, pData: *mut c_void, stride: VkDeviceSize, flags: VkDeviceSize) -> VkResult {
-            (self.vkGetQueryPoolResults.as_ref().unwrap())(device, queryPool, firstQuery, queryCount, dataSize, pData, stride, flags)
+            invoke_command!(self, vkGetQueryPoolResults, device, queryPool, firstQuery, queryCount, dataSize, pData, stride, flags)
         }
 
         pub unsafe fn vkCreateBuffer(&self, device: VkDevice, pCreateInfo: *const VkBufferCreateInfo, pAllocator: *const VkAllocationCallbacks, pBuffer: *mut VkBuffer) -> VkResult {
-            (self.vkCreateBuffer.as_ref().unwrap())(device, pCreateInfo, pAllocator, pBuffer)
+            invoke_command!(self, vkCreateBuffer, device, pCreateInfo, pAllocator, pBuffer)
         }
 
         pub unsafe fn vkDestroyBuffer(&self, device: VkDevice, buffer: VkBuffer, pAllocator: *const VkAllocationCallbacks) {
-            (self.vkDestroyBuffer.as_ref().unwrap())(device, buffer, pAllocator)
+            invoke_command!(self, vkDestroyBuffer, device, buffer, pAllocator)
         }
 
         pub unsafe fn vkCreateBufferView(&self, device: VkDevice, pCreateInfo: *const VkBufferViewCreateInfo, pAllocator: *const VkAllocationCallbacks, pView: *mut VkBufferView) -> VkResult {
-            (self.vkCreateBufferView.as_ref().unwrap())(device, pCreateInfo, pAllocator, pView)
+            invoke_command!(self, vkCreateBufferView, device, pCreateInfo, pAllocator, pView)
         }
 
         pub unsafe fn vkDestroyBufferView(&self, device: VkDevice, bufferView: VkBufferView, pAllocator: *const VkAllocationCallbacks) {
-            (self.vkDestroyBufferView.as_ref().unwrap())(device, bufferView, pAllocator)
+            invoke_command!(self, vkDestroyBufferView, device, bufferView, pAllocator)
         }
 
         pub unsafe fn vkCreateImage(&self, device: VkDevice, pCreateInfo: *const VkImageCreateInfo, pAllocator: *const VkAllocationCallbacks, pImage: *mut VkImage) -> VkResult {
-            (self.vkCreateImage.as_ref().unwrap())(device, pCreateInfo, pAllocator, pImage)
+            invoke_command!(self, vkCreateImage, device, pCreateInfo, pAllocator, pImage)
         }
 
         pub unsafe fn vkDestroyImage(&self, device: VkDevice, image: VkImage, pAllocator: *const VkAllocationCallbacks) {
-            (self.vkDestroyImage.as_ref().unwrap())(device, image, pAllocator)
+            invoke_command!(self, vkDestroyImage, device, image, pAllocator)
         }
 
         pub unsafe fn vkGetImageSubresourceLayout(&self, device: VkDevice, image: VkImage, pSubresource: *const VkImageSubresource, pLayout: *mut VkSubresourceLayout) {
-            (self.vkGetImageSubresourceLayout.as_ref().unwrap())(device, image, pSubresource, pLayout)
+            invoke_command!(self, vkGetImageSubresourceLayout, device, image, pSubresource, pLayout)
         }
 
         pub unsafe fn vkCreateImageView(&self, device: VkDevice, pCreateInfo: *const VkImageViewCreateInfo, pAllocator: *const VkAllocationCallbacks, pView: *mut VkImageView) -> VkResult {
-            (self.vkCreateImageView.as_ref().unwrap())(device, pCreateInfo, pAllocator, pView)
+            invoke_command!(self, vkCreateImageView, device, pCreateInfo, pAllocator, pView)
         }
 
         pub unsafe fn vkDestroyImageView(&self, device: VkDevice, imageView: VkImageView, pAllocator: *const VkAllocationCallbacks) {
-            (self.vkDestroyImageView.as_ref().unwrap())(device, imageView, pAllocator)
+            invoke_command!(self, vkDestroyImageView, device, imageView, pAllocator)
         }
 
         pub unsafe fn vkCreateShaderModule(&self, device: VkDevice, pCreateInfo: *const VkShaderModuleCreateInfo, pAllocator: *const VkAllocationCallbacks, pShaderModule: *mut VkShaderModule) -> VkResult {
-            (self.vkCreateShaderModule.as_ref().unwrap())(device, pCreateInfo, pAllocator, pShaderModule)
+            invoke_command!(self, vkCreateShaderModule, device, pCreateInfo, pAllocator, pShaderModule)
         }
 
         pub unsafe fn vkDestroyShaderModule(&self, device: VkDevice, shaderModule: VkShaderModule, pAllocator: *const VkAllocationCallbacks) {
-            (self.vkDestroyShaderModule.as_ref().unwrap())(device, shaderModule, pAllocator)
+            invoke_command!(self, vkDestroyShaderModule, device, shaderModule, pAllocator)
         }
 
         pub unsafe fn vkCreatePipelineCache(&self, device: VkDevice, pCreateInfo: *const VkPipelineCacheCreateInfo, pAllocator: *const VkAllocationCallbacks, pPipelineCache: *mut VkPipelineCache) -> VkResult {
-            (self.vkCreatePipelineCache.as_ref().unwrap())(device, pCreateInfo, pAllocator, pPipelineCache)
+            invoke_command!(self, vkCreatePipelineCache, device, pCreateInfo, pAllocator, pPipelineCache)
         }
 
         pub unsafe fn vkDestroyPipelineCache(&self, device: VkDevice, pipelineCache: VkPipelineCache, pAllocator: *const VkAllocationCallbacks) {
-            (self.vkDestroyPipelineCache.as_ref().unwrap())(device, pipelineCache, pAllocator)
+            invoke_command!(self, vkDestroyPipelineCache, device, pipelineCache, pAllocator)
         }
 
         pub unsafe fn vkGetPipelineCacheData(&self, device: VkDevice, pipelineCache: VkPipelineCache, pDataSize: *mut size_t, pData: *mut c_void) -> VkResult {
-            (self.vkGetPipelineCacheData.as_ref().unwrap())(device, pipelineCache, pDataSize, pData)
+            invoke_command!(self, vkGetPipelineCacheData, device, pipelineCache, pDataSize, pData)
         }
 
         pub unsafe fn vkMergePipelineCaches(&self, device: VkDevice, dstCache: VkPipelineCache, srcCacheCount: uint32_t, pSrcCaches: *const VkPipelineCache) -> VkResult {
-            (self.vkMergePipelineCaches.as_ref().unwrap())(device, dstCache, srcCacheCount, pSrcCaches)
+            invoke_command!(self, vkMergePipelineCaches, device, dstCache, srcCacheCount, pSrcCaches)
         }
 
         pub unsafe fn vkCreateGraphicsPipelines(&self, device: VkDevice, pipelineCache: VkPipelineCache, createInfoCount: uint32_t, pCreateInfos: *const VkGraphicsPipelineCreateInfo, pAllocator: *const VkAllocationCallbacks, pPipelines: *mut VkPipeline) -> VkResult {
-            (self.vkCreateGraphicsPipelines.as_ref().unwrap())(device, pipelineCache, createInfoCount, pCreateInfos, pAllocator, pPipelines)
+            invoke_command!(self, vkCreateGraphicsPipelines, device, pipelineCache, createInfoCount, pCreateInfos, pAllocator, pPipelines)
         }
 
         pub unsafe fn vkCreateComputePipelines(&self, device: VkDevice, pipelineCache: VkPipelineCache, createInfoCount: uint32_t, pCreateInfos: *const VkComputePipelineCreateInfo, pAllocator: *const VkAllocationCallbacks, pPipelines: *mut VkPipeline) -> VkResult {
-            (self.vkCreateComputePipelines.as_ref().unwrap())(device, pipelineCache, createInfoCount, pCreateInfos, pAllocator, pPipelines)
+            invoke_command!(self, vkCreateComputePipelines, device, pipelineCache, createInfoCount, pCreateInfos, pAllocator, pPipelines)
         }
 
         pub unsafe fn vkDestroyPipeline(&self, device: VkDevice, pipeline: VkPipeline, pAllocator: *const VkAllocationCallbacks) {
-            (self.vkDestroyPipeline.as_ref().unwrap())(device, pipeline, pAllocator)
+            invoke_command!(self, vkDestroyPipeline, device, pipeline, pAllocator)
         }
 
         pub unsafe fn vkCreatePipelineLayout(&self, device: VkDevice, pCreateInfo: *const VkPipelineLayoutCreateInfo, pAllocator: *const VkAllocationCallbacks, pPipelineLayout: *mut VkPipelineLayout) -> VkResult {
-            (self.vkCreatePipelineLayout.as_ref().unwrap())(device, pCreateInfo, pAllocator, pPipelineLayout)
+            invoke_command!(self, vkCreatePipelineLayout, device, pCreateInfo, pAllocator, pPipelineLayout)
         }
 
         pub unsafe fn vkDestroyPipelineLayout(&self, device: VkDevice, pipelineLayout: VkPipelineLayout, pAllocator: *const VkAllocationCallbacks) {
-            (self.vkDestroyPipelineLayout.as_ref().unwrap())(device, pipelineLayout, pAllocator)
+            invoke_command!(self, vkDestroyPipelineLayout, device, pipelineLayout, pAllocator)
         }
 
         pub unsafe fn vkCreateSampler(&self, device: VkDevice, pCreateInfo: *const VkSamplerCreateInfo, pAllocator: *const VkAllocationCallbacks, pSampler: *mut VkSampler) -> VkResult {
-            (self.vkCreateSampler.as_ref().unwrap())(device, pCreateInfo, pAllocator, pSampler)
+            invoke_command!(self, vkCreateSampler, device, pCreateInfo, pAllocator, pSampler)
         }
 
         pub unsafe fn vkDestroySampler(&self, device: VkDevice, sampler: VkSampler, pAllocator: *const VkAllocationCallbacks) {
-            (self.vkDestroySampler.as_ref().unwrap())(device, sampler, pAllocator)
+            invoke_command!(self, vkDestroySampler, device, sampler, pAllocator)
         }
 
         pub unsafe fn vkCreateDescriptorSetLayout(&self, device: VkDevice, pCreateInfo: *const VkDescriptorSetLayoutCreateInfo, pAllocator: *const VkAllocationCallbacks, pSetLayout: *mut VkDescriptorSetLayout) -> VkResult {
-            (self.vkCreateDescriptorSetLayout.as_ref().unwrap())(device, pCreateInfo, pAllocator, pSetLayout)
+            invoke_command!(self, vkCreateDescriptorSetLayout, device, pCreateInfo, pAllocator, pSetLayout)
         }
 
         pub unsafe fn vkDestroyDescriptorSetLayout(&self, device: VkDevice, descriptorSetLayout: VkDescriptorSetLayout, pAllocator: *const VkAllocationCallbacks) {
-            (self.vkDestroyDescriptorSetLayout.as_ref().unwrap())(device, descriptorSetLayout, pAllocator)
+            invoke_command!(self, vkDestroyDescriptorSetLayout, device, descriptorSetLayout, pAllocator)
         }
 
         pub unsafe fn vkCreateDescriptorPool(&self, device: VkDevice, pCreateInfo: *const VkDescriptorPoolCreateInfo, pAllocator: *const VkAllocationCallbacks, pDescriptorPool: *mut VkDescriptorPool) -> VkResult {
-            (self.vkCreateDescriptorPool.as_ref().unwrap())(device, pCreateInfo, pAllocator, pDescriptorPool)
+            invoke_command!(self, vkCreateDescriptorPool, device, pCreateInfo, pAllocator, pDescriptorPool)
         }
 
         pub unsafe fn vkDestroyDescriptorPool(&self, device: VkDevice, descriptorPool: VkDescriptorPool, pAllocator: *const VkAllocationCallbacks) {
-            (self.vkDestroyDescriptorPool.as_ref().unwrap())(device, descriptorPool, pAllocator)
+            invoke_command!(self, vkDestroyDescriptorPool, device, descriptorPool, pAllocator)
         }
 
         pub unsafe fn vkResetDescriptorPool(&self, device: VkDevice, descriptorPool: VkDescriptorPool, flags: VkDescriptorPoolResetFlags) -> VkResult {
-            (self.vkResetDescriptorPool.as_ref().unwrap())(device, descriptorPool, flags)
+            invoke_command!(self, vkResetDescriptorPool, device, descriptorPool, flags)
         }
 
         pub unsafe fn vkAllocateDescriptorSets(&self, device: VkDevice, pAllocateInfo: *const VkDescriptorSetAllocateInfo, pDescriptorSets: *mut VkDescriptorSet) -> VkResult {
-            (self.vkAllocateDescriptorSets.as_ref().unwrap())(device, pAllocateInfo, pDescriptorSets)
+            invoke_command!(self, vkAllocateDescriptorSets, device, pAllocateInfo, pDescriptorSets)
         }
 
         pub unsafe fn vkFreeDescriptorSets(&self, device: VkDevice, descriptorPool: VkDescriptorPool, descriptorSetCount: uint32_t, pDescriptorSets: *const VkDescriptorSet) -> VkResult {
-            (self.vkFreeDescriptorSets.as_ref().unwrap())(device, descriptorPool, descriptorSetCount, pDescriptorSets)
+            invoke_command!(self, vkFreeDescriptorSets, device, descriptorPool, descriptorSetCount, pDescriptorSets)
         }
 
         pub unsafe fn vkUpdateDescriptorSets(&self, device: VkDevice, descriptorWriteCount: uint32_t, pDescriptorWrites: *const VkWriteDescriptorSet, descriptorCopyCount: uint32_t, pDescriptorCopies: *const VkCopyDescriptorSet) {
-            (self.vkUpdateDescriptorSets.as_ref().unwrap())(device, descriptorWriteCount, pDescriptorWrites, descriptorCopyCount, pDescriptorCopies)
+            invoke_command!(self, vkUpdateDescriptorSets, device, descriptorWriteCount, pDescriptorWrites, descriptorCopyCount, pDescriptorCopies)
         }
 
         pub unsafe fn vkCreateFramebuffer(&self, device: VkDevice, pCreateInfo: *const VkFramebufferCreateInfo, pAllocator: *const VkAllocationCallbacks, pFramebuffer: *mut VkFramebuffer) -> VkResult {
-            (self.vkCreateFramebuffer.as_ref().unwrap())(device, pCreateInfo, pAllocator, pFramebuffer)
+            invoke_command!(self, vkCreateFramebuffer, device, pCreateInfo, pAllocator, pFramebuffer)
         }
 
         pub unsafe fn vkDestroyFramebuffer(&self, device: VkDevice, framebuffer: VkFramebuffer, pAllocator: *const VkAllocationCallbacks) {
-            (self.vkDestroyFramebuffer.as_ref().unwrap())(device, framebuffer, pAllocator)
+            invoke_command!(self, vkDestroyFramebuffer, device, framebuffer, pAllocator)
         }
 
         pub unsafe fn vkCreateRenderPass(&self, device: VkDevice, pCreateInfo: *const VkRenderPassCreateInfo, pAllocator: *const VkAllocationCallbacks, pRenderPass: *mut VkRenderPass) -> VkResult {
-            (self.vkCreateRenderPass.as_ref().unwrap())(device, pCreateInfo, pAllocator, pRenderPass)
+            invoke_command!(self, vkCreateRenderPass, device, pCreateInfo, pAllocator, pRenderPass)
         }
 
         pub unsafe fn vkDestroyRenderPass(&self, device: VkDevice, renderPass: VkRenderPass, pAllocator: *const VkAllocationCallbacks) {
-            (self.vkDestroyRenderPass.as_ref().unwrap())(device, renderPass, pAllocator)
+            invoke_command!(self, vkDestroyRenderPass, device, renderPass, pAllocator)
         }
 
         pub unsafe fn vkGetRenderAreaGranularity(&self, device: VkDevice, renderPass: VkRenderPass, pGranularity: *mut VkExtent2D) {
-            (self.vkGetRenderAreaGranularity.as_ref().unwrap())(device, renderPass, pGranularity)
+            invoke_command!(self, vkGetRenderAreaGranularity, device, renderPass, pGranularity)
         }
 
         pub unsafe fn vkCreateCommandPool(&self, device: VkDevice, pCreateInfo: *const VkCommandPoolCreateInfo, pAllocator: *const VkAllocationCallbacks, pCommandPool: *mut VkCommandPool) -> VkResult {
-            (self.vkCreateCommandPool.as_ref().unwrap())(device, pCreateInfo, pAllocator, pCommandPool)
+            invoke_command!(self, vkCreateCommandPool, device, pCreateInfo, pAllocator, pCommandPool)
         }
 
         pub unsafe fn vkDestroyCommandPool(&self, device: VkDevice, commandPool: VkCommandPool, pAllocator: *const VkAllocationCallbacks) {
-            (self.vkDestroyCommandPool.as_ref().unwrap())(device, commandPool, pAllocator)
+            invoke_command!(self, vkDestroyCommandPool, device, commandPool, pAllocator)
         }
 
         pub unsafe fn vkResetCommandPool(&self, device: VkDevice, commandPool: VkCommandPool, flags: VkCommandPoolResetFlags) -> VkResult {
-            (self.vkResetCommandPool.as_ref().unwrap())(device, commandPool, flags)
+            invoke_command!(self, vkResetCommandPool, device, commandPool, flags)
         }
 
         pub unsafe fn vkAllocateCommandBuffers(&self, device: VkDevice, pAllocateInfo: *const VkCommandBufferAllocateInfo, pCommandBuffers: *mut VkCommandBuffer) -> VkResult {
-            (self.vkAllocateCommandBuffers.as_ref().unwrap())(device, pAllocateInfo, pCommandBuffers)
+            invoke_command!(self, vkAllocateCommandBuffers, device, pAllocateInfo, pCommandBuffers)
         }
 
         pub unsafe fn vkFreeCommandBuffers(&self, device: VkDevice, commandPool: VkCommandPool, commandBufferCount: uint32_t, pCommandBuffers: *const VkCommandBuffer) {
-            (self.vkFreeCommandBuffers.as_ref().unwrap())(device, commandPool, commandBufferCount, pCommandBuffers)
+            invoke_command!(self, vkFreeCommandBuffers, device, commandPool, commandBufferCount, pCommandBuffers)
         }
 
         pub unsafe fn vkBeginCommandBuffer(&self, commandBuffer: VkCommandBuffer, pBeginInfo: *const VkCommandBufferBeginInfo) -> VkResult {
-            (self.vkBeginCommandBuffer.as_ref().unwrap())(commandBuffer, pBeginInfo)
+            invoke_command!(self, vkBeginCommandBuffer, commandBuffer, pBeginInfo)
         }
 
         pub unsafe fn vkEndCommandBuffer(&self, commandBuffer: VkCommandBuffer) -> VkResult {
-            (self.vkEndCommandBuffer.as_ref().unwrap())(commandBuffer)
+            invoke_command!(self, vkEndCommandBuffer, commandBuffer)
         }
 
         pub unsafe fn vkResetCommandBuffer(&self, commandBuffer: VkCommandBuffer, flags: VkCommandBufferResetFlags) -> VkResult {
-            (self.vkResetCommandBuffer.as_ref().unwrap())(commandBuffer, flags)
+            invoke_command!(self, vkResetCommandBuffer, commandBuffer, flags)
         }
 
         pub unsafe fn vkCmdBindPipeline(&self, commandBuffer: VkCommandBuffer, pipelineBindPoint: VkPipelineBindPoint, pipeline: VkPipeline) {
-            (self.vkCmdBindPipeline.as_ref().unwrap())(commandBuffer, pipelineBindPoint, pipeline)
+            invoke_command!(self, vkCmdBindPipeline, commandBuffer, pipelineBindPoint, pipeline)
         }
 
         pub unsafe fn vkCmdSetViewport(&self, commandBuffer: VkCommandBuffer, firstViewport: uint32_t, viewportCount: uint32_t, pViewports: *const VkViewport) {
-            (self.vkCmdSetViewport.as_ref().unwrap())(commandBuffer, firstViewport, viewportCount, pViewports)
+            invoke_command!(self, vkCmdSetViewport, commandBuffer, firstViewport, viewportCount, pViewports)
         }
 
         pub unsafe fn vkCmdSetScissor(&self, commandBuffer: VkCommandBuffer, firstScissor: uint32_t, scissorCount: uint32_t, pScissors: *const VkRect2D) {
-            (self.vkCmdSetScissor.as_ref().unwrap())(commandBuffer, firstScissor, scissorCount, pScissors)
+            invoke_command!(self, vkCmdSetScissor, commandBuffer, firstScissor, scissorCount, pScissors)
         }
 
         pub unsafe fn vkCmdSetLineWidth(&self, commandBuffer: VkCommandBuffer, lineWidth: c_float) {
-            (self.vkCmdSetLineWidth.as_ref().unwrap())(commandBuffer, lineWidth)
+            invoke_command!(self, vkCmdSetLineWidth, commandBuffer, lineWidth)
         }
 
         pub unsafe fn vkCmdSetDepthBias(&self, commandBuffer: VkCommandBuffer, depthBiasConstantFactor: c_float, depthBiasClamp: c_float, depthBiasSlopeFactor: c_float) {
-            (self.vkCmdSetDepthBias.as_ref().unwrap())(commandBuffer, depthBiasConstantFactor, depthBiasClamp, depthBiasSlopeFactor)
+            invoke_command!(self, vkCmdSetDepthBias, commandBuffer, depthBiasConstantFactor, depthBiasClamp, depthBiasSlopeFactor)
         }
 
         // TODO: make sure this is working
         pub unsafe fn vkCmdSetBlendConstants(&self, commandBuffer: VkCommandBuffer, blendConstants: [c_float; 4]) {
-            (self.vkCmdSetBlendConstants.as_ref().unwrap())(commandBuffer, blendConstants)
+            invoke_command!(self, vkCmdSetBlendConstants, commandBuffer, blendConstants)
         }
 
         pub unsafe fn vkCmdSetDepthBounds(&self, commandBuffer: VkCommandBuffer, minDepthBounds: c_float, maxDepthBounds: c_float) {
-            (self.vkCmdSetDepthBounds.as_ref().unwrap())(commandBuffer, minDepthBounds, maxDepthBounds)
+            invoke_command!(self, vkCmdSetDepthBounds, commandBuffer, minDepthBounds, maxDepthBounds)
         }
 
         pub unsafe fn vkCmdSetStencilCompareMask(&self, commandBuffer: VkCommandBuffer, faceMask: VkStencilFaceFlags, compareMask: uint32_t) {
-            (self.vkCmdSetStencilCompareMask.as_ref().unwrap())(commandBuffer, faceMask, compareMask)
+            invoke_command!(self, vkCmdSetStencilCompareMask, commandBuffer, faceMask, compareMask)
         }
 
         pub unsafe fn vkCmdSetStencilWriteMask(&self, commandBuffer: VkCommandBuffer, faceMask: VkStencilFaceFlags, writeMask: uint32_t) {
-            (self.vkCmdSetStencilWriteMask.as_ref().unwrap())(commandBuffer, faceMask, writeMask)
+            invoke_command!(self, vkCmdSetStencilWriteMask, commandBuffer, faceMask, writeMask)
         }
 
         pub unsafe fn vkCmdSetStencilReference(&self, commandBuffer: VkCommandBuffer, faceMask: VkStencilFaceFlags, reference: uint32_t) {
-            (self.vkCmdSetStencilReference.as_ref().unwrap())(commandBuffer, faceMask, reference)
+            invoke_command!(self, vkCmdSetStencilReference, commandBuffer, faceMask, reference)
         }
 
         pub unsafe fn vkCmdBindDescriptorSets(&self, commandBuffer: VkCommandBuffer, pipelineBindPoint: VkPipelineBindPoint, layout: VkPipelineLayout, firstSet: uint32_t, descriptorSetCount: uint32_t, pDescriptorSets: *const VkDescriptorSet, dynamicOffsetCount: uint32_t, pDynamicOffsets: *const uint32_t) {
-            (self.vkCmdBindDescriptorSets.as_ref().unwrap())(commandBuffer, pipelineBindPoint, layout, firstSet, descriptorSetCount, pDescriptorSets, dynamicOffsetCount, pDynamicOffsets)
+            invoke_command!(self, vkCmdBindDescriptorSets, commandBuffer, pipelineBindPoint, layout, firstSet, descriptorSetCount, pDescriptorSets, dynamicOffsetCount, pDynamicOffsets)
         }
 
         pub unsafe fn vkCmdBindIndexBuffer(&self, commandBuffer: VkCommandBuffer, buffer: VkBuffer, offset: VkDeviceSize, indexType: VkIndexType) {
-            (self.vkCmdBindIndexBuffer.as_ref().unwrap())(commandBuffer, buffer, offset, indexType)
+            invoke_command!(self, vkCmdBindIndexBuffer, commandBuffer, buffer, offset, indexType)
         }
 
         pub unsafe fn vkCmdBindVertexBuffers(&self, commandBuffer: VkCommandBuffer, firstBinding: uint32_t, bindingCount: uint32_t, pBuffers: *const VkBuffer, pOffsets: *const VkDeviceSize) {
-            (self.vkCmdBindVertexBuffers.as_ref().unwrap())(commandBuffer, firstBinding, bindingCount, pBuffers, pOffsets)
+            invoke_command!(self, vkCmdBindVertexBuffers, commandBuffer, firstBinding, bindingCount, pBuffers, pOffsets)
         }
 
         pub unsafe fn vkCmdDraw(&self, commandBuffer: VkCommandBuffer, vertexCount: uint32_t, instanceCount: uint32_t, firstVertex: uint32_t, firstInstance: uint32_t) {
-            (self.vkCmdDraw.as_ref().unwrap())(commandBuffer, vertexCount, instanceCount, firstVertex, firstInstance)
+            invoke_command!(self, vkCmdDraw, commandBuffer, vertexCount, instanceCount, firstVertex, firstInstance)
         }
 
         pub unsafe fn vkCmdDrawIndexed(&self, commandBuffer: VkCommandBuffer, indexCount: uint32_t, instanceCount: uint32_t, firstIndex: uint32_t, vertexOffset: int32_t, firstInstance: uint32_t) {
-            (self.vkCmdDrawIndexed.as_ref().unwrap())(commandBuffer, indexCount, instanceCount, firstIndex, vertexOffset, firstInstance)
+            invoke_command!(self, vkCmdDrawIndexed, commandBuffer, indexCount, instanceCount, firstIndex, vertexOffset, firstInstance)
         }
 
         pub unsafe fn vkCmdDrawIndirect(&self, commandBuffer: VkCommandBuffer, buffer: VkBuffer, offset: VkDeviceSize, drawCount: uint32_t, stride: uint32_t) {
-            (self.vkCmdDrawIndirect.as_ref().unwrap())(commandBuffer, buffer, offset, drawCount, stride)
+            invoke_command!(self, vkCmdDrawIndirect, commandBuffer, buffer, offset, drawCount, stride)
         }
 
         pub unsafe fn vkCmdDrawIndexedIndirect(&self, commandBuffer: VkCommandBuffer, buffer: VkBuffer, offset: VkDeviceSize, drawCount: uint32_t, stride: uint32_t) {
-            (self.vkCmdDrawIndexedIndirect.as_ref().unwrap())(commandBuffer, buffer, offset, drawCount, stride)
+            invoke_command!(self, vkCmdDrawIndexedIndirect, commandBuffer, buffer, offset, drawCount, stride)
         }
 
         pub unsafe fn vkCmdDispatch(&self, commandBuffer: VkCommandBuffer, x: uint32_t, y: uint32_t, z: uint32_t) {
-            (self.vkCmdDispatch.as_ref().unwrap())(commandBuffer, x, y, z)
+            invoke_command!(self, vkCmdDispatch, commandBuffer, x, y, z)
         }
 
         pub unsafe fn vkCmdDispatchIndirect(&self, commandBuffer: VkCommandBuffer, buffer: VkBuffer, offset: VkDeviceSize) {
-            (self.vkCmdDispatchIndirect.as_ref().unwrap())(commandBuffer, buffer, offset)
+            invoke_command!(self, vkCmdDispatchIndirect, commandBuffer, buffer, offset)
         }
 
         pub unsafe fn vkCmdCopyBuffer(&self, commandBuffer: VkCommandBuffer, srcBuffer: VkBuffer, dstBuffer: VkBuffer, regionCount: uint32_t, pRegions: *const VkBufferCopy) {
-            (self.vkCmdCopyBuffer.as_ref().unwrap())(commandBuffer, srcBuffer, dstBuffer, regionCount, pRegions)
+            invoke_command!(self, vkCmdCopyBuffer, commandBuffer, srcBuffer, dstBuffer, regionCount, pRegions)
         }
 
         pub unsafe fn vkCmdCopyImage(&self, commandBuffer: VkCommandBuffer, srcImage: VkImage, srcImageLayout: VkImageLayout, dstImage: VkImage, dstImageLayout: VkImageLayout, regionCount: uint32_t, pRegions: *const VkImageCopy) {
-            (self.vkCmdCopyImage.as_ref().unwrap())(commandBuffer, srcImage, srcImageLayout, dstImage, dstImageLayout, regionCount, pRegions)
+            invoke_command!(self, vkCmdCopyImage, commandBuffer, srcImage, srcImageLayout, dstImage, dstImageLayout, regionCount, pRegions)
         }
 
         pub unsafe fn vkCmdBlitImage(&self, commandBuffer: VkCommandBuffer, srcImage: VkImage, srcImageLayout: VkImageLayout, dstImage: VkImage, dstImageLayout: VkImageLayout, regionCount: uint32_t, pRegions: *const VkImageBlit, filter: VkFilter) {
-            (self.vkCmdBlitImage.as_ref().unwrap())(commandBuffer, srcImage, srcImageLayout, dstImage, dstImageLayout, regionCount, pRegions, filter)
+            invoke_command!(self, vkCmdBlitImage, commandBuffer, srcImage, srcImageLayout, dstImage, dstImageLayout, regionCount, pRegions, filter)
         }
 
         pub unsafe fn vkCmdCopyBufferToImage(&self, commandBuffer: VkCommandBuffer, srcBuffer: VkBuffer, dstImage: VkImage, dstImageLayout: VkImageLayout, regionCount: uint32_t, pRegions: *const VkBufferImageCopy) {
-            (self.vkCmdCopyBufferToImage.as_ref().unwrap())(commandBuffer, srcBuffer, dstImage, dstImageLayout, regionCount, pRegions)
+            invoke_command!(self, vkCmdCopyBufferToImage, commandBuffer, srcBuffer, dstImage, dstImageLayout, regionCount, pRegions)
         }
 
         pub unsafe fn vkCmdCopyImageToBuffer(&self, commandBuffer: VkCommandBuffer, srcImage: VkImage, srcImageLayout: VkImageLayout, dstBuffer: VkBuffer, regionCount: uint32_t, pRegions: *const VkBufferImageCopy) {
-            (self.vkCmdCopyImageToBuffer.as_ref().unwrap())(commandBuffer, srcImage, srcImageLayout, dstBuffer, regionCount, pRegions)
+            invoke_command!(self, vkCmdCopyImageToBuffer, commandBuffer, srcImage, srcImageLayout, dstBuffer, regionCount, pRegions)
         }
 
         pub unsafe fn vkCmdUpdateBuffer(&self, commandBuffer: VkCommandBuffer, dstBuffer: VkBuffer, dstOffset: VkDeviceSize, dataSize: VkDeviceSize, pData: *const uint32_t) {
-            (self.vkCmdUpdateBuffer.as_ref().unwrap())(commandBuffer, dstBuffer, dstOffset, dataSize, pData)
+            invoke_command!(self, vkCmdUpdateBuffer, commandBuffer, dstBuffer, dstOffset, dataSize, pData)
         }
 
         pub unsafe fn vkCmdFillBuffer(&self, commandBuffer: VkCommandBuffer, dstBuffer: VkBuffer, dstOffset: VkDeviceSize, size: VkDeviceSize, data: uint32_t) {
-            (self.vkCmdFillBuffer.as_ref().unwrap())(commandBuffer, dstBuffer, dstOffset, size, data)
+            invoke_command!(self, vkCmdFillBuffer, commandBuffer, dstBuffer, dstOffset, size, data)
         }
 
         pub unsafe fn vkCmdClearColorImage(&self, commandBuffer: VkCommandBuffer, image: VkImage, imageLayout: VkImageLayout, pColor: *const VkClearColorValue, rangeCount: uint32_t, pRanges: *const VkImageSubresourceRange) {
-            (self.vkCmdClearColorImage.as_ref().unwrap())(commandBuffer, image, imageLayout, pColor, rangeCount, pRanges)
+            invoke_command!(self, vkCmdClearColorImage, commandBuffer, image, imageLayout, pColor, rangeCount, pRanges)
         }
 
         pub unsafe fn vkCmdClearDepthStencilImage(&self, commandBuffer: VkCommandBuffer, image: VkImage, imageLayout: VkImageLayout, pDepthStencil: *const VkClearDepthStencilValue, rangeCount: uint32_t, pRanges: *const VkImageSubresourceRange) {
-            (self.vkCmdClearDepthStencilImage.as_ref().unwrap())(commandBuffer, image, imageLayout, pDepthStencil, rangeCount, pRanges)
+            invoke_command!(self, vkCmdClearDepthStencilImage, commandBuffer, image, imageLayout, pDepthStencil, rangeCount, pRanges)
         }
 
         pub unsafe fn vkCmdClearAttachments(&self, commandBuffer: VkCommandBuffer, attachmentCount: uint32_t, pAttachments: *const VkClearAttachment, rectCount: uint32_t, pRects: *const VkClearRect) {
-            (self.vkCmdClearAttachments.as_ref().unwrap())(commandBuffer, attachmentCount, pAttachments, rectCount, pRects)
+            invoke_command!(self, vkCmdClearAttachments, commandBuffer, attachmentCount, pAttachments, rectCount, pRects)
         }
 
         pub unsafe fn vkCmdResolveImage(&self, commandBuffer: VkCommandBuffer, srcImage: VkImage, srcImageLayout: VkImageLayout, dstImage: VkImage, dstImageLayout: VkImageLayout, regionCount: uint32_t, pRegions: *const VkImageResolve) {
-            (self.vkCmdResolveImage.as_ref().unwrap())(commandBuffer, srcImage, srcImageLayout, dstImage, dstImageLayout, regionCount, pRegions)
+            invoke_command!(self, vkCmdResolveImage, commandBuffer, srcImage, srcImageLayout, dstImage, dstImageLayout, regionCount, pRegions)
         }
 
         pub unsafe fn vkCmdSetEvent(&self, commandBuffer: VkCommandBuffer, event: VkEvent, stageMask: VkPipelineStageFlags) {
-            (self.vkCmdSetEvent.as_ref().unwrap())(commandBuffer, event, stageMask)
+            invoke_command!(self, vkCmdSetEvent, commandBuffer, event, stageMask)
         }
 
         pub unsafe fn vkCmdResetEvent(&self, commandBuffer: VkCommandBuffer, event: VkEvent, stageMask: VkPipelineStageFlags) {
-            (self.vkCmdResetEvent.as_ref().unwrap())(commandBuffer, event, stageMask)
+            invoke_command!(self, vkCmdResetEvent, commandBuffer, event, stageMask)
         }
 
         pub unsafe fn vkCmdWaitEvents(&self, commandBuffer: VkCommandBuffer, eventCount: uint32_t, pEvents: *const VkEvent, srcStageMask: VkPipelineStageFlags, dstStageMask: VkPipelineStageFlags, memoryBarrierCount: uint32_t, pMemoryBarriers: *const VkMemoryBarrier, bufferMemoryBarrierCount: uint32_t, pBufferMemoryBarriers: *const VkBufferMemoryBarrier, imageMemoryBarrierCount: uint32_t, pImageMemoryBarriers: *const VkImageMemoryBarrier) {
-            (self.vkCmdWaitEvents.as_ref().unwrap())(commandBuffer, eventCount, pEvents, srcStageMask, dstStageMask, memoryBarrierCount, pMemoryBarriers, bufferMemoryBarrierCount, pBufferMemoryBarriers, imageMemoryBarrierCount, pImageMemoryBarriers)
+            invoke_command!(self, vkCmdWaitEvents, commandBuffer, eventCount, pEvents, srcStageMask, dstStageMask, memoryBarrierCount, pMemoryBarriers, bufferMemoryBarrierCount, pBufferMemoryBarriers, imageMemoryBarrierCount, pImageMemoryBarriers)
         }
 
         pub unsafe fn vkCmdPipelineBarrier(&self, commandBuffer: VkCommandBuffer, srcStageMask: VkPipelineStageFlags, dstStageMask: VkPipelineStageFlags, dependencyFlags: VkDependencyFlags, memoryBarrierCount: uint32_t, pMemoryBarriers: *const VkMemoryBarrier, bufferMemoryBarrierCount: uint32_t, pBufferMemoryBarriers: *const VkBufferMemoryBarrier, imageMemoryBarrierCount: uint32_t, pImageMemoryBarriers: *const VkImageMemoryBarrier) {
-            (self.vkCmdPipelineBarrier.as_ref().unwrap())(commandBuffer, srcStageMask, dstStageMask, dependencyFlags, memoryBarrierCount, pMemoryBarriers, bufferMemoryBarrierCount, pBufferMemoryBarriers, imageMemoryBarrierCount, pImageMemoryBarriers)
+            invoke_command!(self, vkCmdPipelineBarrier, commandBuffer, srcStageMask, dstStageMask, dependencyFlags, memoryBarrierCount, pMemoryBarriers, bufferMemoryBarrierCount, pBufferMemoryBarriers, imageMemoryBarrierCount, pImageMemoryBarriers)
         }
 
         pub unsafe fn vkCmdBeginQuery(&self, commandBuffer: VkCommandBuffer, queryPool: VkQueryPool, query: uint32_t, flags: VkQueryControlFlags) {
-            (self.vkCmdBeginQuery.as_ref().unwrap())(commandBuffer, queryPool, query, flags)
+            invoke_command!(self, vkCmdBeginQuery, commandBuffer, queryPool, query, flags)
         }
 
         pub unsafe fn vkCmdEndQuery(&self, commandBuffer: VkCommandBuffer, queryPool: VkQueryPool, query: uint32_t) {
-            (self.vkCmdEndQuery.as_ref().unwrap())(commandBuffer, queryPool, query)
+            invoke_command!(self, vkCmdEndQuery, commandBuffer, queryPool, query)
         }
 
         pub unsafe fn vkCmdResetQueryPool(&self, commandBuffer: VkCommandBuffer, queryPool: VkQueryPool, firstQuery: uint32_t, queryCount: uint32_t) {
-            (self.vkCmdResetQueryPool.as_ref().unwrap())(commandBuffer, queryPool, firstQuery, queryCount)
+            invoke_command!(self, vkCmdResetQueryPool, commandBuffer, queryPool, firstQuery, queryCount)
         }
 
         pub unsafe fn vkCmdWriteTimestamp(&self, commandBuffer: VkCommandBuffer, pipelineStage: VkPipelineStageFlags, queryPool: VkQueryPool, query: uint32_t) {
-            (self.vkCmdWriteTimestamp.as_ref().unwrap())(commandBuffer, pipelineStage, queryPool, query)
+            invoke_command!(self, vkCmdWriteTimestamp, commandBuffer, pipelineStage, queryPool, query)
         }
 
         pub unsafe fn vkCmdCopyQueryPoolResults(&self, commandBuffer: VkCommandBuffer, queryPool: VkQueryPool, firstQuery: uint32_t, queryCount: uint32_t, dstBuffer: VkBuffer, dstOffset: VkDeviceSize, stride: VkDeviceSize, flags: VkQueryResultFlags) {
-            (self.vkCmdCopyQueryPoolResults.as_ref().unwrap())(commandBuffer, queryPool, firstQuery, queryCount, dstBuffer, dstOffset, stride, flags)
+            invoke_command!(self, vkCmdCopyQueryPoolResults, commandBuffer, queryPool, firstQuery, queryCount, dstBuffer, dstOffset, stride, flags)
         }
 
         pub unsafe fn vkCmdPushConstants(&self, commandBuffer: VkCommandBuffer, layout: VkPipelineLayout, stageFlags: VkShaderStageFlags, offset: uint32_t, size: uint32_t, pValues: *const c_void) {
-            (self.vkCmdPushConstants.as_ref().unwrap())(commandBuffer, layout, stageFlags, offset, size, pValues)
+            invoke_command!(self, vkCmdPushConstants, commandBuffer, layout, stageFlags, offset, size, pValues)
         }
 
         pub unsafe fn vkCmdBeginRenderPass(&self, commandBuffer: VkCommandBuffer, pRenderPassBegin: *const VkRenderPassBeginInfo, contents: VkSubpassContents) {
-            (self.vkCmdBeginRenderPass.as_ref().unwrap())(commandBuffer, pRenderPassBegin, contents)
+            invoke_command!(self, vkCmdBeginRenderPass, commandBuffer, pRenderPassBegin, contents)
         }
 
         pub unsafe fn vkCmdNextSubpass(&self, commandBuffer: VkCommandBuffer, contents: VkSubpassContents) {
-            (self.vkCmdNextSubpass.as_ref().unwrap())(commandBuffer, contents)
+            invoke_command!(self, vkCmdNextSubpass, commandBuffer, contents)
         }
 
         pub unsafe fn vkCmdEndRenderPass(&self, commandBuffer: VkCommandBuffer) {
-            (self.vkCmdEndRenderPass.as_ref().unwrap())(commandBuffer)
+            invoke_command!(self, vkCmdEndRenderPass, commandBuffer)
         }
 
         pub unsafe fn vkCmdExecuteCommands(&self, commandBuffer: VkCommandBuffer, commandBufferCount: uint32_t, pCommandBuffers: *const VkCommandBuffer) {
-            (self.vkCmdExecuteCommands.as_ref().unwrap())(commandBuffer, commandBufferCount, pCommandBuffers)
+            invoke_command!(self, vkCmdExecuteCommands, commandBuffer, commandBufferCount, pCommandBuffers)
         }
     }
 }
@@ -4261,7 +4273,6 @@ pub mod khr_surface {
     use ::std::mem::transmute;
     use ::std::ffi::CString;
     use ::VULKAN_LIBRARY;
-    #[macro_use]
     use ::core::*;
 
     VK_DEFINE_NON_DISPATCHABLE_HANDLE!(VkSurfaceKHR);
@@ -4403,7 +4414,7 @@ pub mod khr_surface {
                                           instance: VkInstance,
                                           surface: VkSurfaceKHR,
                                           pAllocator: *const VkAllocationCallbacks) {
-            (self.vkDestroySurfaceKHR.as_ref().unwrap())(instance, surface, pAllocator)
+            invoke_command!(self, vkDestroySurfaceKHR, instance, surface, pAllocator)
         }
 
         pub unsafe fn vkGetPhysicalDeviceSurfaceSupportKHR(&self, 
@@ -4411,14 +4422,14 @@ pub mod khr_surface {
                                                            queueFamilyIndex: uint32_t,
                                                            surface: VkSurfaceKHR,
                                                            pSupported: *mut VkBool32) -> VkResult {
-            (self.vkGetPhysicalDeviceSurfaceSupportKHR.as_ref().unwrap())(physicalDevice, queueFamilyIndex, surface, pSupported)
+            invoke_command!(self, vkGetPhysicalDeviceSurfaceSupportKHR, physicalDevice, queueFamilyIndex, surface, pSupported)
         }
         
         pub unsafe fn vkGetPhysicalDeviceSurfaceCapabilitiesKHR(&self, 
                                                                 physicalDevice: VkPhysicalDevice,
                                                                 surface: VkSurfaceKHR,
                                                                 pSurfaceCapabilities: *mut VkSurfaceCapabilitiesKHR) -> VkResult {
-            (self.vkGetPhysicalDeviceSurfaceCapabilitiesKHR.as_ref().unwrap())(physicalDevice, surface, pSurfaceCapabilities)
+            invoke_command!(self, vkGetPhysicalDeviceSurfaceCapabilitiesKHR, physicalDevice, surface, pSurfaceCapabilities)
         }
         
         pub unsafe fn vkGetPhysicalDeviceSurfaceFormatsKHR(&self, 
@@ -4426,7 +4437,7 @@ pub mod khr_surface {
                                                            surface: VkSurfaceKHR,
                                                            pSurfaceFormatCount: *mut uint32_t,
                                                            pSurfaceFormats: *mut VkSurfaceFormatKHR) -> VkResult {
-            (self.vkGetPhysicalDeviceSurfaceFormatsKHR.as_ref().unwrap())(physicalDevice, surface, pSurfaceFormatCount, pSurfaceFormats)
+            invoke_command!(self, vkGetPhysicalDeviceSurfaceFormatsKHR, physicalDevice, surface, pSurfaceFormatCount, pSurfaceFormats)
         }
         
         pub unsafe fn vkGetPhysicalDeviceSurfacePresentModesKHR(&self, 
@@ -4434,7 +4445,7 @@ pub mod khr_surface {
                                                                 surface: VkSurfaceKHR,
                                                                 pPresentModeCount: *mut uint32_t,
                                                                 pPresentModes: *mut VkPresentModeKHR) -> VkResult {
-            (self.vkGetPhysicalDeviceSurfacePresentModesKHR.as_ref().unwrap())(physicalDevice, surface, pPresentModeCount, pPresentModes)
+            invoke_command!(self, vkGetPhysicalDeviceSurfacePresentModesKHR, physicalDevice, surface, pPresentModeCount, pPresentModes)
         }
     }
 }
@@ -4446,7 +4457,6 @@ pub mod khr_swapchain {
     use ::std::mem::transmute;
     use ::std::ffi::CString;
     use ::VULKAN_LIBRARY;
-    #[macro_use]
     use ::core::*;
     use ::khr_surface::*;
 
@@ -4578,21 +4588,21 @@ pub mod khr_swapchain {
                                              pCreateInfo: *const VkSwapchainCreateInfoKHR,
                                              pAllocator: *const VkAllocationCallbacks,
                                              pSwapchain: *mut VkSwapchainKHR) -> VkResult {
-            (self.vkCreateSwapchainKHR.as_ref().unwrap())(device, pCreateInfo, pAllocator, pSwapchain)
+            invoke_command!(self, vkCreateSwapchainKHR, device, pCreateInfo, pAllocator, pSwapchain)
         }
     
         pub unsafe fn vkDestroySwapchainKHR(&self,
                                              device: VkDevice,
                                              swapchain: VkSwapchainKHR,
                                              pAllocator: *const VkAllocationCallbacks) {
-            (self.vkDestroySwapchainKHR.as_ref().unwrap())(device,swapchain,pAllocator)
+            invoke_command!(self, vkDestroySwapchainKHR, device, swapchain, pAllocator)
         }
         pub unsafe fn vkGetSwapchainImagesKHR(&self,
                                              device: VkDevice,
                                              swapchain: VkSwapchainKHR,
                                              pSwapchainImageCount: *mut uint32_t,
                                              pSwapchainImages: *mut VkImage) -> VkResult {
-            (self.vkGetSwapchainImagesKHR.as_ref().unwrap())(device,swapchain,pSwapchainImageCount,pSwapchainImages)
+            invoke_command!(self, vkGetSwapchainImagesKHR, device, swapchain, pSwapchainImageCount, pSwapchainImages)
         }
     
         pub unsafe fn vkAcquireNextImageKHR(&self,
@@ -4602,13 +4612,13 @@ pub mod khr_swapchain {
                                              semaphore: VkSemaphore,
                                              fence: VkFence,
                                              pImageIndex: *mut uint32_t) -> VkResult {
-            (self.vkAcquireNextImageKHR.as_ref().unwrap())(device,swapchain,timeout,semaphore,fence,pImageIndex)
+            invoke_command!(self, vkAcquireNextImageKHR, device, swapchain, timeout, semaphore, fence, pImageIndex)
         }
     
         pub unsafe fn vkQueuePresentKHR(&self,
                                         queue: VkQueue,
                                         pPresentInfo: *const VkPresentInfoKHR) -> VkResult {
-            (self.vkQueuePresentKHR.as_ref().unwrap())(queue,pPresentInfo)
+            invoke_command!(self, vkQueuePresentKHR, queue, pPresentInfo)
         }
     }
 }
@@ -4620,7 +4630,6 @@ pub mod khr_display {
     use ::std::mem::transmute;
     use ::std::ffi::CString;
     use ::VULKAN_LIBRARY;
-    #[macro_use]
     use ::core::*;
     use ::khr_surface::*;
 
@@ -4798,14 +4807,14 @@ pub mod khr_display {
                                                               physicalDevice: VkPhysicalDevice, 
                                                               pPropertyCount: *mut uint32_t,
                                                               pProperties: *mut VkDisplayPropertiesKHR) -> VkResult {
-            (self.vkGetPhysicalDeviceDisplayPropertiesKHR.as_ref().unwrap())(physicalDevice, pPropertyCount, pProperties)
+            invoke_command!(self, vkGetPhysicalDeviceDisplayPropertiesKHR, physicalDevice, pPropertyCount, pProperties)
         }
     
         pub unsafe fn vkGetPhysicalDeviceDisplayPlanePropertiesKHR(&self, 
                                                                    physicalDevice: VkPhysicalDevice,
                                                                    pPropertyCount: *mut uint32_t,
                                                                    pProperties: *mut VkDisplayPlanePropertiesKHR) -> VkResult {
-            (self.vkGetPhysicalDeviceDisplayPlanePropertiesKHR.as_ref().unwrap())(physicalDevice, pPropertyCount, pProperties)
+            invoke_command!(self, vkGetPhysicalDeviceDisplayPlanePropertiesKHR, physicalDevice, pPropertyCount, pProperties)
         }
         
         pub unsafe fn vkGetDisplayPlaneSupportedDisplaysKHR(&self, 
@@ -4813,7 +4822,7 @@ pub mod khr_display {
                                                             planeIndex: uint32_t,
                                                             pDisplayCount: *mut uint32_t,
                                                             pDisplays: *mut VkDisplayKHR) -> VkResult {
-            (self.vkGetDisplayPlaneSupportedDisplaysKHR.as_ref().unwrap())(physicalDevice, planeIndex, pDisplayCount, pDisplays)
+            invoke_command!(self, vkGetDisplayPlaneSupportedDisplaysKHR, physicalDevice, planeIndex, pDisplayCount, pDisplays)
         }
         
         pub unsafe fn vkGetDisplayModePropertiesKHR(&self, 
@@ -4821,7 +4830,7 @@ pub mod khr_display {
                                                     display: VkDisplayKHR, 
                                                     pPropertyCount: *mut uint32_t,
                                                     pProperties: *mut VkDisplayModePropertiesKHR) -> VkResult {
-            (self.vkGetDisplayModePropertiesKHR.as_ref().unwrap())(physicalDevice, display, pPropertyCount, pProperties)
+            invoke_command!(self, vkGetDisplayModePropertiesKHR, physicalDevice, display, pPropertyCount, pProperties)
         }
         
         pub unsafe fn vkCreateDisplayModeKHR(&self, 
@@ -4830,7 +4839,7 @@ pub mod khr_display {
                                              pCreateInfo: *const VkDisplayModeCreateInfoKHR,
                                              pAllocator: *const VkAllocationCallbacks,
                                              pMode: *mut VkDisplayModeKHR) -> VkResult {
-            (self.vkCreateDisplayModeKHR.as_ref().unwrap())(physicalDevice, display, pCreateInfo, pAllocator, pMode)
+            invoke_command!(self, vkCreateDisplayModeKHR, physicalDevice, display, pCreateInfo, pAllocator, pMode)
         }
         
         pub unsafe fn vkGetDisplayPlaneCapabilitiesKHR(&self, 
@@ -4838,7 +4847,7 @@ pub mod khr_display {
                                                        mode: VkDisplayModeKHR,
                                                        planeIndex: uint32_t,
                                                        pCapabilities: *mut VkDisplayPlaneCapabilitiesKHR) -> VkResult {
-            (self.vkGetDisplayPlaneCapabilitiesKHR.as_ref().unwrap())(physicalDevice, mode, planeIndex, pCapabilities)
+            invoke_command!(self, vkGetDisplayPlaneCapabilitiesKHR, physicalDevice, mode, planeIndex, pCapabilities)
         }
         
         pub unsafe fn vkCreateDisplayPlaneSurfaceKHR(&self, 
@@ -4846,7 +4855,7 @@ pub mod khr_display {
                                                      pCreateInfo: *const VkDisplaySurfaceCreateInfoKHR,
                                                      pAllocator: *const VkAllocationCallbacks,
                                                      pSurface: *mut VkSurfaceKHR) -> VkResult {
-            (self.vkCreateDisplayPlaneSurfaceKHR.as_ref().unwrap())(instance, pCreateInfo, pAllocator, pSurface)
+            invoke_command!(self, vkCreateDisplayPlaneSurfaceKHR, instance, pCreateInfo, pAllocator, pSurface)
         }
     }
 }
@@ -4858,7 +4867,6 @@ pub mod khr_display_swapchain {
     use ::std::mem::transmute;
     use ::std::ffi::CString;
     use ::VULKAN_LIBRARY;
-    #[macro_use]
     use ::core::*;
     use ::khr_swapchain::*;
 
@@ -4916,7 +4924,7 @@ pub mod khr_display_swapchain {
                                                   pCreateInfos: *const VkSwapchainCreateInfoKHR,
                                                   pAllocator: *const VkAllocationCallbacks,
                                                   pSwapchains: *mut VkSwapchainKHR) -> VkResult {
-            (self.vkCreateSharedSwapchainsKHR.as_ref().unwrap())(device, swapchainCount, pCreateInfos, pAllocator, pSwapchains)
+            invoke_command!(self, vkCreateSharedSwapchainsKHR, device, swapchainCount, pCreateInfos, pAllocator, pSwapchains)
         }
     }
 }
@@ -4996,13 +5004,13 @@ pub mod khr_win32_surface {
                                               pCreateInfo: *const VkWin32SurfaceCreateInfoKHR,
                                               pAllocator: *const VkAllocationCallbacks,
                                               pSurface: *mut VkSurfaceKHR) -> VkResult {
-            (self.vkCreateWin32SurfaceKHR.as_ref().unwrap())(instance, pCreateInfo, pAllocator, pSurface)
+            invoke_command!(self, vkCreateWin32SurfaceKHR, instance, pCreateInfo, pAllocator, pSurface)
         }
     
         pub unsafe fn vkGetPhysicalDeviceWin32PresentationSupportKHR(&self,
                                                                      physicalDevice: VkPhysicalDevice,
                                                                      queueFamilyIndex: uint32_t) -> VkBool32 {
-            (self.vkGetPhysicalDeviceWin32PresentationSupportKHR.as_ref().unwrap())(physicalDevice, queueFamilyIndex)
+            invoke_command!(self, vkGetPhysicalDeviceWin32PresentationSupportKHR, physicalDevice, queueFamilyIndex)
         }
     }
 }
@@ -5014,7 +5022,6 @@ pub mod ext_debug_report {
     use ::std::ffi::CString;
     use ::std::mem::transmute;
     use ::VULKAN_LIBRARY;
-    #[macro_use]
     use ::core::*;
 
     VK_DEFINE_NON_DISPATCHABLE_HANDLE!(VkDebugReportCallbackEXT);
@@ -5164,14 +5171,14 @@ pub mod ext_debug_report {
                                                      pCreateInfo: *const VkDebugReportCallbackCreateInfoEXT,
                                                      pAllocator: *const VkAllocationCallbacks, 
                                                      pCallback: *mut VkDebugReportCallbackEXT) -> VkResult {
-            (self.vkCreateDebugReportCallbackEXT.as_ref().unwrap())(instance, pCreateInfo, pAllocator, pCallback)
+            invoke_command!(self, vkCreateDebugReportCallbackEXT, instance, pCreateInfo, pAllocator, pCallback)
         }
     
         pub unsafe fn vkDestroyDebugReportCallbackEXT(&self,
                                                       instance: VkInstance,
                                                       callback: VkDebugReportCallbackEXT,
                                                       pAllocator: *const VkAllocationCallbacks) {
-            (self.vkDestroyDebugReportCallbackEXT.as_ref().unwrap())(instance, callback, pAllocator)
+            invoke_command!(self, vkDestroyDebugReportCallbackEXT, instance, callback, pAllocator)
         }
     
         pub unsafe fn vkDebugReportMessageEXT(&self,
@@ -5183,7 +5190,7 @@ pub mod ext_debug_report {
                                               messageCode: int32_t,
                                               pLayerPrefix: *const c_char,
                                               pMessage: *const c_char) {
-            (self.vkDebugReportMessageEXT.as_ref().unwrap())(instance, flags, objectType, object, location, messageCode, pLayerPrefix, pMessage)
+            invoke_command!(self, vkDebugReportMessageEXT, instance, flags, objectType, object, location, messageCode, pLayerPrefix, pMessage)
         }
     }
 }
