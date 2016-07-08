@@ -4267,7 +4267,7 @@ pub mod core {
 }
 
 pub mod khr_surface {
-    use ::libc::{c_void, c_char, c_float, uint64_t, uint32_t};
+    use ::libc::{c_char, uint64_t, uint32_t};
     use ::shared_library::dynamic_library::DynamicLibrary;
     use ::std::path::Path;
     use ::std::mem::transmute;
@@ -4451,7 +4451,7 @@ pub mod khr_surface {
 }
 
 pub mod khr_swapchain {
-    use ::libc::{c_void, c_char, c_float, uint64_t, uint32_t};
+    use ::libc::{c_void, c_char, uint64_t, uint32_t};
     use ::shared_library::dynamic_library::DynamicLibrary;
     use ::std::path::Path;
     use ::std::mem::transmute;
