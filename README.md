@@ -1,4 +1,4 @@
-Dvk is a library providing bindings to Vulkan API. Unlike many other alternatives Dvk loads all Vulkan commands dynamically at run time, making compilation much more straightforward, to the point that you don't even need Vulkan installed to compile it. 
+Dvk is a library providing bindings to Vulkan API. Unlike many other alternatives Dvk loads all Vulkan commands dynamically at run time, making compilation much more straightforward, to the point that you don't even need Vulkan to be installed to compile it. 
 
 This library is designed following the principle of minimum surprise, it deviates very little from the official headers and does not needlessly pollute official Vulkan namespace.  There are only a handful of places where either language differences or the requirment to load dynamically had forced design to deviate from canonical, all such peculiarities are thoroughly documented on this page. Regular Khronos documentation should be sufficient to learn about all the types and functions provided by this library. 
 
@@ -25,6 +25,7 @@ All definitions are orginized into modules, the main one is *core*, the rest *kh
 * ```VulkanExtDebugReport```
 * No separate ```*FlagBits``` and ```*Flags``` types just ```*Flags```
 * ```VkDescriptorPoolSize.type``` is renamed to ```dType``` due to naming collision with Rust keyword ```type```
+* Platform types are redefined as part of the library
 
 ### Functions
 * ```Vulkan*::new()``` and ```Vulkan*::load(&mut self, VkInstance)```
@@ -39,7 +40,7 @@ Dynamic loading has advantage over static linking in that no static library is n
 2. ```vkEnumerateInstanceExtensionProperties```
 3. ```vkEnumerateInstanceLayerProperties```
 
-The rest of the API, consisting of *134 core commands* can similarly loaded with ```vkGetInstanceProcAddr```, but require a ```VkInstance``` object to load them. A ```VkInstance``` object not surprisingly can be created via global command ```vkCreateInstance```. Extension commands are loaded in exactly the same way.
+The rest of the API, consisting of *134 core commands* can similarly be loaded with ```vkGetInstanceProcAddr```, but require a ```VkInstance``` object to load them. A ```VkInstance``` object not surprisingly can be created via global command ```vkCreateInstance```. Extension commands are loaded in exactly the same way.
 
 This library does not export any ready-to-use command prototypes, instead you get all commands dynamically loaded and returned in structs. 
 
