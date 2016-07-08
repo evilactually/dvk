@@ -1,3 +1,9 @@
+////////////////////////////////////////////////////////////////////////////////////////////////
+//     Based on C++ demo & tutorial by José Henriques and released under equivalent terms.    //
+//                 https://bitbucket.org/jose_henriques/vulkan_tutorial/src                   //
+//                      http://av.dfki.de/~jhenriques/development.html                        //
+////////////////////////////////////////////////////////////////////////////////////////////////
+
 #![feature(box_syntax)]
 extern crate winapi;
 extern crate gdi32;
@@ -187,6 +193,7 @@ fn main() {
         context.ext_debug_report.load(context.instance).unwrap();
         context.khr_surface.load(context.instance).unwrap();
         context.khr_win32_surface.load(context.instance).unwrap();
+        context.khr_swapchain.load(context.instance).unwrap();
         
         // debug callback
         let callbackCreateInfo = VkDebugReportCallbackCreateInfoEXT {
@@ -195,7 +202,7 @@ fn main() {
             flags: VK_DEBUG_REPORT_ERROR_BIT_EXT |
                    VK_DEBUG_REPORT_WARNING_BIT_EXT |
                    VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT,
-            pfnCallback: DebugReportCallback,
+            pfnCallback: Some(DebugReportCallback),
             pUserData: null_mut()
         };
 
