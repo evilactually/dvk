@@ -3412,7 +3412,6 @@ pub mod core {
                                                                  commandBufferCount: uint32_t,
                                                                  pCommandBuffers: *const VkCommandBuffer);
 
-    #[derive(Default)]
     pub struct VulkanCore {
         library: Option<DynamicLibrary>,
         vkCreateInstance: Option<vkCreateInstanceFn>,
@@ -3556,21 +3555,22 @@ pub mod core {
 
     impl VulkanCore {
         pub fn new() -> Result<VulkanCore, String> {
-            let mut vulkan_core: VulkanCore = Default::default();
-            let library_path = Path::new(VULKAN_LIBRARY);
-            vulkan_core.library = match DynamicLibrary::open(Some(library_path)) {
-                Err(error) => return Err(format!("Failed to load {}: {}", VULKAN_LIBRARY, error)),
-                Ok(library) => Some(library),
-            };
             unsafe {
+                let mut vulkan_core: VulkanCore;
+                vulkan_core = ::std::mem::zeroed::<VulkanCore>();
+                let library_path = Path::new(VULKAN_LIBRARY);
+                vulkan_core.library = match DynamicLibrary::open(Some(library_path)) {
+                    Err(error) => return Err(format!("Failed to load {}: {}", VULKAN_LIBRARY, error)),
+                    Ok(library) => Some(library),
+                };
                 // Only vkGetInstanceProcAddr is guaranteed to be exported by the library
                 vulkan_core.vkGetInstanceProcAddr = Some(transmute(try!(vulkan_core.library.as_ref().unwrap().symbol::<u8>("vkGetInstanceProcAddr"))));
                 // Load global commands via vkGetInstanceProcAddr
                 vulkan_core.vkCreateInstance = Some(transmute(load_command!(vulkan_core, VkInstance::null(), "vkCreateInstance")));
                 vulkan_core.vkEnumerateInstanceExtensionProperties = Some(transmute(load_command!(vulkan_core, VkInstance::null(), "vkEnumerateInstanceExtensionProperties")));
                 vulkan_core.vkEnumerateInstanceLayerProperties = Some(transmute(load_command!(vulkan_core, VkInstance::null(), "vkEnumerateInstanceLayerProperties")));
+                Ok(vulkan_core)
             }
-            Ok(vulkan_core)
         }
 
         pub fn load(&mut self, instance: VkInstance) -> Result<(), String> {
@@ -4374,7 +4374,6 @@ pub mod khr_surface {
                                                                                       pPresentModeCount: *mut uint32_t,
                                                                                       pPresentModes: *mut VkPresentModeKHR) -> VkResult;
 
-    #[derive(Default)]
     pub struct VulkanKhrSurface {
        library: Option<DynamicLibrary>,
        vkGetInstanceProcAddr: Option<vkGetInstanceProcAddrFn>,
@@ -4387,16 +4386,16 @@ pub mod khr_surface {
 
     impl VulkanKhrSurface {
         pub fn new() -> Result<VulkanKhrSurface, String> {
-            let mut vulkan_khr_surface: VulkanKhrSurface = Default::default();
-            let library_path = Path::new(VULKAN_LIBRARY);
-            vulkan_khr_surface.library = match DynamicLibrary::open(Some(library_path)) {
-                Err(error) => return Err(format!("Failed to load {}: {}",VULKAN_LIBRARY,error)),
-                Ok(library) => Some(library),
-            };
             unsafe {
+                let mut vulkan_khr_surface: VulkanKhrSurface = ::std::mem::zeroed::<VulkanKhrSurface>();
+                let library_path = Path::new(VULKAN_LIBRARY);
+                vulkan_khr_surface.library = match DynamicLibrary::open(Some(library_path)) {
+                    Err(error) => return Err(format!("Failed to load {}: {}",VULKAN_LIBRARY,error)),
+                    Ok(library) => Some(library),
+                };
                 vulkan_khr_surface.vkGetInstanceProcAddr = Some(transmute(try!(vulkan_khr_surface.library.as_ref().unwrap().symbol::<u8>("vkGetInstanceProcAddr"))));
+                Ok(vulkan_khr_surface)
             }
-            Ok(vulkan_khr_surface)
         }
 
         pub fn load(&mut self, instance: VkInstance) -> Result<(), String> {
@@ -4547,7 +4546,6 @@ pub mod khr_swapchain {
     pub type vkQueuePresentKHRFn = unsafe extern "stdcall" fn(queue: VkQueue,
                                                               pPresentInfo: *const VkPresentInfoKHR) -> VkResult;
     
-    #[derive(Default)]
     pub struct VulkanKhrSwapchain {
        library: Option<DynamicLibrary>,
        vkGetInstanceProcAddr: Option<vkGetInstanceProcAddrFn>,
@@ -4560,16 +4558,16 @@ pub mod khr_swapchain {
     
     impl VulkanKhrSwapchain {
         pub fn new() -> Result<VulkanKhrSwapchain, String> {
-            let mut vulkan_khr_swapchain: VulkanKhrSwapchain = Default::default();
-            let library_path = Path::new(VULKAN_LIBRARY);
-            vulkan_khr_swapchain.library = match DynamicLibrary::open(Some(library_path)) {
-                Err(error) => return Err(format!("Failed to load {}: {}",VULKAN_LIBRARY,error)),
-                Ok(library) => Some(library),
-            };
             unsafe {
+                let mut vulkan_khr_swapchain: VulkanKhrSwapchain = ::std::mem::zeroed::<VulkanKhrSwapchain>();
+                let library_path = Path::new(VULKAN_LIBRARY);
+                vulkan_khr_swapchain.library = match DynamicLibrary::open(Some(library_path)) {
+                    Err(error) => return Err(format!("Failed to load {}: {}",VULKAN_LIBRARY,error)),
+                    Ok(library) => Some(library),
+                };
                 vulkan_khr_swapchain.vkGetInstanceProcAddr = Some(transmute(try!(vulkan_khr_swapchain.library.as_ref().unwrap().symbol::<u8>("vkGetInstanceProcAddr"))));
+                Ok(vulkan_khr_swapchain)
             }
-            Ok(vulkan_khr_swapchain)
         }
     
         pub fn load(&mut self, instance: VkInstance) -> Result<(), String> {
@@ -4763,7 +4761,6 @@ pub mod khr_display {
                                                                            pAllocator: *const VkAllocationCallbacks,
                                                                            pSurface: *mut VkSurfaceKHR) -> VkResult;
     
-    #[derive(Default)]
     pub struct VulkanKhrDisplay {
         library: Option<DynamicLibrary>,
         vkGetInstanceProcAddr: Option<vkGetInstanceProcAddrFn>,
@@ -4778,16 +4775,16 @@ pub mod khr_display {
     
     impl VulkanKhrDisplay {
         pub fn new() -> Result<VulkanKhrDisplay, String> {
-            let mut vulkan_khr_display: VulkanKhrDisplay = Default::default();
-            let library_path = Path::new(VULKAN_LIBRARY);
-            vulkan_khr_display.library = match DynamicLibrary::open(Some(library_path)) {
-                Err(error) => return Err(format!("Failed to load {}: {}",VULKAN_LIBRARY,error)),
-                Ok(library) => Some(library),
-            };
             unsafe {
+                let mut vulkan_khr_display: VulkanKhrDisplay = ::std::mem::zeroed::<VulkanKhrDisplay>();
+                let library_path = Path::new(VULKAN_LIBRARY);
+                vulkan_khr_display.library = match DynamicLibrary::open(Some(library_path)) {
+                    Err(error) => return Err(format!("Failed to load {}: {}",VULKAN_LIBRARY,error)),
+                    Ok(library) => Some(library),
+                };
                 vulkan_khr_display.vkGetInstanceProcAddr = Some(transmute(try!(vulkan_khr_display.library.as_ref().unwrap().symbol::<u8>("vkGetInstanceProcAddr"))));
+                Ok(vulkan_khr_display)
             }
-            Ok(vulkan_khr_display)
         }
     
         pub fn load(&mut self, instance: VkInstance) -> Result<(), String> {
@@ -4890,7 +4887,6 @@ pub mod khr_display_swapchain {
                                                                         pAllocator: *const VkAllocationCallbacks,
                                                                         pSwapchains: *mut VkSwapchainKHR) -> VkResult;
     
-    #[derive(Default)]
     pub struct VulkanKhrDisplaySwapchain {
         library: Option<DynamicLibrary>,
         vkGetInstanceProcAddr: Option<vkGetInstanceProcAddrFn>,
@@ -4899,16 +4895,16 @@ pub mod khr_display_swapchain {
     
     impl VulkanKhrDisplaySwapchain {
         pub fn new() -> Result<VulkanKhrDisplaySwapchain, String> {
-            let mut vulkan_khr_display_swapchain: VulkanKhrDisplaySwapchain = Default::default();
-            let library_path = Path::new(VULKAN_LIBRARY);
-            vulkan_khr_display_swapchain.library = match DynamicLibrary::open(Some(library_path)) {
-                Err(error) => return Err(format!("Failed to load {}: {}",VULKAN_LIBRARY,error)),
-                Ok(library) => Some(library),
-            };
             unsafe {
+                let mut vulkan_khr_display_swapchain: VulkanKhrDisplaySwapchain = ::std::mem::zeroed::<VulkanKhrDisplaySwapchain>();
+                let library_path = Path::new(VULKAN_LIBRARY);
+                vulkan_khr_display_swapchain.library = match DynamicLibrary::open(Some(library_path)) {
+                    Err(error) => return Err(format!("Failed to load {}: {}",VULKAN_LIBRARY,error)),
+                    Ok(library) => Some(library),
+                };
                 vulkan_khr_display_swapchain.vkGetInstanceProcAddr = Some(transmute(try!(vulkan_khr_display_swapchain.library.as_ref().unwrap().symbol::<u8>("vkGetInstanceProcAddr"))));
+                Ok(vulkan_khr_display_swapchain)
             }
-            Ok(vulkan_khr_display_swapchain)
         }
     
         pub fn load(&mut self, instance: VkInstance) -> Result<(), String> {
@@ -4969,7 +4965,6 @@ pub mod khr_win32_surface {
     pub type vkGetPhysicalDeviceWin32PresentationSupportKHRFn = unsafe extern "stdcall" fn(physicalDevice: VkPhysicalDevice, 
                                                                                            queueFamilyIndex: uint32_t) -> VkBool32;
     
-    #[derive(Default)]
     pub struct VulkanKhrWin32Surface {
         library: Option<DynamicLibrary>,
         vkGetInstanceProcAddr: Option<vkGetInstanceProcAddrFn>,
@@ -4979,16 +4974,16 @@ pub mod khr_win32_surface {
     
     impl VulkanKhrWin32Surface {
         pub fn new() -> Result<VulkanKhrWin32Surface, String> {
-            let mut vulkan_khr_win32_surface: VulkanKhrWin32Surface = Default::default();
-            let library_path = Path::new(VULKAN_LIBRARY);
-            vulkan_khr_win32_surface.library = match DynamicLibrary::open(Some(library_path)) {
-                Err(error) => return Err(format!("Failed to load {}: {}",VULKAN_LIBRARY,error)),
-                Ok(library) => Some(library),
-            };
             unsafe {
+                let mut vulkan_khr_win32_surface: VulkanKhrWin32Surface = ::std::mem::zeroed::<VulkanKhrWin32Surface>();
+                let library_path = Path::new(VULKAN_LIBRARY);
+                vulkan_khr_win32_surface.library = match DynamicLibrary::open(Some(library_path)) {
+                    Err(error) => return Err(format!("Failed to load {}: {}",VULKAN_LIBRARY,error)),
+                    Ok(library) => Some(library),
+                };
                 vulkan_khr_win32_surface.vkGetInstanceProcAddr = Some(transmute(try!(vulkan_khr_win32_surface.library.as_ref().unwrap().symbol::<u8>("vkGetInstanceProcAddr"))));
+                Ok(vulkan_khr_win32_surface)
             }
-            Ok(vulkan_khr_win32_surface)
         }
     
         pub fn load(&mut self, instance: VkInstance) -> Result<(), String> {
@@ -5134,7 +5129,6 @@ pub mod ext_debug_report {
                                                                     pLayerPrefix: *const c_char,
                                                                     pMessage: *const c_char);
     
-    #[derive(Default)]
     pub struct VulkanExtDebugReport {
        library: Option<DynamicLibrary>,
        vkGetInstanceProcAddr: Option<vkGetInstanceProcAddrFn>,
@@ -5145,16 +5139,16 @@ pub mod ext_debug_report {
     
     impl VulkanExtDebugReport {
         pub fn new() -> Result<VulkanExtDebugReport, String> {
-            let mut vulkan_ext_debug_report: VulkanExtDebugReport = Default::default();
-            let library_path = Path::new(VULKAN_LIBRARY);
-            vulkan_ext_debug_report.library = match DynamicLibrary::open(Some(library_path)) {
-                Err(error) => return Err(format!("Failed to load {}: {}",VULKAN_LIBRARY,error)),
-                Ok(library) => Some(library),
-            };
             unsafe {
+                let mut vulkan_ext_debug_report: VulkanExtDebugReport = ::std::mem::zeroed::<VulkanExtDebugReport>();
+                let library_path = Path::new(VULKAN_LIBRARY);
+                vulkan_ext_debug_report.library = match DynamicLibrary::open(Some(library_path)) {
+                    Err(error) => return Err(format!("Failed to load {}: {}",VULKAN_LIBRARY,error)),
+                    Ok(library) => Some(library),
+                };
                 vulkan_ext_debug_report.vkGetInstanceProcAddr = Some(transmute(try!(vulkan_ext_debug_report.library.as_ref().unwrap().symbol::<u8>("vkGetInstanceProcAddr"))));
+                Ok(vulkan_ext_debug_report)
             }
-            Ok(vulkan_ext_debug_report)
         }
     
         pub fn load(&mut self, instance: VkInstance) -> Result<(), String> {
