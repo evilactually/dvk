@@ -4,6 +4,7 @@
 //                      http://av.dfki.de/~jhenriques/development.html                        //
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
+#![feature(associated_consts)]
 #![feature(box_syntax)]
 extern crate winapi;
 extern crate gdi32;
@@ -25,6 +26,7 @@ use user32::{CreateWindowExW, RedrawWindow, RegisterClassExW, PostQuitMessage, L
 use kernel32::{GetModuleHandleA};
 use libc::{uint32_t, uint64_t, int32_t, size_t, c_char, c_void};
 use std::mem::{transmute};
+use std::iter::{Repeat, repeat, FromIterator};
 use dvk::core::*;
 use dvk::khr_surface::*;
 use dvk::khr_win32_surface::*;
@@ -55,21 +57,26 @@ unsafe extern "stdcall" fn DebugReportCallback(flags: VkDebugReportFlagsEXT,
 }
 
 struct VulkanContext {
+    pub fragmanet_shader: &'static[u8],
     pub width: uint32_t,
     pub height: uint32_t,
-    pub core: VulkanCore,
-    pub ext_debug_report: VulkanExtDebugReport,
-    pub khr_surface: VulkanKhrSurface,
-    pub khr_win32_surface: VulkanKhrWin32Surface,
-    pub khr_swapchain: VulkanKhrSwapchain,
+    pub core: CoreCommands,
+    pub ext_debug_report: ExtDebugReportCommands,
+    pub khr_surface: KhrSurfaceCommands,
+    pub khr_win32_surface: KhrWin32SurfaceCommands,
+    pub khr_swapchain: KhrSwapchainCommands,
     pub instance: VkInstance,
     pub debug_callback: VkDebugReportCallbackEXT,
     pub surface: VkSurfaceKHR,
     pub physicalDevice: VkPhysicalDevice,
     pub physicalDeviceProperties: VkPhysicalDeviceProperties,
     pub presentQueueIdx: uint32_t,
+    pub presentQueue: VkQueue,
     pub device: VkDevice,
-    pub swapChain: VkSwapchainKHR
+    pub swapChain: VkSwapchainKHR,
+    pub presentImages:Vec<VkImage>,
+    pub setupCmdBuffer: VkCommandBuffer,
+    pub drawCmdBuffer: VkCommandBuffer
 }
 
 impl VulkanContext {
@@ -78,11 +85,12 @@ impl VulkanContext {
             let mut context = std::mem::zeroed::<VulkanContext>();
             context.width = 640;
             context.height = 480;
-            context.core = VulkanCore::new().unwrap();
-            context.khr_surface = VulkanKhrSurface::new().unwrap();
-            context.khr_win32_surface = VulkanKhrWin32Surface::new().unwrap();
-            context.khr_swapchain = VulkanKhrSwapchain::new().unwrap();
-            context.ext_debug_report = VulkanExtDebugReport::new().unwrap();
+            context.core = CoreCommands::new().unwrap();
+            context.khr_surface = KhrSurfaceCommands::new().unwrap();
+            context.khr_win32_surface = KhrWin32SurfaceCommands::new().unwrap();
+            context.khr_swapchain = KhrSwapchainCommands::new().unwrap();
+            context.ext_debug_report = ExtDebugReportCommands::new().unwrap();
+            context.fragmanet_shader = include_bytes!("frag.spv");
             context
         }
     }
@@ -287,6 +295,9 @@ fn main() {
         let result = context.core.vkCreateDevice(context.physicalDevice, &deviceInfo, null(), &mut context.device);
         assert_eq!(result, VkResult::VK_SUCCESS);
 
+        // get queue
+        context.core.vkGetDeviceQueue(context.device, context.presentQueueIdx, 0, &mut context.presentQueue);
+
         // swap chain
 
         // format
@@ -381,13 +392,168 @@ fn main() {
             compositeAlpha: VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
             presentMode: presentationMode,
             clipped: VK_TRUE, // If we want clipping outside the extents
-            .. std::mem::zeroed::<VkSwapchainCreateInfoKHR>()}; 
+            .. std::mem::zeroed()
+        }; 
 
         let result = context.khr_swapchain.vkCreateSwapchainKHR(context.device,
                                                                 &swapChainCreateInfo,
                                                                 null(),
                                                                 &mut context.swapChain);
         assert_eq!(result, VkResult::VK_SUCCESS);
+
+        // command pool
+        let commandPoolCreateInfo = VkCommandPoolCreateInfo {
+            sType: VkStructureType::VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+            flags: VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
+            queueFamilyIndex: context.presentQueueIdx,
+            .. std::mem::zeroed()
+        };
+
+        let mut commandPool = VkCommandPool::null();
+        let result = context.core.vkCreateCommandPool(context.device, &commandPoolCreateInfo, null(), &mut commandPool);
+        assert_eq!(result, VkResult::VK_SUCCESS);
+
+        let commandBufferAllocationInfo = VkCommandBufferAllocateInfo {
+            sType: VkStructureType::VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+            commandPool: commandPool,
+            level: VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+            commandBufferCount: 1,
+            .. std::mem::zeroed()
+        };
+
+        let result = context.core.vkAllocateCommandBuffers(context.device, &commandBufferAllocationInfo, &mut context.setupCmdBuffer);
+        assert_eq!(result, VkResult::VK_SUCCESS);
+
+        let result = context.core.vkAllocateCommandBuffers(context.device, &commandBufferAllocationInfo, &mut context.drawCmdBuffer);
+        assert_eq!(result, VkResult::VK_SUCCESS);
+
+        // get swapchain images
+        let mut imageCount: uint32_t = 0;
+        context.khr_swapchain.vkGetSwapchainImagesKHR(context.device, context.swapChain, &mut imageCount, null_mut());
+        context.presentImages = Vec::with_capacity(imageCount as usize);
+        context.khr_swapchain.vkGetSwapchainImagesKHR(context.device, context.swapChain, &mut imageCount, context.presentImages.as_mut_ptr());
+
+        // create VkImageViews for our swap chain VkImages buffers:
+        let presentImagesViewCreateInfoTemplate = VkImageViewCreateInfo {
+            sType: VkStructureType::VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+            viewType: VkImageViewType::VK_IMAGE_VIEW_TYPE_2D,
+            format: colorFormat,
+            components: VkComponentMapping {
+                r: VkComponentSwizzle::VK_COMPONENT_SWIZZLE_R,
+                g: VkComponentSwizzle::VK_COMPONENT_SWIZZLE_G,
+                b: VkComponentSwizzle::VK_COMPONENT_SWIZZLE_B,
+                a: VkComponentSwizzle::VK_COMPONENT_SWIZZLE_A 
+            },
+            subresourceRange: VkImageSubresourceRange {
+                aspectMask: VK_IMAGE_ASPECT_COLOR_BIT,
+                baseMipLevel: 0,
+                levelCount: 1,
+                baseArrayLayer: 0,
+                layerCount: 1 },
+            .. std::mem::zeroed()
+        };
+
+        let beginInfo = VkCommandBufferBeginInfo {
+            sType: VkStructureType::VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+            flags: VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
+            .. std::mem::zeroed()
+        };
+
+        let fenceCreateInfo = VkFenceCreateInfo {
+            sType: VkStructureType::VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
+            flags: VkFenceCreateFlags::empty(),
+            .. std::mem::zeroed()
+        };
+        let mut submitFence = VkFence::null();
+        context.core.vkCreateFence(context.device, &fenceCreateInfo, null(), &mut submitFence);
+
+        let mut transitioned:Vec<bool> = Vec::from_iter(repeat(false).take(imageCount as usize));
+
+        let mut doneCount: uint32_t = 0;
+        while(doneCount != imageCount) {
+            let mut presentCompleteSemaphore = VkSemaphore::null();
+            let semaphoreCreateInfo = VkSemaphoreCreateInfo {
+                sType: VkStructureType::VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
+                .. std::mem::zeroed()
+            };
+            context.core.vkCreateSemaphore(context.device, &semaphoreCreateInfo, null(), &mut presentCompleteSemaphore);
+
+            let mut nextImageIdx: uint32_t = 0;
+            context.khr_swapchain.vkAcquireNextImageKHR(context.device,
+                                                        context.swapChain,
+                                                        u64::max_value(),
+                                                        presentCompleteSemaphore,
+                                                        VkFence::null(),
+                                                        &mut nextImageIdx);
+         
+            if(!transitioned[nextImageIdx as usize]) {
+                // start recording out image layout change barrier on our setup command buffer:
+                context.core.vkBeginCommandBuffer(context.setupCmdBuffer, &beginInfo);
+
+                let layoutTransitionBarrier = VkImageMemoryBarrier {
+                    sType: VkStructureType::VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+                    srcAccessMask: VkAccessFlags::empty(),
+                    dstAccessMask: VK_ACCESS_MEMORY_READ_BIT,
+                    oldLayout: VkImageLayout::VK_IMAGE_LAYOUT_UNDEFINED,
+                    newLayout: VkImageLayout::VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+                    srcQueueFamilyIndex: VK_QUEUE_FAMILY_IGNORED,
+                    dstQueueFamilyIndex: VK_QUEUE_FAMILY_IGNORED,
+                    image: context.presentImages[nextImageIdx as usize],
+                    subresourceRange: VkImageSubresourceRange { 
+                        aspectMask: VK_IMAGE_ASPECT_COLOR_BIT,
+                        baseMipLevel: 0,
+                        levelCount: 1,
+                        baseArrayLayer: 0,
+                        layerCount:1
+                    },
+                    .. std::mem::zeroed()
+                };
+
+        //         vkCmdPipelineBarrier(   context.setupCmdBuffer, 
+        //                                 VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, 
+        //                                 VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, 
+        //                                 0,
+        //                                 0, NULL,
+        //                                 0, NULL, 
+        //                                 1, &layoutTransitionBarrier );
+
+        //         vkEndCommandBuffer( context.setupCmdBuffer );
+
+        //         VkPipelineStageFlags waitStageMash[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+        //         VkSubmitInfo submitInfo = {};
+        //         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        //         submitInfo.waitSemaphoreCount = 1;
+        //         submitInfo.pWaitSemaphores = &presentCompleteSemaphore;
+        //         submitInfo.pWaitDstStageMask = waitStageMash;
+        //         submitInfo.commandBufferCount = 1;
+        //         submitInfo.pCommandBuffers = &context.setupCmdBuffer;
+        //         submitInfo.signalSemaphoreCount = 0;
+        //         submitInfo.pSignalSemaphores = NULL;
+        //         result = vkQueueSubmit( context.presentQueue, 1, &submitInfo, submitFence );
+
+        //         vkWaitForFences( context.device, 1, &submitFence, VK_TRUE, UINT64_MAX );
+        //         vkResetFences( context.device, 1, &submitFence );
+
+        //         vkDestroySemaphore( context.device, presentCompleteSemaphore, NULL );
+
+        //         vkResetCommandBuffer( context.setupCmdBuffer, 0 );
+                
+        //         transitioned[ nextImageIdx ] = true;
+        //         doneCount++;
+            }
+
+        //     VkPresentInfoKHR presentInfo = {};
+        //     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+        //     presentInfo.waitSemaphoreCount = 0;
+        //     presentInfo.pWaitSemaphores = NULL;
+        //     presentInfo.swapchainCount = 1;
+        //     presentInfo.pSwapchains = &context.swapChain;
+        //     presentInfo.pImageIndices = &nextImageIdx;
+        //     vkQueuePresentKHR( context.presentQueue, &presentInfo );
+        }
+        // delete[] transitioned;
+
+
 
         ShowWindow(hwnd, SW_SHOW);
         let mut msg: MSG = std::mem::zeroed();

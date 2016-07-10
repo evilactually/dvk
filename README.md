@@ -16,20 +16,21 @@ All definitions are orginized into modules, the main one is *core*, the rest *kh
 ### Types
 * ```VkClearValueUnion```
 * ```VkClearColorValueUnion ```
-* ```VulkanCore```
-* ```VulkanKhrSurface```
-* ```VulkanKhrSwapchain```
-* ```VulkanKhrDisplay```
-* ```VulkanKhrDisplaySwapchain```
-* ```VulkanKhrWin32Surface```
-* ```VulkanExtDebugReport```
+* ```CoreCommands```
+* ```KhrSurfaceCommands```
+* ```KhrSwapchainCommands```
+* ```KhrDisplayCommands```
+* ```KhrDisplaySwapchainCommands```
+* ```KhrWin32SurfaceCommands```
+* ```ExtDebugReportCommands```
 * No separate ```*FlagBits``` and ```*Flags``` types just ```*Flags```
 * ```VkDescriptorPoolSize.type``` is renamed to ```dType``` due to naming collision with Rust keyword ```type```
 * Platform types are redefined as part of the library
+* No universal VK_NULL_HANDLE constant, it's incompatible with type-safe handles
 
 ### Functions
 * ```Vulkan*::new()``` and ```Vulkan*::load(&mut self, VkInstance)```
-* ```::null()``` and ```::is_null(&self)``` for all handles
+* ```::null()``` constructor and ```::is_null(&self)``` method for all handles
 * From trait implementation for ```*Union``` types
 
 ## Loading
@@ -44,9 +45,9 @@ The rest of the API, consisting of *134 core commands* can similarly be loaded w
 
 This library does not export any ready-to-use command prototypes, instead you get all commands dynamically loaded and returned in structs. 
 
-The core of Vulkan functionality resides in ```VulkanCore``` struct. It provides all the core ```Vulkan``` commands as methods. When ```VulkanCore``` is initially created by calling ```VulkanCore::new()```, it will already have the *3 global commands* loaded and ready to use. If you attempt to call any of the unloaded commands at this point it will result in *panic*. The next step should be to create a ```VkInstance``` object and call ```VulkanCore::load(&mut self, VkInstance instance)``` method passing it as argument. Vulkan is ready to use.
+The core of Vulkan functionality resides in ```CoreCommands``` struct. It provides all the core ```Vulkan``` commands as methods. When ```CoreCommands``` is initially created by calling ```CoreCommands::new()```, it will already have the *3 global commands* loaded and ready to use. If you attempt to call any of the unloaded commands at this point it will result in *panic*. The next step should be to create a ```VkInstance``` object and call ```CoreCommands::load(&mut self, VkInstance instance)``` method passing it as argument. Vulkan is ready to use.
 
-Extensions are loaded similarly by ```VulkanKhrSurface```, ```VulkanKhrSwapchain```, ```VulkanKhrDisplay```, ```VulkanKhrDisplaySwapchain```, ```VulkanKhrWin32Surface```
+Extensions are loaded similarly by ```KhrSurfaceCommands```, ```KhrSwapchainCommands```, ```KhrDisplayCommands```, ```KhrDisplaySwapchainCommands```, ```KhrWin32SurfaceCommands```
 
 *One thing this library does not support is loading device optimized command pointers using ```vkGetDeviceProcAddr```. The reason for this omission is that loading functions in this way introduces a lot of incidental complexity and makes library awkward to use.*
 
@@ -77,7 +78,7 @@ Here's a short example to illustrate basic use
 	
 	...
 	// This will load vulkan shared library and 3 global commands
-	let mut core = VulkanCore::new().unwrap(); 
+	let mut core = CoreCommands::new().unwrap(); 
 	
 	// The null method is used to get type-safe "NULL" handles
 	let mut instance = VkInstance::null();
@@ -107,4 +108,6 @@ A more complete example is available in ```examples/triangle.rs```. To compile( 
 ```
 > cargo build(or run) --examples triangle
 ```
-
+# Wish List
+* Scoped flags
+* Empty flags

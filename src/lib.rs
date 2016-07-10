@@ -2570,7 +2570,7 @@ pub mod core {
     #[derive(Copy)]
     #[derive(Clone)]
     pub struct VkClearColorValue {
-        pub union_data: [u8;16]
+        union_data: [u8;16]
     }
 
     #[repr(C)]
@@ -2602,8 +2602,8 @@ pub mod core {
     #[derive(Copy)]
     #[derive(Clone)]
     pub struct VkClearDepthStencilValue {
-        depth: c_float,
-        stencil: uint32_t
+        pub depth: c_float,
+        pub stencil: uint32_t
     }
 
     #[repr(C)]
@@ -2643,113 +2643,113 @@ pub mod core {
     #[derive(Copy)]
     #[derive(Clone)]
     pub struct VkClearAttachment {
-        aspectMask: VkImageAspectFlags,
-        colorAttachment: uint32_t,
-        clearValue: VkClearValue
+        pub aspectMask: VkImageAspectFlags,
+        pub colorAttachment: uint32_t,
+        pub clearValue: VkClearValue
     }
 
     #[repr(C)]
     #[derive(Copy)]
     #[derive(Clone)]
     pub struct VkClearRect {
-        rect: VkRect2D,
-        baseArrayLayer: uint32_t,
-        layerCount: uint32_t
+        pub rect: VkRect2D,
+        pub baseArrayLayer: uint32_t,
+        pub layerCount: uint32_t
     }
 
     #[repr(C)]
     #[derive(Copy)]
     #[derive(Clone)]
     pub struct VkImageResolve {
-        srcSubresource: VkImageSubresourceLayers,
-        srcOffset: VkOffset3D,
-        dstSubresource: VkImageSubresourceLayers,
-        dstOffset: VkOffset3D,
-        extent: VkExtent3D
+        pub srcSubresource: VkImageSubresourceLayers,
+        pub srcOffset: VkOffset3D,
+        pub dstSubresource: VkImageSubresourceLayers,
+        pub dstOffset: VkOffset3D,
+        pub extent: VkExtent3D
     }
 
     #[repr(C)]
     #[derive(Copy)]
     #[derive(Clone)]
     pub struct VkMemoryBarrier {
-        sType: VkStructureType,
-        pNext: *const c_void,
-        srcAccessMask: VkAccessFlags,
-        dstAccessMask: VkAccessFlags
+        pub sType: VkStructureType,
+        pub pNext: *const c_void,
+        pub srcAccessMask: VkAccessFlags,
+        pub dstAccessMask: VkAccessFlags
     }
 
     #[repr(C)]
     #[derive(Copy)]
     #[derive(Clone)]
     pub struct VkBufferMemoryBarrier {
-        sType: VkStructureType,
-        pNext: *const c_void,
-        srcAccessMask: VkAccessFlags,
-        dstAccessMask: VkAccessFlags,
-        srcQueueFamilyIndex: uint32_t,
-        dstQueueFamilyIndex: uint32_t,
-        buffer: VkBuffer,
-        offset: VkDeviceSize,
-        size: VkDeviceSize
+        pub sType: VkStructureType,
+        pub pNext: *const c_void,
+        pub srcAccessMask: VkAccessFlags,
+        pub dstAccessMask: VkAccessFlags,
+        pub srcQueueFamilyIndex: uint32_t,
+        pub dstQueueFamilyIndex: uint32_t,
+        pub buffer: VkBuffer,
+        pub offset: VkDeviceSize,
+        pub size: VkDeviceSize
     }
 
     #[repr(C)]
     #[derive(Copy)]
     #[derive(Clone)]
     pub struct VkImageMemoryBarrier {
-        sType: VkStructureType,
-        pNext: *const c_void,
-        srcAccessMask: VkAccessFlags,
-        dstAccessMask: VkAccessFlags,
-        oldLayout: VkImageLayout,
-        newLayout: VkImageLayout,
-        srcQueueFamilyIndex: uint32_t,
-        dstQueueFamilyIndex: uint32_t,
-        image: VkImage,
-        subresourceRange: VkImageSubresourceRange
+        pub sType: VkStructureType,
+        pub pNext: *const c_void,
+        pub srcAccessMask: VkAccessFlags,
+        pub dstAccessMask: VkAccessFlags,
+        pub oldLayout: VkImageLayout,
+        pub newLayout: VkImageLayout,
+        pub srcQueueFamilyIndex: uint32_t,
+        pub dstQueueFamilyIndex: uint32_t,
+        pub image: VkImage,
+        pub subresourceRange: VkImageSubresourceRange
     }
 
     #[repr(C)]
     #[derive(Copy)]
     #[derive(Clone)]
     pub struct VkRenderPassBeginInfo {
-        sType: VkStructureType,
-        pNext: *const c_void,
-        renderPass: VkRenderPass,
-        framebuffer: VkFramebuffer,
-        renderArea: VkRect2D,
-        clearValueCount: uint32_t,
-        pClearValues: *const VkClearValue
+        pub sType: VkStructureType,
+        pub pNext: *const c_void,
+        pub renderPass: VkRenderPass,
+        pub framebuffer: VkFramebuffer,
+        pub renderArea: VkRect2D,
+        pub clearValueCount: uint32_t,
+        pub pClearValues: *const VkClearValue
     }
 
     #[repr(C)]
     #[derive(Copy)]
     #[derive(Clone)]
     pub struct VkDispatchIndirectCommand {
-        x: uint32_t,
-        y: uint32_t,
-        z: uint32_t
+        pub x: uint32_t,
+        pub y: uint32_t,
+        pub z: uint32_t
     }
 
     #[repr(C)]
     #[derive(Copy)]
     #[derive(Clone)]
     pub struct VkDrawIndexedIndirectCommand {
-        indexCount: uint32_t,
-        instanceCount: uint32_t,
-        firstIndex: uint32_t,
-        vertexOffset: int32_t,
-        firstInstance: uint32_t
+        pub indexCount: uint32_t,
+        pub instanceCount: uint32_t,
+        pub firstIndex: uint32_t,
+        pub vertexOffset: int32_t,
+        pub firstInstance: uint32_t
     }
 
     #[repr(C)]
     #[derive(Copy)]
     #[derive(Clone)]
     pub struct VkDrawIndirectCommand {
-        vertexCount: uint32_t,
-        instanceCount: uint32_t,
-        firstVertex: uint32_t,
-        firstInstance: uint32_t
+        pub vertexCount: uint32_t,
+        pub instanceCount: uint32_t,
+        pub firstVertex: uint32_t,
+        pub firstInstance: uint32_t
     }
 
     pub type vkCreateInstanceFn = unsafe extern "stdcall" fn(pCreateInfo: *const VkInstanceCreateInfo, 
@@ -3412,7 +3412,7 @@ pub mod core {
                                                                  commandBufferCount: uint32_t,
                                                                  pCommandBuffers: *const VkCommandBuffer);
 
-    pub struct VulkanCore {
+    pub struct CoreCommands {
         library: Option<DynamicLibrary>,
         vkCreateInstance: Option<vkCreateInstanceFn>,
         vkDestroyInstance: Option<vkDestroyInstanceFn>,
@@ -3553,11 +3553,11 @@ pub mod core {
         vkCmdExecuteCommands: Option<vkCmdExecuteCommandsFn>,
     }
 
-    impl VulkanCore {
-        pub fn new() -> Result<VulkanCore, String> {
+    impl CoreCommands {
+        pub fn new() -> Result<CoreCommands, String> {
             unsafe {
-                let mut vulkan_core: VulkanCore;
-                vulkan_core = ::std::mem::zeroed::<VulkanCore>();
+                let mut vulkan_core: CoreCommands;
+                vulkan_core = ::std::mem::zeroed::<CoreCommands>();
                 let library_path = Path::new(VULKAN_LIBRARY);
                 vulkan_core.library = match DynamicLibrary::open(Some(library_path)) {
                     Err(error) => return Err(format!("Failed to load {}: {}", VULKAN_LIBRARY, error)),
@@ -4374,7 +4374,7 @@ pub mod khr_surface {
                                                                                       pPresentModeCount: *mut uint32_t,
                                                                                       pPresentModes: *mut VkPresentModeKHR) -> VkResult;
 
-    pub struct VulkanKhrSurface {
+    pub struct KhrSurfaceCommands {
        library: Option<DynamicLibrary>,
        vkGetInstanceProcAddr: Option<vkGetInstanceProcAddrFn>,
        vkDestroySurfaceKHR: Option<vkDestroySurfaceKHRFn>,
@@ -4384,10 +4384,10 @@ pub mod khr_surface {
        vkGetPhysicalDeviceSurfacePresentModesKHR: Option<vkGetPhysicalDeviceSurfacePresentModesKHRFn>
     }
 
-    impl VulkanKhrSurface {
-        pub fn new() -> Result<VulkanKhrSurface, String> {
+    impl KhrSurfaceCommands {
+        pub fn new() -> Result<KhrSurfaceCommands, String> {
             unsafe {
-                let mut vulkan_khr_surface: VulkanKhrSurface = ::std::mem::zeroed::<VulkanKhrSurface>();
+                let mut vulkan_khr_surface: KhrSurfaceCommands = ::std::mem::zeroed::<KhrSurfaceCommands>();
                 let library_path = Path::new(VULKAN_LIBRARY);
                 vulkan_khr_surface.library = match DynamicLibrary::open(Some(library_path)) {
                     Err(error) => return Err(format!("Failed to load {}: {}",VULKAN_LIBRARY,error)),
@@ -4464,24 +4464,6 @@ pub mod khr_swapchain {
     pub const VK_KHR_SWAPCHAIN_SPEC_VERSION: uint32_t = 68;
     pub const VK_KHR_SWAPCHAIN_EXTENSION_NAME: *const c_char = b"VK_KHR_swapchain\0" as *const u8 as *const c_char;
     
-    #[repr(u32)]
-    #[derive(Eq)]
-    #[derive(PartialEq)]
-    #[derive(Debug)]
-    #[derive(Copy)]
-    #[derive(Clone)]
-    pub enum VkKhrSwapchainImageLayout {
-        VK_IMAGE_LAYOUT_PRESENT_SRC_KHR = 1000001002
-    }
-    
-    impl From<VkKhrSwapchainImageLayout> for VkImageLayout {
-        fn from(imageLayout:VkKhrSwapchainImageLayout) -> Self {
-            unsafe {
-                transmute(imageLayout)
-            }
-        }
-    }
-    
     pub type VkSwapchainCreateFlagsKHR = VkFlags;
     
     #[repr(C)]
@@ -4546,7 +4528,7 @@ pub mod khr_swapchain {
     pub type vkQueuePresentKHRFn = unsafe extern "stdcall" fn(queue: VkQueue,
                                                               pPresentInfo: *const VkPresentInfoKHR) -> VkResult;
     
-    pub struct VulkanKhrSwapchain {
+    pub struct KhrSwapchainCommands {
        library: Option<DynamicLibrary>,
        vkGetInstanceProcAddr: Option<vkGetInstanceProcAddrFn>,
        vkCreateSwapchainKHR: Option<vkCreateSwapchainKHRFn>,
@@ -4556,10 +4538,10 @@ pub mod khr_swapchain {
        vkQueuePresentKHR: Option<vkQueuePresentKHRFn>
     }
     
-    impl VulkanKhrSwapchain {
-        pub fn new() -> Result<VulkanKhrSwapchain, String> {
+    impl KhrSwapchainCommands {
+        pub fn new() -> Result<KhrSwapchainCommands, String> {
             unsafe {
-                let mut vulkan_khr_swapchain: VulkanKhrSwapchain = ::std::mem::zeroed::<VulkanKhrSwapchain>();
+                let mut vulkan_khr_swapchain: KhrSwapchainCommands = ::std::mem::zeroed::<KhrSwapchainCommands>();
                 let library_path = Path::new(VULKAN_LIBRARY);
                 vulkan_khr_swapchain.library = match DynamicLibrary::open(Some(library_path)) {
                     Err(error) => return Err(format!("Failed to load {}: {}",VULKAN_LIBRARY,error)),
@@ -4761,7 +4743,7 @@ pub mod khr_display {
                                                                            pAllocator: *const VkAllocationCallbacks,
                                                                            pSurface: *mut VkSurfaceKHR) -> VkResult;
     
-    pub struct VulkanKhrDisplay {
+    pub struct KhrDisplayCommands {
         library: Option<DynamicLibrary>,
         vkGetInstanceProcAddr: Option<vkGetInstanceProcAddrFn>,
         vkGetPhysicalDeviceDisplayPropertiesKHR: Option<vkGetPhysicalDeviceDisplayPropertiesKHRFn>,
@@ -4773,10 +4755,10 @@ pub mod khr_display {
         vkCreateDisplayPlaneSurfaceKHR: Option<vkCreateDisplayPlaneSurfaceKHRFn>
     }
     
-    impl VulkanKhrDisplay {
-        pub fn new() -> Result<VulkanKhrDisplay, String> {
+    impl KhrDisplayCommands {
+        pub fn new() -> Result<KhrDisplayCommands, String> {
             unsafe {
-                let mut vulkan_khr_display: VulkanKhrDisplay = ::std::mem::zeroed::<VulkanKhrDisplay>();
+                let mut vulkan_khr_display: KhrDisplayCommands = ::std::mem::zeroed::<KhrDisplayCommands>();
                 let library_path = Path::new(VULKAN_LIBRARY);
                 vulkan_khr_display.library = match DynamicLibrary::open(Some(library_path)) {
                     Err(error) => return Err(format!("Failed to load {}: {}",VULKAN_LIBRARY,error)),
@@ -4887,16 +4869,16 @@ pub mod khr_display_swapchain {
                                                                         pAllocator: *const VkAllocationCallbacks,
                                                                         pSwapchains: *mut VkSwapchainKHR) -> VkResult;
     
-    pub struct VulkanKhrDisplaySwapchain {
+    pub struct KhrDisplaySwapchainCommands {
         library: Option<DynamicLibrary>,
         vkGetInstanceProcAddr: Option<vkGetInstanceProcAddrFn>,
         vkCreateSharedSwapchainsKHR: Option<vkCreateSharedSwapchainsKHRFn>,
     }
     
-    impl VulkanKhrDisplaySwapchain {
-        pub fn new() -> Result<VulkanKhrDisplaySwapchain, String> {
+    impl KhrDisplaySwapchainCommands {
+        pub fn new() -> Result<KhrDisplaySwapchainCommands, String> {
             unsafe {
-                let mut vulkan_khr_display_swapchain: VulkanKhrDisplaySwapchain = ::std::mem::zeroed::<VulkanKhrDisplaySwapchain>();
+                let mut vulkan_khr_display_swapchain: KhrDisplaySwapchainCommands = ::std::mem::zeroed::<KhrDisplaySwapchainCommands>();
                 let library_path = Path::new(VULKAN_LIBRARY);
                 vulkan_khr_display_swapchain.library = match DynamicLibrary::open(Some(library_path)) {
                     Err(error) => return Err(format!("Failed to load {}: {}",VULKAN_LIBRARY,error)),
@@ -4965,17 +4947,17 @@ pub mod khr_win32_surface {
     pub type vkGetPhysicalDeviceWin32PresentationSupportKHRFn = unsafe extern "stdcall" fn(physicalDevice: VkPhysicalDevice, 
                                                                                            queueFamilyIndex: uint32_t) -> VkBool32;
     
-    pub struct VulkanKhrWin32Surface {
+    pub struct KhrWin32SurfaceCommands {
         library: Option<DynamicLibrary>,
         vkGetInstanceProcAddr: Option<vkGetInstanceProcAddrFn>,
         vkCreateWin32SurfaceKHR: Option<vkCreateWin32SurfaceKHRFn>,
         vkGetPhysicalDeviceWin32PresentationSupportKHR: Option<vkGetPhysicalDeviceWin32PresentationSupportKHRFn>
     }
     
-    impl VulkanKhrWin32Surface {
-        pub fn new() -> Result<VulkanKhrWin32Surface, String> {
+    impl KhrWin32SurfaceCommands {
+        pub fn new() -> Result<KhrWin32SurfaceCommands, String> {
             unsafe {
-                let mut vulkan_khr_win32_surface: VulkanKhrWin32Surface = ::std::mem::zeroed::<VulkanKhrWin32Surface>();
+                let mut vulkan_khr_win32_surface: KhrWin32SurfaceCommands = ::std::mem::zeroed::<KhrWin32SurfaceCommands>();
                 let library_path = Path::new(VULKAN_LIBRARY);
                 vulkan_khr_win32_surface.library = match DynamicLibrary::open(Some(library_path)) {
                     Err(error) => return Err(format!("Failed to load {}: {}",VULKAN_LIBRARY,error)),
@@ -5129,7 +5111,7 @@ pub mod ext_debug_report {
                                                                     pLayerPrefix: *const c_char,
                                                                     pMessage: *const c_char);
     
-    pub struct VulkanExtDebugReport {
+    pub struct ExtDebugReportCommands {
        library: Option<DynamicLibrary>,
        vkGetInstanceProcAddr: Option<vkGetInstanceProcAddrFn>,
        vkCreateDebugReportCallbackEXT: Option<vkCreateDebugReportCallbackEXTFn>,
@@ -5137,10 +5119,10 @@ pub mod ext_debug_report {
        vkDebugReportMessageEXT: Option<vkDebugReportMessageEXTFn>
     }
     
-    impl VulkanExtDebugReport {
-        pub fn new() -> Result<VulkanExtDebugReport, String> {
+    impl ExtDebugReportCommands {
+        pub fn new() -> Result<ExtDebugReportCommands, String> {
             unsafe {
-                let mut vulkan_ext_debug_report: VulkanExtDebugReport = ::std::mem::zeroed::<VulkanExtDebugReport>();
+                let mut vulkan_ext_debug_report: ExtDebugReportCommands = ::std::mem::zeroed::<ExtDebugReportCommands>();
                 let library_path = Path::new(VULKAN_LIBRARY);
                 vulkan_ext_debug_report.library = match DynamicLibrary::open(Some(library_path)) {
                     Err(error) => return Err(format!("Failed to load {}: {}",VULKAN_LIBRARY,error)),
