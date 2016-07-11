@@ -41,6 +41,25 @@ macro_rules! invoke_command {
     }
 }
 
+/// Simplified variant of bitflags! for defining placeholder flags
+macro_rules! reserved_bitflags {
+    ($(#[$attr:meta])* pub flags $BitFlags:ident: $T:ty;) => {
+        #[derive(Copy, PartialEq, Eq, Clone, PartialOrd, Ord, Hash)]
+        $(#[$attr])*
+        pub struct $BitFlags {
+            bits: $T,
+        }
+
+        impl $BitFlags {
+            /// Returns an empty set of flags.
+            #[inline]
+            pub fn empty() -> $BitFlags {
+                $BitFlags { bits: 0 }
+            }
+        }
+    }
+}
+
 #[macro_use]
 pub mod core {
     use ::libc::{c_void, c_char, uint32_t, size_t, uint64_t, c_float, int32_t, uint8_t};
@@ -913,7 +932,9 @@ pub mod core {
         VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS = 1
     }
 
-    pub type VkInstanceCreateFlags = VkFlags;
+    reserved_bitflags! { 
+        pub flags VkInstanceCreateFlags: VkFlags;
+    }
 
     bitflags! {
         pub flags VkFormatFeatureFlags: VkFlags {
@@ -994,8 +1015,13 @@ pub mod core {
         }
     }
 
-    pub type VkDeviceCreateFlags = VkFlags;
-    pub type VkDeviceQueueCreateFlags = VkFlags;
+    reserved_bitflags! {
+        pub flags VkDeviceCreateFlags: VkFlags;
+    }
+
+    reserved_bitflags! { 
+        pub flags VkDeviceQueueCreateFlags: VkFlags;
+    }
 
     bitflags! {
         pub flags VkPipelineStageFlags: VkFlags {
@@ -1019,7 +1045,9 @@ pub mod core {
         }
     }
 
-    pub type VkMemoryMapFlags = VkFlags;
+    reserved_bitflags! { 
+        pub flags VkMemoryMapFlags: VkFlags;
+    }
 
     bitflags! {
         pub flags VkImageAspectFlags: VkFlags {
@@ -1050,9 +1078,15 @@ pub mod core {
         }
     }
 
-    pub type VkSemaphoreCreateFlags = VkFlags;
-    pub type VkEventCreateFlags = VkFlags;
-    pub type VkQueryPoolCreateFlags = VkFlags;
+    reserved_bitflags! { 
+        pub flags VkSemaphoreCreateFlags: VkFlags;
+    }
+    reserved_bitflags! { 
+        pub flags VkEventCreateFlags: VkFlags;
+    }
+    reserved_bitflags! { 
+        pub flags VkQueryPoolCreateFlags: VkFlags;
+    }
 
     bitflags! {
         pub flags VkQueryPipelineStatisticFlags: VkFlags {
@@ -1101,10 +1135,18 @@ pub mod core {
         }
     }
 
-    pub type VkBufferViewCreateFlags = VkFlags;
-    pub type VkImageViewCreateFlags = VkFlags;
-    pub type VkShaderModuleCreateFlags = VkFlags;
-    pub type VkPipelineCacheCreateFlags = VkFlags;
+    reserved_bitflags! { 
+        pub flags VkBufferViewCreateFlags: VkFlags;
+    }
+    reserved_bitflags! { 
+        pub flags VkImageViewCreateFlags: VkFlags;
+    }
+    reserved_bitflags! { 
+        pub flags VkShaderModuleCreateFlags: VkFlags;
+    }
+    reserved_bitflags! { 
+        pub flags VkPipelineCacheCreateFlags: VkFlags;
+    }
 
     bitflags! {
         pub flags VkPipelineCreateFlags: VkFlags {
@@ -1114,7 +1156,9 @@ pub mod core {
         }
     }
 
-    pub type VkPipelineShaderStageCreateFlags = VkFlags;
+    reserved_bitflags! { 
+        pub flags VkPipelineShaderStageCreateFlags: VkFlags;
+    }
 
     bitflags! {
         pub flags VkShaderStageFlags: VkFlags {
@@ -1129,11 +1173,21 @@ pub mod core {
         }
     }
 
-    pub type VkPipelineVertexInputStateCreateFlags = VkFlags;
-    pub type VkPipelineInputAssemblyStateCreateFlags = VkFlags;
-    pub type VkPipelineTessellationStateCreateFlags = VkFlags;
-    pub type VkPipelineViewportStateCreateFlags = VkFlags;
-    pub type VkPipelineRasterizationStateCreateFlags = VkFlags;
+    reserved_bitflags! { 
+        pub flags VkPipelineVertexInputStateCreateFlags: VkFlags;
+    }
+    reserved_bitflags! { 
+        pub flags VkPipelineInputAssemblyStateCreateFlags: VkFlags;
+    }
+    reserved_bitflags! { 
+        pub flags VkPipelineTessellationStateCreateFlags: VkFlags;
+    }
+    reserved_bitflags! { 
+        pub flags VkPipelineViewportStateCreateFlags: VkFlags;
+    }
+    reserved_bitflags! { 
+        pub flags VkPipelineRasterizationStateCreateFlags: VkFlags;
+    }
 
     bitflags! {
         pub flags VkCullModeFlags: VkFlags {
@@ -1144,9 +1198,15 @@ pub mod core {
         }
     }
 
-    pub type VkPipelineMultisampleStateCreateFlags = VkFlags;
-    pub type VkPipelineDepthStencilStateCreateFlags = VkFlags;
-    pub type VkPipelineColorBlendStateCreateFlags = VkFlags;
+    reserved_bitflags! { 
+        pub flags VkPipelineMultisampleStateCreateFlags: VkFlags;
+    }
+    reserved_bitflags! { 
+        pub flags VkPipelineDepthStencilStateCreateFlags: VkFlags;
+    }
+    reserved_bitflags! { 
+        pub flags VkPipelineColorBlendStateCreateFlags: VkFlags;
+    }
 
     bitflags! {
         pub flags VkColorComponentFlags: VkFlags {
@@ -1157,10 +1217,18 @@ pub mod core {
         }
     }
 
-    pub type VkPipelineDynamicStateCreateFlags = VkFlags;
-    pub type VkPipelineLayoutCreateFlags = VkFlags;
-    pub type VkSamplerCreateFlags = VkFlags;
-    pub type VkDescriptorSetLayoutCreateFlags = VkFlags;
+    reserved_bitflags! { 
+        pub flags VkPipelineDynamicStateCreateFlags: VkFlags;
+    }
+    reserved_bitflags! { 
+        pub flags VkPipelineLayoutCreateFlags: VkFlags;
+    }
+    reserved_bitflags! { 
+        pub flags VkSamplerCreateFlags: VkFlags;
+    }
+    reserved_bitflags! { 
+        pub flags VkDescriptorSetLayoutCreateFlags: VkFlags;
+    }
 
     bitflags! {
         pub flags VkDescriptorPoolCreateFlags: VkFlags {
@@ -1168,9 +1236,15 @@ pub mod core {
         }
     }
 
-    pub type VkDescriptorPoolResetFlags = VkFlags;
-    pub type VkFramebufferCreateFlags = VkFlags;
-    pub type VkRenderPassCreateFlags = VkFlags;
+    reserved_bitflags! { 
+        pub flags VkDescriptorPoolResetFlags: VkFlags;
+    }
+    reserved_bitflags! { 
+        pub flags VkFramebufferCreateFlags: VkFlags;
+    }
+    reserved_bitflags! { 
+        pub flags VkRenderPassCreateFlags: VkFlags;
+    }
 
     bitflags! {
         pub flags VkAttachmentDescriptionFlags: VkFlags {
@@ -1178,7 +1252,9 @@ pub mod core {
         }
     }
 
-    pub type VkSubpassDescriptionFlags = VkFlags;
+    reserved_bitflags! { 
+        pub flags VkSubpassDescriptionFlags: VkFlags;
+    }
 
     bitflags! {
         pub flags VkAccessFlags: VkFlags {
@@ -3412,7 +3488,7 @@ pub mod core {
                                                                  commandBufferCount: uint32_t,
                                                                  pCommandBuffers: *const VkCommandBuffer);
 
-    pub struct CoreCommands {
+    pub struct VkCoreCommands {
         library: Option<DynamicLibrary>,
         vkCreateInstance: Option<vkCreateInstanceFn>,
         vkDestroyInstance: Option<vkDestroyInstanceFn>,
@@ -3553,11 +3629,11 @@ pub mod core {
         vkCmdExecuteCommands: Option<vkCmdExecuteCommandsFn>,
     }
 
-    impl CoreCommands {
-        pub fn new() -> Result<CoreCommands, String> {
+    impl VkCoreCommands {
+        pub fn new() -> Result<VkCoreCommands, String> {
             unsafe {
-                let mut vulkan_core: CoreCommands;
-                vulkan_core = ::std::mem::zeroed::<CoreCommands>();
+                let mut vulkan_core: VkCoreCommands;
+                vulkan_core = ::std::mem::zeroed::<VkCoreCommands>();
                 let library_path = Path::new(VULKAN_LIBRARY);
                 vulkan_core.library = match DynamicLibrary::open(Some(library_path)) {
                     Err(error) => return Err(format!("Failed to load {}: {}", VULKAN_LIBRARY, error)),
@@ -4374,7 +4450,7 @@ pub mod khr_surface {
                                                                                       pPresentModeCount: *mut uint32_t,
                                                                                       pPresentModes: *mut VkPresentModeKHR) -> VkResult;
 
-    pub struct KhrSurfaceCommands {
+    pub struct VkKhrSurfaceCommands {
        library: Option<DynamicLibrary>,
        vkGetInstanceProcAddr: Option<vkGetInstanceProcAddrFn>,
        vkDestroySurfaceKHR: Option<vkDestroySurfaceKHRFn>,
@@ -4384,10 +4460,10 @@ pub mod khr_surface {
        vkGetPhysicalDeviceSurfacePresentModesKHR: Option<vkGetPhysicalDeviceSurfacePresentModesKHRFn>
     }
 
-    impl KhrSurfaceCommands {
-        pub fn new() -> Result<KhrSurfaceCommands, String> {
+    impl VkKhrSurfaceCommands {
+        pub fn new() -> Result<VkKhrSurfaceCommands, String> {
             unsafe {
-                let mut vulkan_khr_surface: KhrSurfaceCommands = ::std::mem::zeroed::<KhrSurfaceCommands>();
+                let mut vulkan_khr_surface: VkKhrSurfaceCommands = ::std::mem::zeroed::<VkKhrSurfaceCommands>();
                 let library_path = Path::new(VULKAN_LIBRARY);
                 vulkan_khr_surface.library = match DynamicLibrary::open(Some(library_path)) {
                     Err(error) => return Err(format!("Failed to load {}: {}",VULKAN_LIBRARY,error)),
@@ -4464,7 +4540,9 @@ pub mod khr_swapchain {
     pub const VK_KHR_SWAPCHAIN_SPEC_VERSION: uint32_t = 68;
     pub const VK_KHR_SWAPCHAIN_EXTENSION_NAME: *const c_char = b"VK_KHR_swapchain\0" as *const u8 as *const c_char;
     
-    pub type VkSwapchainCreateFlagsKHR = VkFlags;
+    reserved_bitflags! { 
+        pub flags VkSwapchainCreateFlagsKHR: VkFlags;
+    }
     
     #[repr(C)]
     #[derive(Copy)]
@@ -4528,7 +4606,7 @@ pub mod khr_swapchain {
     pub type vkQueuePresentKHRFn = unsafe extern "stdcall" fn(queue: VkQueue,
                                                               pPresentInfo: *const VkPresentInfoKHR) -> VkResult;
     
-    pub struct KhrSwapchainCommands {
+    pub struct VkKhrSwapchainCommands {
        library: Option<DynamicLibrary>,
        vkGetInstanceProcAddr: Option<vkGetInstanceProcAddrFn>,
        vkCreateSwapchainKHR: Option<vkCreateSwapchainKHRFn>,
@@ -4538,10 +4616,10 @@ pub mod khr_swapchain {
        vkQueuePresentKHR: Option<vkQueuePresentKHRFn>
     }
     
-    impl KhrSwapchainCommands {
-        pub fn new() -> Result<KhrSwapchainCommands, String> {
+    impl VkKhrSwapchainCommands {
+        pub fn new() -> Result<VkKhrSwapchainCommands, String> {
             unsafe {
-                let mut vulkan_khr_swapchain: KhrSwapchainCommands = ::std::mem::zeroed::<KhrSwapchainCommands>();
+                let mut vulkan_khr_swapchain: VkKhrSwapchainCommands = ::std::mem::zeroed::<VkKhrSwapchainCommands>();
                 let library_path = Path::new(VULKAN_LIBRARY);
                 vulkan_khr_swapchain.library = match DynamicLibrary::open(Some(library_path)) {
                     Err(error) => return Err(format!("Failed to load {}: {}",VULKAN_LIBRARY,error)),
@@ -4628,8 +4706,12 @@ pub mod khr_display {
         }
     }
     
-    pub type VkDisplayModeCreateFlagsKHR = VkFlags;
-    pub type VkDisplaySurfaceCreateFlagsKHR = VkFlags;
+    reserved_bitflags! { 
+        pub flags VkDisplayModeCreateFlagsKHR: VkFlags;
+    }
+    reserved_bitflags! { 
+        pub flags VkDisplaySurfaceCreateFlagsKHR: VkFlags;
+    }
     
     #[repr(C)]
     #[derive(Copy)]
@@ -4743,7 +4825,7 @@ pub mod khr_display {
                                                                            pAllocator: *const VkAllocationCallbacks,
                                                                            pSurface: *mut VkSurfaceKHR) -> VkResult;
     
-    pub struct KhrDisplayCommands {
+    pub struct VkKhrDisplayCommands {
         library: Option<DynamicLibrary>,
         vkGetInstanceProcAddr: Option<vkGetInstanceProcAddrFn>,
         vkGetPhysicalDeviceDisplayPropertiesKHR: Option<vkGetPhysicalDeviceDisplayPropertiesKHRFn>,
@@ -4755,10 +4837,10 @@ pub mod khr_display {
         vkCreateDisplayPlaneSurfaceKHR: Option<vkCreateDisplayPlaneSurfaceKHRFn>
     }
     
-    impl KhrDisplayCommands {
-        pub fn new() -> Result<KhrDisplayCommands, String> {
+    impl VkKhrDisplayCommands {
+        pub fn new() -> Result<VkKhrDisplayCommands, String> {
             unsafe {
-                let mut vulkan_khr_display: KhrDisplayCommands = ::std::mem::zeroed::<KhrDisplayCommands>();
+                let mut vulkan_khr_display: VkKhrDisplayCommands = ::std::mem::zeroed::<VkKhrDisplayCommands>();
                 let library_path = Path::new(VULKAN_LIBRARY);
                 vulkan_khr_display.library = match DynamicLibrary::open(Some(library_path)) {
                     Err(error) => return Err(format!("Failed to load {}: {}",VULKAN_LIBRARY,error)),
@@ -4869,16 +4951,16 @@ pub mod khr_display_swapchain {
                                                                         pAllocator: *const VkAllocationCallbacks,
                                                                         pSwapchains: *mut VkSwapchainKHR) -> VkResult;
     
-    pub struct KhrDisplaySwapchainCommands {
+    pub struct VkKhrDisplaySwapchainCommands {
         library: Option<DynamicLibrary>,
         vkGetInstanceProcAddr: Option<vkGetInstanceProcAddrFn>,
         vkCreateSharedSwapchainsKHR: Option<vkCreateSharedSwapchainsKHRFn>,
     }
     
-    impl KhrDisplaySwapchainCommands {
-        pub fn new() -> Result<KhrDisplaySwapchainCommands, String> {
+    impl VkKhrDisplaySwapchainCommands {
+        pub fn new() -> Result<VkKhrDisplaySwapchainCommands, String> {
             unsafe {
-                let mut vulkan_khr_display_swapchain: KhrDisplaySwapchainCommands = ::std::mem::zeroed::<KhrDisplaySwapchainCommands>();
+                let mut vulkan_khr_display_swapchain: VkKhrDisplaySwapchainCommands = ::std::mem::zeroed::<VkKhrDisplaySwapchainCommands>();
                 let library_path = Path::new(VULKAN_LIBRARY);
                 vulkan_khr_display_swapchain.library = match DynamicLibrary::open(Some(library_path)) {
                     Err(error) => return Err(format!("Failed to load {}: {}",VULKAN_LIBRARY,error)),
@@ -4926,7 +5008,9 @@ pub mod khr_win32_surface {
     pub const VK_KHR_WIN32_SURFACE_SPEC_VERSION: uint32_t = 5;
     pub const VK_KHR_WIN32_SURFACE_EXTENSION_NAME: *const c_char = b"VK_KHR_win32_surface\0" as *const u8 as *const c_char;
     
-    pub type VkWin32SurfaceCreateFlagsKHR = VkFlags;
+    reserved_bitflags! { 
+        pub flags VkWin32SurfaceCreateFlagsKHR: VkFlags;
+    }
     
     #[repr(C)]
     #[derive(Copy)]
@@ -4947,17 +5031,17 @@ pub mod khr_win32_surface {
     pub type vkGetPhysicalDeviceWin32PresentationSupportKHRFn = unsafe extern "stdcall" fn(physicalDevice: VkPhysicalDevice, 
                                                                                            queueFamilyIndex: uint32_t) -> VkBool32;
     
-    pub struct KhrWin32SurfaceCommands {
+    pub struct VkKhrWin32SurfaceCommands {
         library: Option<DynamicLibrary>,
         vkGetInstanceProcAddr: Option<vkGetInstanceProcAddrFn>,
         vkCreateWin32SurfaceKHR: Option<vkCreateWin32SurfaceKHRFn>,
         vkGetPhysicalDeviceWin32PresentationSupportKHR: Option<vkGetPhysicalDeviceWin32PresentationSupportKHRFn>
     }
     
-    impl KhrWin32SurfaceCommands {
-        pub fn new() -> Result<KhrWin32SurfaceCommands, String> {
+    impl VkKhrWin32SurfaceCommands {
+        pub fn new() -> Result<VkKhrWin32SurfaceCommands, String> {
             unsafe {
-                let mut vulkan_khr_win32_surface: KhrWin32SurfaceCommands = ::std::mem::zeroed::<KhrWin32SurfaceCommands>();
+                let mut vulkan_khr_win32_surface: VkKhrWin32SurfaceCommands = ::std::mem::zeroed::<VkKhrWin32SurfaceCommands>();
                 let library_path = Path::new(VULKAN_LIBRARY);
                 vulkan_khr_win32_surface.library = match DynamicLibrary::open(Some(library_path)) {
                     Err(error) => return Err(format!("Failed to load {}: {}",VULKAN_LIBRARY,error)),
@@ -5111,7 +5195,7 @@ pub mod ext_debug_report {
                                                                     pLayerPrefix: *const c_char,
                                                                     pMessage: *const c_char);
     
-    pub struct ExtDebugReportCommands {
+    pub struct VkExtDebugReportCommands {
        library: Option<DynamicLibrary>,
        vkGetInstanceProcAddr: Option<vkGetInstanceProcAddrFn>,
        vkCreateDebugReportCallbackEXT: Option<vkCreateDebugReportCallbackEXTFn>,
@@ -5119,10 +5203,10 @@ pub mod ext_debug_report {
        vkDebugReportMessageEXT: Option<vkDebugReportMessageEXTFn>
     }
     
-    impl ExtDebugReportCommands {
-        pub fn new() -> Result<ExtDebugReportCommands, String> {
+    impl VkExtDebugReportCommands {
+        pub fn new() -> Result<VkExtDebugReportCommands, String> {
             unsafe {
-                let mut vulkan_ext_debug_report: ExtDebugReportCommands = ::std::mem::zeroed::<ExtDebugReportCommands>();
+                let mut vulkan_ext_debug_report: VkExtDebugReportCommands = ::std::mem::zeroed::<VkExtDebugReportCommands>();
                 let library_path = Path::new(VULKAN_LIBRARY);
                 vulkan_ext_debug_report.library = match DynamicLibrary::open(Some(library_path)) {
                     Err(error) => return Err(format!("Failed to load {}: {}",VULKAN_LIBRARY,error)),
