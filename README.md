@@ -108,3 +108,5 @@ A more complete example is available in ```examples/triangle.rs```. To compile( 
 ```
 > cargo build(or run) --examples triangle
 ```
+# Abandoned
+This package is an orphan, I'm not working on it anymore, I don't have time for Rust, If you would like to take ownership of this library send me your user name at vlad.shcherbakov@gmail.com, I will give it up to first person that asks.
